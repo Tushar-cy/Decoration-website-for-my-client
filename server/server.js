@@ -1,3 +1,7 @@
+// Sentry MUST be the very first require in the process
+require("./instrument");
+const { Sentry } = require("./instrument");
+
 const express = require("express");
 const helmet = require("helmet");
 const compression = require("compression");
@@ -15,6 +19,8 @@ const errorHandler = require("./middleware/errorHandler");
 const { globalLimiter } = require("./middleware/rateLimiter");
 const { requireCustomHeader } = require("./middleware/csrfMiddleware");
 const AppError = require("./utils/AppError");
+const featureFlags = require("./services/featureFlags");
+const { razorpayBreaker } = require("./utils/circuitBreaker");
 
 const app = express();
 
@@ -68,6 +74,24 @@ app.use(globalLimiter);
 // 10. CSRF Protection for Cookie Auth: Require X-Requested-With: decorjoy on mutating requests
 app.use(requireCustomHeader);
 
+const { publicCache, noStoreCache } = require("./middleware/httpCache");
+
+// 10.5. Request execution timeout: 10s limit
+app.use((req, res, next) => {
+  req.setTimeout(10000, () => {
+    if (!res.headersSent) {
+      res.status(504).json({
+        status: "error",
+        message: "Gateway Timeout: Request exceeded 10s execution window",
+      });
+    }
+  });
+  next();
+});
+
+// Enable strong ETags for HTTP 304 validation
+app.set("etag", "strong");
+
 // 11. Health & Readiness Probes
 app.get("/healthz", (req, res) => {
   res.status(200).json({
@@ -77,56 +101,81 @@ app.get("/healthz", (req, res) => {
   });
 });
 
-app.get("/readyz", (req, res) => {
+app.get("/readyz", async (req, res) => {
   const mongoConnected = mongoose.connection.readyState === 1;
   const redisConnected = redisClient.isReady;
 
-  if (!mongoConnected) {
-    return res.status(503).json({
-      status: "unhealthy",
-      mongo: "disconnected",
-      redis: redisConnected ? "connected" : "disconnected",
-    });
-  }
+  const checks = {
+    mongo: mongoConnected ? "connected" : "disconnected",
+    redis: redisConnected ? "connected" : "bypassed",  // Redis down = bypass, not fatal
+    razorpay: razorpayBreaker.state,   // CLOSED | OPEN | HALF_OPEN
+  };
 
-  if (!redisConnected) {
-    return res.status(503).json({
+  if (!mongoConnected) {
+    return res.status(503).set("Retry-After", "10").json({
       status: "unhealthy",
-      mongo: "connected",
-      redis: "disconnected",
+      ...checks,
+      message: "MongoDB not connected",
     });
   }
 
   return res.status(200).json({
     status: "ready",
-    mongo: "connected",
-    redis: "connected",
+    ...checks,
+    uptime: Math.floor(process.uptime()),
+    release: process.env.SENTRY_RELEASE || "unknown",
   });
 });
 
-// 12. Application API Routes
-app.use("/api/auth", require("./routes/authRoutes"));
-app.use("/api/services", require("./routes/serviceRoutes"));
-app.use("/api/gallery", require("./routes/galleryRoutes"));
-app.use("/api/inquiries", require("./routes/inquiryRoutes"));
-app.use("/api/testimonials", require("./routes/testimonialRoutes"));
+// Public flags endpoint (for storefront banners, payment mode)
+app.get("/api/settings/flags", async (req, res) => {
+  try {
+    const flags = await featureFlags.get();
+    // Only expose customer-facing flags — never return raw Settings
+    return res.status(200).json({
+      status: "success",
+      data: {
+        onlinePayments: flags.onlinePayments && razorpayBreaker.state !== "OPEN",
+        bookingsPaused: flags.bookingsPaused,
+        maintenanceBanner: flags.maintenanceBanner,
+      },
+    });
+  } catch (err) {
+    return res.status(200).json({
+      status: "success",
+      data: { onlinePayments: false, bookingsPaused: false, maintenanceBanner: "" },
+    });
+  }
+});
 
-// Order & Payment Engine Routes
+// 12. Application API Routes
+
+// Private, no-store transactional & auth routes
+app.use("/api/auth", noStoreCache(), require("./routes/authRoutes"));
+app.use("/api/quotes", noStoreCache(), require("./routes/quoteRoutes"));
+app.use("/api/orders", noStoreCache(), require("./routes/orderRoutes"));
+app.use("/api/payments", noStoreCache(), require("./routes/paymentRoutes"));
+app.use("/api/inquiries", noStoreCache(), require("./routes/inquiryRoutes"));
+
+// Public edge-cached routes (ETag + max-age=30, s-maxage=300, stale-while-revalidate=86400, stale-if-error=86400)
+app.use("/api/services", publicCache(30, 300), require("./routes/serviceRoutes"));
+app.use("/api/gallery", publicCache(30, 300), require("./routes/galleryRoutes"));
+app.use("/api/testimonials", publicCache(30, 300), require("./routes/testimonialRoutes"));
+
+// Availability has dedicated short 15s cache
 app.use("/api/availability", require("./routes/availabilityRoutes"));
-app.use("/api/quotes", require("./routes/quoteRoutes"));
-app.use("/api/orders", require("./routes/orderRoutes"));
-app.use("/api/payments", require("./routes/paymentRoutes"));
 
 // Products, Categories & AddOns Routes
-app.use("/api/products", require("./routes/productRoutes"));
-app.get("/api/categories", require("./controllers/productController").getPublicCategories);
-app.get("/api/addons", require("./controllers/productController").getPublicAddOns);
+app.use("/api/products", publicCache(30, 300), require("./routes/productRoutes"));
+app.get("/api/categories", publicCache(30, 300), require("./controllers/productController").getPublicCategories);
+app.get("/api/addons", publicCache(30, 300), require("./controllers/productController").getPublicAddOns);
 app.use("/api/settings", require("./routes/publicSettingsRoutes"));
 
 // Schema-Driven Purpose Forms Routes
-app.use("/api/forms", require("./routes/purposeFormRoutes"));
+app.use("/api/forms", publicCache(30, 300), require("./routes/purposeFormRoutes"));
 
-// Admin Management Routes
+// Admin Management Routes (strictly private, no-store)
+app.use("/api/admin", noStoreCache());
 app.use("/api/admin/dashboard", require("./routes/adminDashboardRoutes"));
 app.use("/api/admin/orders", require("./routes/adminOrderRoutes"));
 app.use("/api/admin", require("./routes/adminProductRoutes"));
@@ -137,6 +186,8 @@ app.use("/api/admin/submissions", require("./routes/adminSubmissionRoutes"));
 app.use("/api/admin/users", require("./routes/adminUserRoutes"));
 app.use("/api/admin/audit-logs", require("./routes/adminAuditRoutes"));
 app.use("/api/admin/availability", require("./routes/adminAvailabilityRoutes"));
+app.use("/api/admin/gallery", require("./routes/adminGalleryRoutes"));
+app.use("/api/admin/testimonials", require("./routes/adminTestimonialRoutes"));
 
 // Root Info Route
 app.get("/", (req, res) => {
@@ -180,6 +231,11 @@ const startServer = async () => {
       logger.info(`Decor Joy Gurgaon Server running on port ${env.PORT} [${env.NODE_ENV}]`);
       logger.info(`API Base: http://localhost:${env.PORT}/api`);
     });
+
+    // Tuning HTTP server timeouts for Cloudflare / AWS ALB reverse proxy compatibility
+    server.keepAliveTimeout = 65000; // 65 seconds (must exceed reverse proxy 60s idle timeout)
+    server.headersTimeout = 66000;   // 66 seconds (must exceed keepAliveTimeout)
+    server.requestTimeout = 10000;   // 10 seconds request execution limit
 
     const shutdown = async (signal) => {
       logger.info(`Received ${signal}. Draining connections and shutting down...`);

@@ -1,0 +1,118 @@
+name: Deploy — Staging
+
+on:
+  push:
+    branches: [staging]
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false   # Never cancel an in-flight deploy
+
+jobs:
+  # ── Reuse CI gate ──────────────────────────────────────────────────
+  ci-gate:
+    name: CI Gate (must pass before deploy)
+    uses: ./.github/workflows/ci.yml
+
+  # ── Run DB Migrations on staging ──────────────────────────────────
+  migrate:
+    name: Run DB Migrations (staging)
+    needs: ci-gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: server/package-lock.json
+      - run: npm ci
+        working-directory: server
+      - name: Run migrate-mongo up
+        run: npm run migrate:up
+        working-directory: server
+        env:
+          MONGO_URI: ${{ secrets.STAGING_MONGO_URI }}
+
+  # ── Deploy Server to Staging ───────────────────────────────────────
+  deploy-server:
+    name: Deploy Server (staging)
+    needs: migrate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy server via SSH (rolling, health-check-gated)
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.STAGING_SSH_HOST }}
+          username: ${{ secrets.STAGING_SSH_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          script: |
+            set -euo pipefail
+            cd /opt/decorjoy-staging/server
+            git fetch origin staging && git reset --hard origin/staging
+            npm ci --omit=dev
+            # Rolling restart: PM2 performs zero-downtime reload
+            pm2 reload decorjoy-staging --update-env
+            # Health-check gate: poll /readyz for up to 60s
+            for i in $(seq 1 12); do
+              STATUS=$(curl -fs -o /dev/null -w "%{http_code}" http://localhost:5001/readyz || echo "000")
+              if [ "$STATUS" = "200" ]; then
+                echo "✅ Server healthy after $((i*5))s"
+                exit 0
+              fi
+              echo "⏳ Waiting for /readyz (attempt $i, status=$STATUS)..."
+              sleep 5
+            done
+            echo "❌ Health check failed — rolling back"
+            pm2 reload decorjoy-staging-prev --update-env 2>/dev/null || true
+            exit 1
+
+  # ── Deploy Client (static assets) ─────────────────────────────────
+  deploy-client:
+    name: Deploy Client (staging)
+    needs: ci-gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: client/package-lock.json
+      - run: npm ci
+        working-directory: client
+      - name: Build client for staging
+        run: npm run build
+        working-directory: client
+        env:
+          VITE_API_URL: ${{ vars.STAGING_API_URL }}
+          VITE_RAZORPAY_KEY: ${{ secrets.RAZORPAY_KEY_ID_STAGING }}
+          VITE_SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          VITE_SENTRY_RELEASE: ${{ github.sha }}
+          VITE_SENTRY_ENV: staging
+      - name: Upload source maps to Sentry
+        run: |
+          npx @sentry/cli releases new ${{ github.sha }}
+          npx @sentry/cli releases files ${{ github.sha }} upload-sourcemaps ./client/dist/assets
+          npx @sentry/cli releases finalize ${{ github.sha }}
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: decorjoy-client
+      - name: Deploy to Cloudflare Pages (staging)
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: decorjoy-staging
+          directory: client/dist
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          branch: staging

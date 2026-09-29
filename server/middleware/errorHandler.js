@@ -1,4 +1,5 @@
 const { logger } = require("../utils/logger");
+const { Sentry } = require("../instrument");
 
 const errorHandler = (err, req, res, next) => {
   const isProduction = process.env.NODE_ENV === "production";
@@ -44,6 +45,16 @@ const errorHandler = (err, req, res, next) => {
     req.log.error({ err, requestId }, message);
   } else {
     logger.error({ err, requestId }, message);
+  }
+
+  // Report unexpected errors to Sentry (not 4xx operational errors)
+  if (!isOperational && statusCode >= 500 && Sentry) {
+    Sentry.withScope((scope) => {
+      scope.setTag("requestId", requestId);
+      scope.setTag("method", req.method);
+      scope.setTag("path", req.path);
+      Sentry.captureException(err);
+    });
   }
 
   // Production response: Never leak internal error message or stack trace

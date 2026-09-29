@@ -1,11 +1,16 @@
-const { Worker } = require("bullmq");
+const { Worker, Queue } = require("bullmq");
 const IORedis = require("ioredis");
 const mongoose = require("mongoose");
 const { env } = require("./config/env");
 const { connectDB, closeDB } = require("./config/db");
+const { connectRedis, closeRedis } = require("./config/redis");
 const { logger } = require("./utils/logger");
 const Order = require("./models/Order");
 const Settings = require("./models/Settings");
+const Category = require("./models/Category");
+const Product = require("./models/Product");
+const FormSchema = require("./models/FormSchema");
+const cache = require("./utils/cache");
 const { releaseSlotAtomic } = require("./services/slotService");
 const { recordAudit } = require("./services/auditService");
 
@@ -72,6 +77,112 @@ async function cancelExpiredOrders() {
 }
 
 /**
+ * Warms up Redis cache with hot catalog, settings, and form data.
+ */
+async function warmUpCache() {
+  logger.info("Running cache warmup job...");
+  try {
+    // 1. Categories
+    await cache.wrap(
+      cache.buildCacheKey("categories", {}),
+      600,
+      async () =>
+        Category.find({ isActive: true, deletedAt: null })
+          .select("name slug image sortOrder isActive")
+          .sort({ sortOrder: 1, name: 1 })
+          .lean(),
+      { tags: ["categories"], forceFresh: true }
+    );
+
+    // 2. Public Settings
+    await cache.wrap(
+      "cache:settings:public",
+      600,
+      async () => {
+        const settings = await Settings.getSettings();
+        return {
+          business: {
+            name: settings.business?.name || "Decor Joy Gurgaon",
+            phone: settings.business?.phone || "+91 7015767715",
+            whatsapp: settings.business?.whatsapp || "+91 7015767715",
+            email: settings.business?.email || "decorjoygurgaon@gmail.com",
+            address: settings.business?.address || "Sector 57, Gurugram, Haryana",
+            geo: settings.business?.geo || { lat: 28.4239, lng: 77.0863 },
+          },
+          slots: (settings.slots || []).map((s) => ({
+            key: s.key,
+            label: s.label,
+            startTime: s.startTime,
+            endTime: s.endTime,
+          })),
+          serviceablePincodes: (settings.serviceablePincodes || []).map((p) => ({
+            pincode: p.pincode,
+            deliveryFeePaise: p.deliveryFeePaise,
+          })),
+          advancePercent: settings.advancePercent || 25,
+          paymentMode: settings.paymentMode || "advance_online",
+          socials: settings.socials || {},
+        };
+      },
+      { tags: ["settings"], forceFresh: true }
+    );
+
+    // 3. Active purpose forms
+    await cache.wrap(
+      "cache:forms:active",
+      600,
+      async () => {
+        const forms = await FormSchema.find({ isActive: true })
+          .select("key title description version fields successMessage")
+          .lean();
+        return forms.map((f) => ({
+          key: f.key,
+          title: f.title,
+          description: f.description,
+          version: f.version,
+          fieldCount: (f.fields || []).length,
+        }));
+      },
+      { tags: ["forms"], forceFresh: true }
+    );
+
+    // 4. Products catalogue page 1
+    await cache.wrap(
+      cache.buildCacheKey("products", {}),
+      120,
+      async () => {
+        const [products, total] = await Promise.all([
+          Product.find({ isActive: true, deletedAt: null })
+            .select(
+              "title slug categoryId basePricePaise compareAtPricePaise images badge isFeatured ratingAvg ratingCount setupMinutes minLeadHours tags isActive sortOrder"
+            )
+            .populate("categoryId", "name slug")
+            .sort({ isFeatured: -1, sortOrder: 1, createdAt: -1 })
+            .limit(20)
+            .lean(),
+          Product.countDocuments({ isActive: true, deletedAt: null }),
+        ]);
+
+        return {
+          products,
+          pagination: {
+            page: 1,
+            limit: 20,
+            total,
+            totalPages: Math.ceil(total / 20) || 1,
+          },
+        };
+      },
+      { tags: ["products"], forceFresh: true }
+    );
+
+    logger.info("Cache warmup successfully populated hot catalog and config entries in Redis.");
+  } catch (err) {
+    logger.warn({ err: err.message }, "Cache warmup failed to refresh some keys");
+  }
+}
+
+/**
  * Handles sending simulated or real notifications (email, SMS, WhatsApp)
  * from the worker process instead of inline in HTTP request loops.
  */
@@ -103,6 +214,10 @@ async function processNotificationJob(job) {
       );
       break;
 
+    case "CACHE_WARMUP":
+      await warmUpCache();
+      break;
+
     default:
       logger.warn({ jobName: name }, "Unknown notification job type");
   }
@@ -112,11 +227,13 @@ async function processNotificationJob(job) {
 
 let notificationWorker = null;
 let sweepInterval = null;
+let warmupInterval = null;
 
 async function startWorker() {
-  logger.info("Starting Decor Joy background worker...");
+  logger.info("Starting Decor Joy background worker (BullMQ + Slot Expiry + Cache Warmup)...");
 
   await connectDB();
+  await connectRedis();
 
   const redisConnection = new IORedis(env.REDIS_URL, {
     maxRetriesPerRequest: null,
@@ -125,12 +242,12 @@ async function startWorker() {
 
   try {
     await redisConnection.connect();
-    logger.info("Worker connected to Redis");
+    logger.info("Worker connected to Redis for BullMQ");
   } catch (e) {
     logger.warn({ message: e.message }, "Worker running with Redis reconnect mode");
   }
 
-  // BullMQ Worker for background notifications
+  // BullMQ Worker for background notifications and scheduled jobs
   notificationWorker = new Worker(
     "order-notifications",
     async (job) => processNotificationJob(job),
@@ -148,7 +265,7 @@ async function startWorker() {
     logger.error({ jobId: job?.id, err }, "Notification job failed");
   });
 
-  // Run initial expiry sweep, then schedule every 60 seconds
+  // 1. Initial orders sweep and recurring interval (60s)
   await cancelExpiredOrders();
   sweepInterval = setInterval(async () => {
     try {
@@ -156,11 +273,21 @@ async function startWorker() {
     } catch (e) {}
   }, 60 * 1000);
 
+  // 2. Initial cache warmup and recurring interval (10 min)
+  await warmUpCache();
+  warmupInterval = setInterval(async () => {
+    try {
+      await warmUpCache();
+    } catch (e) {}
+  }, 10 * 60 * 1000);
+
   const shutdown = async (signal) => {
     logger.info(`Worker received ${signal}. Shutting down cleanly...`);
     if (sweepInterval) clearInterval(sweepInterval);
+    if (warmupInterval) clearInterval(warmupInterval);
     if (notificationWorker) await notificationWorker.close();
     await redisConnection.quit();
+    await closeRedis();
     await closeDB();
     logger.info("Worker stopped.");
     process.exit(0);
@@ -182,5 +309,6 @@ if (require.main === module) {
 module.exports = {
   startWorker,
   cancelExpiredOrders,
+  warmUpCache,
   processNotificationJob,
 };

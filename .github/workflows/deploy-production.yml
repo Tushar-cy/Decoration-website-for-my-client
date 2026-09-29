@@ -1,0 +1,147 @@
+name: Deploy — Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: "Git SHA or tag to promote to production (leave blank for HEAD of main)"
+        required: false
+        default: ""
+      reason:
+        description: "Reason for this production deployment"
+        required: true
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  # ── Manual approval gate ───────────────────────────────────────────
+  # Approval is enforced by the GitHub environment "production" protection rules.
+  # Set at: Settings → Environments → production → Required reviewers: owner
+
+  migrate:
+    name: Run DB Migrations (production)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: server/package-lock.json
+      - run: npm ci
+        working-directory: server
+      - name: Run migrate-mongo up (production)
+        run: npm run migrate:up
+        working-directory: server
+        env:
+          MONGO_URI: ${{ secrets.PROD_MONGO_URI }}
+
+  deploy-server:
+    name: Deploy Server (production, rolling zero-downtime)
+    needs: migrate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.sha || github.sha }}
+
+      - name: Deploy server via SSH (rolling, health-check-gated)
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.PROD_SSH_HOST }}
+          username: ${{ secrets.PROD_SSH_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            set -euo pipefail
+            cd /opt/decorjoy/server
+            git fetch origin main && git reset --hard ${{ github.event.inputs.sha || github.sha }}
+            npm ci --omit=dev
+            # Zero-downtime rolling reload via PM2
+            # PM2 keeps old workers alive until new ones pass health check
+            pm2 reload decorjoy-prod --update-env
+            # Poll /readyz for 90 seconds
+            for i in $(seq 1 18); do
+              STATUS=$(curl -fs -o /dev/null -w "%{http_code}" http://localhost:5000/readyz || echo "000")
+              if [ "$STATUS" = "200" ]; then
+                echo "✅ Production server healthy after $((i*5))s"
+                exit 0
+              fi
+              echo "⏳ Waiting for /readyz (attempt $i/18, status=$STATUS)..."
+              sleep 5
+            done
+            echo "❌ Health check failed — initiating rollback"
+            git log --oneline -5
+            PREV_SHA=$(git log --skip=1 -1 --format="%H")
+            git reset --hard $PREV_SHA
+            npm ci --omit=dev
+            pm2 reload decorjoy-prod --update-env
+            echo "⚠️  Rolled back to $PREV_SHA"
+            exit 1
+
+  deploy-client:
+    name: Deploy Client (production, Cloudflare Pages)
+    needs: migrate   # Can run in parallel with server deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: client/package-lock.json
+      - run: npm ci
+        working-directory: client
+      - name: Build client for production
+        run: npm run build
+        working-directory: client
+        env:
+          VITE_API_URL: ${{ vars.PROD_API_URL }}
+          VITE_RAZORPAY_KEY: ${{ secrets.RAZORPAY_KEY_ID_PROD }}
+          VITE_SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          VITE_SENTRY_RELEASE: ${{ github.sha }}
+          VITE_SENTRY_ENV: production
+      - name: Upload source maps to Sentry
+        run: |
+          npx @sentry/cli releases new ${{ github.sha }}
+          npx @sentry/cli releases files ${{ github.sha }} upload-sourcemaps ./client/dist/assets
+          npx @sentry/cli releases finalize ${{ github.sha }}
+          npx @sentry/cli releases deploys ${{ github.sha }} new -e production
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: decorjoy-client
+      - name: Deploy to Cloudflare Pages (production)
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: decorjoy
+          directory: client/dist
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
+
+  notify:
+    name: Notify deployment result
+    needs: [deploy-server, deploy-client]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Post deployment status
+        run: |
+          STATUS="${{ needs.deploy-server.result }}"
+          echo "Deployment status: $STATUS"
+          echo "SHA: ${{ github.sha }}"
+          echo "Reason: ${{ github.event.inputs.reason }}"
+          # Add Slack/WhatsApp webhook here if desired

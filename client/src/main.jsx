@@ -1,7 +1,10 @@
+// Sentry MUST be the very first import
+import "./sentry.js";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App.jsx";
+import "./styles/fonts.css";
 import "./styles/global.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Routes, Route, useLocation, Outlet } from "react-router-dom";
+import { Routes, Route, useLocation, Outlet, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -12,18 +12,19 @@ import InstallPrompt from "./components/pwa/InstallPrompt";
 import PwaUpdatePrompt from "./components/pwa/PwaUpdatePrompt";
 import { ShopProvider } from "./context/ShopContext";
 import { SettingsProvider } from "./context/SettingsContext";
+import MaintenanceBanner from "./components/MaintenanceBanner";
 
-// Storefront Pages (TanStack Query driven)
-import Home from "./pages/Home";
-import Shop from "./pages/Shop";
-import ProductDetail from "./pages/ProductDetail";
-import CartPage from "./pages/CartPage";
-import CheckoutPage from "./pages/CheckoutPage";
-import OrderTracking from "./pages/OrderTracking";
-import Gallery from "./pages/Gallery";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
-import PlanMyEvent from "./pages/PlanMyEvent";
+// Storefront Pages (Route-level code splitting with React.lazy)
+const Home = React.lazy(() => import("./pages/Home"));
+const Shop = React.lazy(() => import("./pages/Shop"));
+const ProductDetail = React.lazy(() => import("./pages/ProductDetail"));
+const CartPage = React.lazy(() => import("./pages/CartPage"));
+const CheckoutPage = React.lazy(() => import("./pages/CheckoutPage"));
+const OrderTracking = React.lazy(() => import("./pages/OrderTracking"));
+const Gallery = React.lazy(() => import("./pages/Gallery"));
+const About = React.lazy(() => import("./pages/About"));
+const Contact = React.lazy(() => import("./pages/Contact"));
+const PlanMyEvent = React.lazy(() => import("./pages/PlanMyEvent"));
 
 // Admin Portal Pages (Code-split with React.lazy so customers NEVER download admin code)
 const AdminLogin = React.lazy(() => import("./admin/AdminLogin"));
@@ -42,7 +43,7 @@ const UsersManager = React.lazy(() => import("./admin/UsersManager"));
 const AuditLogManager = React.lazy(() => import("./admin/AuditLogManager"));
 
 // Customer TanStack Query Client with required cache and retry parameters
-const storefrontQueryClient = new QueryClient({
+export const storefrontQueryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 60 * 1000, // 60 seconds
@@ -52,6 +53,25 @@ const storefrontQueryClient = new QueryClient({
     },
   },
 });
+
+function PageLoading() {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "50vh",
+        color: "var(--gold)",
+        fontSize: "1.1rem",
+        fontWeight: 500,
+        gap: "10px",
+      }}
+    >
+      <span>✨ Loading celebration details...</span>
+    </div>
+  );
+}
 
 function AdminLoading() {
   return (
@@ -87,9 +107,12 @@ function CustomerLayout() {
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", minHeight: "100dvh" }}>
       <InstallPrompt />
+      <MaintenanceBanner />
       <Navbar />
       <main style={{ flexGrow: 1 }}>
-        <Outlet />
+        <React.Suspense fallback={<PageLoading />}>
+          <Outlet />
+        </React.Suspense>
       </main>
       <Footer />
       {/* Mobile Customer Bottom Navigation Bar */}
@@ -150,7 +173,7 @@ function App() {
               <Route path="orders" element={<OrdersManager />} />
               <Route path="products" element={<ProductsManager />} />
               <Route path="categories" element={<CategoriesManager />} />
-              <Route path="coupons" element={<CategoriesManager />} />
+              <Route path="coupons" element={<Navigate to="/admin/categories?tab=coupons" replace />} />
               <Route path="availability" element={<AvailabilityManager />} />
               <Route path="forms" element={<FormBuilder />} />
               <Route path="submissions" element={<SubmissionsManager />} />

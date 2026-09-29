@@ -39,6 +39,15 @@ const envSchema = z.object({
   // Optional admin seed credentials
   ADMIN_EMAIL: z.string().email().optional(),
   ADMIN_PASSWORD: z.string().min(12, "ADMIN_PASSWORD must be at least 12 characters").optional(),
+
+  // Observability (optional)
+  SENTRY_DSN: z.string().url().optional(),
+  SENTRY_RELEASE: z.string().optional(),
+
+  // WhatsApp Business Cloud API (optional)
+  WHATSAPP_PHONE_NUMBER_ID: z.string().optional(),
+  WHATSAPP_ACCESS_TOKEN: z.string().optional(),
+  OWNER_WHATSAPP: z.string().optional(),  // e.g. 917015767715 (no +)
 });
 
 function validateEnv(rawEnv = process.env) {

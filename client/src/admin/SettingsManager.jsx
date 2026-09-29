@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getAdminSettings, updateAdminSettings } from "../services/api";
 import RoleGuard from "./components/RoleGuard";
+import { useAdminUser } from "./hooks/useAdminUser";
 
 function SettingsManagerContent({ currentUser }) {
   const queryClient = useQueryClient();
@@ -101,6 +102,80 @@ function SettingsManagerContent({ currentUser }) {
       )}
 
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+        {/* ─── Operational Switches ─────────────────────────────── */}
+        <div className="fb-card" style={{ border: "2px solid #f59e0b" }}>
+          <div className="fb-card-title" style={{ color: "#b45309" }}>⚡ Operational Switches</div>
+          <p style={{ fontSize: "0.84rem", color: "#78350f", marginBottom: "16px", lineHeight: 1.5 }}>
+            Changes take effect site-wide within 60 seconds — <strong>no deploy required.</strong>
+          </p>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            {/* Online Payments toggle */}
+            <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
+              <div style={{ paddingTop: "3px" }}>
+                <input
+                  type="checkbox"
+                  id="flag-online-payments"
+                  style={{ width: 20, height: 20, cursor: "pointer", accentColor: "#16a34a" }}
+                  checked={formData.flags?.onlinePayments !== false}
+                  onChange={(e) =>
+                    setFormData({ ...formData, flags: { ...(formData.flags || {}), onlinePayments: e.target.checked } })
+                  }
+                />
+              </div>
+              <div>
+                <label htmlFor="flag-online-payments" style={{ fontWeight: 700, cursor: "pointer", fontSize: "0.95rem" }}>
+                  💳 Online Payments Enabled
+                </label>
+                <p style={{ fontSize: "0.8rem", color: "#64748b", margin: "2px 0 0" }}>
+                  Uncheck to fall back to Pay-on-Confirmation. Customer sees a message; no order is blocked.
+                </p>
+              </div>
+            </div>
+
+            {/* Bookings Paused toggle */}
+            <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
+              <div style={{ paddingTop: "3px" }}>
+                <input
+                  type="checkbox"
+                  id="flag-bookings-paused"
+                  style={{ width: 20, height: 20, cursor: "pointer", accentColor: "#dc2626" }}
+                  checked={!!formData.flags?.bookingsPaused}
+                  onChange={(e) =>
+                    setFormData({ ...formData, flags: { ...(formData.flags || {}), bookingsPaused: e.target.checked } })
+                  }
+                />
+              </div>
+              <div>
+                <label htmlFor="flag-bookings-paused" style={{ fontWeight: 700, cursor: "pointer", fontSize: "0.95rem" }}>
+                  🛑 Pause New Bookings
+                </label>
+                <p style={{ fontSize: "0.8rem", color: "#64748b", margin: "2px 0 0" }}>
+                  Check to block new orders with a friendly message. Existing orders are unaffected.
+                </p>
+              </div>
+            </div>
+
+            {/* Maintenance Banner */}
+            <div className="fb-input-group">
+              <label className="fb-input-label">
+                📢 Site-Wide Announcement Banner
+                <span style={{ fontWeight: 400, color: "#94a3b8", marginLeft: "6px" }}>(leave blank to hide)</span>
+              </label>
+              <input
+                type="text"
+                className="fb-input"
+                placeholder="e.g. We're closed on 15 Oct for Diwali. Bookings resume 16 Oct."
+                value={formData.flags?.maintenanceBanner || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, flags: { ...(formData.flags || {}), maintenanceBanner: e.target.value.slice(0, 300) } })
+                }
+                maxLength={300}
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Business Details */}
         <div className="fb-card">
           <div className="fb-card-title">🏢 Business Information</div>
@@ -287,7 +362,8 @@ function SettingsManagerContent({ currentUser }) {
   );
 }
 
-function SettingsManager({ currentUser }) {
+function SettingsManager() {
+  const { currentUser } = useAdminUser();
   return (
     <RoleGuard user={currentUser} requiredRole="owner">
       <SettingsManagerContent currentUser={currentUser} />
