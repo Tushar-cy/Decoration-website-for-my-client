@@ -57,7 +57,7 @@ function Navbar() {
   const handleCategoryClick = (category) => {
     setIsCategoryMenuOpen(false);
     closeMobileMenu();
-    navigate(`/services?category=${encodeURIComponent(category)}`);
+    navigate(`/shop?category=${encodeURIComponent(category)}`);
   };
 
   return (
@@ -154,7 +154,7 @@ function Navbar() {
                   ))}
                   <div style={{ borderTop: "1px solid var(--border-subtle)", paddingTop: "8px", marginTop: "4px" }}>
                     <Link
-                      to="/services"
+                      to="/shop"
                       onClick={() => setIsCategoryMenuOpen(false)}
                       style={{
                         display: "block",
@@ -165,7 +165,7 @@ function Navbar() {
                         padding: "6px",
                       }}
                     >
-                      View All Packages Catalog ➔
+                      View All Setups Catalog ➔
                     </Link>
                   </div>
                 </div>
@@ -173,8 +173,8 @@ function Navbar() {
             </li>
 
             <li>
-              <NavLink to="/services" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
-                Packages
+              <NavLink to="/shop" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
+                Shop Setups
               </NavLink>
             </li>
 
@@ -333,8 +333,8 @@ function Navbar() {
             </NavLink>
           </li>
           <li>
-            <NavLink to="/services" className={({ isActive }) => (isActive ? "mobile-nav-link active" : "mobile-nav-link")} onClick={closeMobileMenu}>
-              All Packages Catalog
+            <NavLink to="/shop" className={({ isActive }) => (isActive ? "mobile-nav-link active" : "mobile-nav-link")} onClick={closeMobileMenu}>
+              Shop Setups & Packages
             </NavLink>
           </li>
           <li>

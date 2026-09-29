@@ -273,7 +273,7 @@ const trackQuerySchema = z.object({
 
 /**
  * GET /api/orders/track?orderNumber=&phone=
- * Limited public order tracking view.
+ * Limited public order tracking view (requires phone verification).
  */
 async function trackOrder(req, res, next) {
   try {
@@ -323,7 +323,58 @@ async function trackOrder(req, res, next) {
   }
 }
 
+/**
+ * GET /api/orders/:orderNumber
+ * Public order overview by orderNumber.
+ */
+async function getOrderByNumber(req, res, next) {
+  try {
+    const orderNumber = (req.params.orderNumber || "").trim();
+    if (!orderNumber) {
+      throw new AppError("orderNumber is required", 400);
+    }
+
+    const order = await Order.findOne({ orderNumber }).lean();
+    if (!order) {
+      throw new AppError(`No order found matching ${orderNumber}`, 404);
+    }
+
+    return res.status(200).json({
+      status: "success",
+      data: {
+        orderNumber: order.orderNumber,
+        status: order.status,
+        event: {
+          type: order.event.type,
+          date: formatISTDate(order.event.date),
+          slotKey: order.event.slotKey,
+        },
+        items: (order.items || []).map((it) => ({
+          titleSnapshot: it.titleSnapshot,
+          quantity: it.quantity,
+          variantSelections: it.variantSelections,
+        })),
+        pricing: {
+          subtotalPaise: order.pricing.subtotalPaise,
+          discountPaise: order.pricing.discountPaise,
+          deliveryFeePaise: order.pricing.deliveryFeePaise,
+          totalPaise: order.pricing.totalPaise,
+          advanceDuePaise: order.pricing.advanceDuePaise,
+        },
+        payment: {
+          status: order.payment.status,
+          paidPaise: order.payment.paidPaise,
+        },
+        createdAt: order.createdAt,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   createOrder,
   trackOrder,
+  getOrderByNumber,
 };

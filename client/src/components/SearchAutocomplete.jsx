@@ -1,28 +1,43 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { DEFAULT_SERVICES } from "../services/api";
-import { useShop } from "../context/ShopContext";
+import { getPublicProducts } from "../services/api";
+import { formatPaise } from "../utils/money";
+import { getOptimizedImageUrl } from "../utils/cloudinary";
 
 function SearchAutocomplete({ placeholder = "Search setups, themes, colors...", onSelect }) {
   const [query, setQuery] = useState("");
+  const [results, setResults] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const wrapperRef = useRef(null);
   const navigate = useNavigate();
-  const { setQuickViewProduct } = useShop();
 
-  const filteredResults = query.trim()
-    ? DEFAULT_SERVICES.filter((item) => {
-        const q = query.toLowerCase();
-        return (
-          item.title?.toLowerCase().includes(q) ||
-          item.category?.toLowerCase().includes(q) ||
-          item.color?.toLowerCase().includes(q) ||
-          item.material?.toLowerCase().includes(q) ||
-          item.description?.toLowerCase().includes(q)
-        );
-      }).slice(0, 5)
-    : [];
+  // Debounced API search
+  useEffect(() => {
+    if (!query.trim()) {
+      setResults([]);
+      setIsOpen(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        setIsLoading(true);
+        const res = await getPublicProducts({ q: query.trim(), limit: 5 });
+        const prods = res.data?.data?.products || [];
+        setResults(prods);
+        setIsOpen(true);
+      } catch (err) {
+        console.error("Autocomplete search error", err);
+        setResults([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [query]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -35,18 +50,18 @@ function SearchAutocomplete({ placeholder = "Search setups, themes, colors...", 
   }, []);
 
   const handleKeyDown = (e) => {
-    if (!isOpen || filteredResults.length === 0) return;
+    if (!isOpen || results.length === 0) return;
 
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setSelectedIndex((prev) => (prev < filteredResults.length - 1 ? prev + 1 : 0));
+      setSelectedIndex((prev) => (prev < results.length - 1 ? prev + 1 : 0));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      setSelectedIndex((prev) => (prev > 0 ? prev - 1 : filteredResults.length - 1));
+      setSelectedIndex((prev) => (prev > 0 ? prev - 1 : results.length - 1));
     } else if (e.key === "Enter") {
       e.preventDefault();
-      if (selectedIndex >= 0 && filteredResults[selectedIndex]) {
-        handleSelectItem(filteredResults[selectedIndex]);
+      if (selectedIndex >= 0 && results[selectedIndex]) {
+        handleSelectItem(results[selectedIndex]);
       } else {
         handleSubmitSearch();
       }
@@ -60,15 +75,17 @@ function SearchAutocomplete({ placeholder = "Search setups, themes, colors...", 
     setQuery("");
     if (onSelect) {
       onSelect(item);
+    } else if (item.slug) {
+      navigate(`/p/${item.slug}`);
     } else {
-      setQuickViewProduct(item);
+      navigate(`/shop?q=${encodeURIComponent(item.title)}`);
     }
   };
 
   const handleSubmitSearch = () => {
     if (query.trim()) {
       setIsOpen(false);
-      navigate(`/services?search=${encodeURIComponent(query.trim())}`);
+      navigate(`/shop?q=${encodeURIComponent(query.trim())}`);
     }
   };
 
@@ -83,11 +100,10 @@ function SearchAutocomplete({ placeholder = "Search setups, themes, colors...", 
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
-            setIsOpen(true);
             setSelectedIndex(-1);
           }}
           onFocus={() => {
-            if (query.trim()) setIsOpen(true);
+            if (query.trim() && results.length > 0) setIsOpen(true);
           }}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
@@ -100,7 +116,7 @@ function SearchAutocomplete({ placeholder = "Search setups, themes, colors...", 
             borderRadius: "var(--radius-full)",
             border: "1px solid var(--border)",
             background: "var(--white)",
-            fontSize: "0.88rem",
+            fontSize: "16px", /* Prevents iOS auto-zoom */
             outline: "none",
             color: "var(--dark)",
             transition: "var(--transition)",
@@ -150,7 +166,11 @@ function SearchAutocomplete({ placeholder = "Search setups, themes, colors...", 
             padding: "8px 0",
           }}
         >
-          {filteredResults.length === 0 ? (
+          {isLoading ? (
+            <div style={{ padding: "16px 20px", textAlign: "center", color: "var(--text-muted)", fontSize: "0.88rem" }}>
+              Searching live packages...
+            </div>
+          ) : results.length === 0 ? (
             <div style={{ padding: "16px 20px", textAlign: "center", color: "var(--text-muted)", fontSize: "0.88rem" }}>
               No setups found for "{query}".
               <div style={{ marginTop: "4px" }}>
@@ -165,53 +185,59 @@ function SearchAutocomplete({ placeholder = "Search setups, themes, colors...", 
               </div>
             </div>
           ) : (
-            filteredResults.map((item, idx) => (
-              <div
-                key={item._id}
-                role="option"
-                aria-selected={selectedIndex === idx}
-                onClick={() => handleSelectItem(item)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "12px",
-                  padding: "10px 16px",
-                  cursor: "pointer",
-                  background: selectedIndex === idx ? "var(--gold-light)" : "transparent",
-                  borderBottom: idx < filteredResults.length - 1 ? "1px solid var(--border-subtle)" : "none",
-                  transition: "background 0.15s ease",
-                }}
-                onMouseEnter={() => setSelectedIndex(idx)}
-              >
-                <img
-                  src={item.image}
-                  alt={item.title}
+            results.map((item, idx) => {
+              const imgUrl = item.images?.[0]?.url || item.image || "";
+              return (
+                <div
+                  key={item._id}
+                  role="option"
+                  aria-selected={selectedIndex === idx}
+                  onClick={() => handleSelectItem(item)}
                   style={{
-                    width: "48px",
-                    height: "48px",
-                    borderRadius: "8px",
-                    objectFit: "cover",
-                    flexShrink: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                    padding: "10px 16px",
+                    cursor: "pointer",
+                    background: selectedIndex === idx ? "var(--gold-light)" : "transparent",
+                    borderBottom: idx < results.length - 1 ? "1px solid var(--border-subtle)" : "none",
+                    transition: "background 0.15s ease",
                   }}
-                />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: "0.88rem", color: "var(--dark)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {item.title}
+                  onMouseEnter={() => setSelectedIndex(idx)}
+                >
+                  <img
+                    src={getOptimizedImageUrl(imgUrl, { width: 100, height: 100 })}
+                    alt={item.title}
+                    loading="lazy"
+                    width="48"
+                    height="48"
+                    style={{
+                      width: "48px",
+                      height: "48px",
+                      borderRadius: "8px",
+                      objectFit: "cover",
+                      flexShrink: 0,
+                    }}
+                  />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: "0.88rem", color: "var(--dark)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {item.title}
+                    </div>
+                    <div style={{ display: "flex", gap: "6px", alignItems: "center", marginTop: "2px" }}>
+                      <span style={{ fontSize: "0.72rem", color: "var(--text-light)" }}>
+                        {item.categoryId?.name || item.category || "Setup"}
+                      </span>
+                    </div>
                   </div>
-                  <div style={{ display: "flex", gap: "6px", alignItems: "center", marginTop: "2px" }}>
-                    <span style={{ fontSize: "0.72rem", color: "var(--text-light)" }}>{item.category}</span>
-                    <span style={{ fontSize: "0.72rem", color: "var(--border)" }}>•</span>
-                    <span style={{ fontSize: "0.72rem", color: "var(--dark-gold)", fontWeight: 600 }}>{item.color}</span>
+                  <div style={{ fontWeight: 800, fontSize: "0.92rem", color: "var(--dark)", flexShrink: 0 }}>
+                    {formatPaise(item.basePricePaise || item.startingPrice * 100 || 0)}
                   </div>
                 </div>
-                <div style={{ fontWeight: 800, fontSize: "0.92rem", color: "var(--dark)", flexShrink: 0 }}>
-                  ₹{item.startingPrice?.toLocaleString("en-IN")}
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
 
-          {filteredResults.length > 0 && (
+          {results.length > 0 && (
             <div style={{ padding: "10px 16px", borderTop: "1px solid var(--border-subtle)", textAlign: "center" }}>
               <button
                 type="button"

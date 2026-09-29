@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { Routes, Route, useLocation, Outlet } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import CartDrawer from "./components/CartDrawer";
@@ -7,10 +8,15 @@ import WishlistModal from "./components/WishlistModal";
 import ProductQuickViewModal from "./components/ProductQuickViewModal";
 import Toast from "./components/Toast";
 import { ShopProvider } from "./context/ShopContext";
+import { SettingsProvider } from "./context/SettingsContext";
 
-// Customer Pages
+// Storefront Pages (TanStack Query driven)
 import Home from "./pages/Home";
-import Services from "./pages/Services";
+import Shop from "./pages/Shop";
+import ProductDetail from "./pages/ProductDetail";
+import CartPage from "./pages/CartPage";
+import CheckoutPage from "./pages/CheckoutPage";
+import OrderTracking from "./pages/OrderTracking";
 import Gallery from "./pages/Gallery";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
@@ -32,6 +38,18 @@ const SettingsManager = React.lazy(() => import("./admin/SettingsManager"));
 const UsersManager = React.lazy(() => import("./admin/UsersManager"));
 const AuditLogManager = React.lazy(() => import("./admin/AuditLogManager"));
 
+// Customer TanStack Query Client with required cache and retry parameters
+const storefrontQueryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000, // 60 seconds
+      gcTime: 10 * 60 * 1000, // 10 minutes
+      retry: 2, // 2 retries with exponential backoff
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
 function AdminLoading() {
   return (
     <div
@@ -50,7 +68,7 @@ function AdminLoading() {
   );
 }
 
-// Helper component to reset scroll position on route change
+// Reset scroll position on route change
 function ScrollToTop() {
   const { pathname } = useLocation();
 
@@ -61,7 +79,7 @@ function ScrollToTop() {
   return null;
 }
 
-// Layout wrapper for customer pages (includes Navbar and Footer)
+// Layout wrapper for customer pages
 function CustomerLayout() {
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
@@ -81,68 +99,81 @@ function CustomerLayout() {
 
 function App() {
   return (
-    <ShopProvider>
-      <ScrollToTop />
-      <Routes>
-        {/* Customer Website Routes */}
-        <Route path="/" element={<CustomerLayout />}>
-          <Route index element={<Home />} />
-          <Route path="services" element={<Services />} />
-          <Route path="plan-my-event" element={<PlanMyEvent />} />
-          <Route path="gallery" element={<Gallery />} />
-          <Route path="about" element={<About />} />
-          <Route path="contact" element={<Contact />} />
-        </Route>
+    <QueryClientProvider client={storefrontQueryClient}>
+      <SettingsProvider>
+        <ShopProvider>
+          <ScrollToTop />
+          <Routes>
+            {/* Customer Website Routes */}
+            <Route path="/" element={<CustomerLayout />}>
+              <Route index element={<Home />} />
+              <Route path="shop" element={<Shop />} />
+              <Route path="services" element={<Shop />} />
+              <Route path="p/:slug" element={<ProductDetail />} />
+              <Route path="cart" element={<CartPage />} />
+              <Route path="checkout" element={<CheckoutPage />} />
+              <Route path="order/:orderNumber" element={<OrderTracking />} />
+              <Route path="plan-my-event" element={<PlanMyEvent />} />
+              <Route path="gallery" element={<Gallery />} />
+              <Route path="about" element={<About />} />
+              <Route path="contact" element={<Contact />} />
+            </Route>
 
-        {/* Code-Split Admin Portal Routes */}
-        <Route
-          path="/admin/login"
-          element={
-            <React.Suspense fallback={<AdminLoading />}>
-              <AdminLogin />
-            </React.Suspense>
-          }
-        />
+            {/* Code-Split Admin Portal Routes */}
+            <Route
+              path="/admin/login"
+              element={
+                <React.Suspense fallback={<AdminLoading />}>
+                  <AdminLogin />
+                </React.Suspense>
+              }
+            />
 
-        <Route
-          path="/admin"
-          element={
-            <React.Suspense fallback={<AdminLoading />}>
-              <AdminLayout />
-            </React.Suspense>
-          }
-        >
-          <Route index element={<Dashboard />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="orders" element={<OrdersManager />} />
-          <Route path="products" element={<ProductsManager />} />
-          <Route path="categories" element={<CategoriesManager />} />
-          <Route path="coupons" element={<CategoriesManager />} />
-          <Route path="availability" element={<AvailabilityManager />} />
-          <Route path="forms" element={<FormBuilder />} />
-          <Route path="submissions" element={<SubmissionsManager />} />
-          <Route path="gallery" element={<GalleryManager />} />
-          <Route path="testimonials" element={<TestimonialManager />} />
-          <Route path="settings" element={<SettingsManager />} />
-          <Route path="users" element={<UsersManager />} />
-          <Route path="audit-logs" element={<AuditLogManager />} />
-        </Route>
+            <Route
+              path="/admin"
+              element={
+                <React.Suspense fallback={<AdminLoading />}>
+                  <AdminLayout />
+                </React.Suspense>
+              }
+            >
+              <Route index element={<Dashboard />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="orders" element={<OrdersManager />} />
+              <Route path="products" element={<ProductsManager />} />
+              <Route path="categories" element={<CategoriesManager />} />
+              <Route path="coupons" element={<CategoriesManager />} />
+              <Route path="availability" element={<AvailabilityManager />} />
+              <Route path="forms" element={<FormBuilder />} />
+              <Route path="submissions" element={<SubmissionsManager />} />
+              <Route path="gallery" element={<GalleryManager />} />
+              <Route path="testimonials" element={<TestimonialManager />} />
+              <Route path="settings" element={<SettingsManager />} />
+              <Route path="users" element={<UsersManager />} />
+              <Route path="audit-logs" element={<AuditLogManager />} />
+            </Route>
 
-        {/* 404 Fallback Route */}
-        <Route
-          path="*"
-          element={
-            <div style={{ textAlign: "center", padding: "100px 20px" }}>
-              <h1 style={{ fontFamily: "var(--font-heading)", fontSize: "2.5rem" }}>404 - Page Not Found</h1>
-              <p style={{ marginTop: "12px", color: "var(--text-light)" }}>The page you are looking for does not exist.</p>
-              <a href="/" className="btn btn-gold" style={{ marginTop: "24px" }}>
-                Return to Home
-              </a>
-            </div>
-          }
-        />
-      </Routes>
-    </ShopProvider>
+            {/* 404 Fallback Route */}
+            <Route
+              path="*"
+              element={
+                <div style={{ textAlign: "center", padding: "100px 20px" }}>
+                  <h1 style={{ fontFamily: "var(--font-heading)", fontSize: "2.5rem" }}>
+                    404 - Page Not Found
+                  </h1>
+                  <p style={{ marginTop: "12px", color: "var(--text-light)" }}>
+                    The page you are looking for does not exist.
+                  </p>
+                  <a href="/" className="btn btn-gold" style={{ marginTop: "24px" }}>
+                    Return to Home
+                  </a>
+                </div>
+              }
+            />
+          </Routes>
+        </ShopProvider>
+      </SettingsProvider>
+    </QueryClientProvider>
   );
 }
 

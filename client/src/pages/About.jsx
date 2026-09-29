@@ -1,9 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import WhatsAppButton from "../components/WhatsAppButton";
+import { usePublicSettings } from "../context/SettingsContext";
 import "../styles/about.css";
 
 function About() {
+  const { phone, cleanPhone } = usePublicSettings();
   return (
     <div className="about-page">
       <section className="section">
@@ -120,8 +122,8 @@ function About() {
               <strong>Decor Joy Gurgaon:</strong> 166GF, Sector 57, Housing Board Colony, Gurugram, Haryana. Proudly serving DLF, Golf Course Road, Sohna Road, Sushant Lok, and all surrounding areas.
             </p>
             <div style={{ display: "flex", justifyContent: "center", gap: "16px", flexWrap: "wrap" }}>
-              <a href="tel:7015767715" className="btn btn-outline">
-                Call +91 7015767715
+              <a href={`tel:${cleanPhone}`} className="btn btn-outline">
+                Call {phone}
               </a>
               <WhatsAppButton
                 text="WhatsApp Inquiries"

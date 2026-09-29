@@ -1,42 +1,73 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import Hero from "../components/Hero";
 import ServiceCard from "../components/ServiceCard";
 import GalleryCard from "../components/GalleryCard";
 import TestimonialCard from "../components/TestimonialCard";
 import WhatsAppButton from "../components/WhatsAppButton";
-import { getServices, getGallery, getTestimonials } from "../services/api";
+import { LoadingSkeleton } from "../components/common/LoadingSkeleton";
+import { ErrorState } from "../components/common/ErrorState";
+import { getPublicProducts, getGallery, getTestimonials } from "../services/api";
 import "../styles/services.css";
 import "../styles/gallery.css";
 
 function Home() {
-  const [services, setServices] = useState([]);
-  const [gallery, setGallery] = useState([]);
-  const [testimonials, setTestimonials] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchHomeData = async () => {
-      try {
-        setLoading(true);
-        const [servicesRes, galleryRes, testimonialsRes] = await Promise.all([
-          getServices(),
-          getGallery(),
-          getTestimonials(),
-        ]);
-        setServices(servicesRes.data.slice(0, 3)); // show top 3 on home
-        setGallery(galleryRes.data.slice(0, 6)); // show top 6 on home
-        setTestimonials(testimonialsRes.data);
-      } catch (error) {
-        console.error("Error fetching home data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // 1. Featured Setups Query
+  const {
+    data: productsData,
+    isLoading: isProductsLoading,
+    isError: isProductsError,
+    refetch: refetchProducts,
+  } = useQuery({
+    queryKey: ["home-products"],
+    queryFn: async () => {
+      const res = await getPublicProducts({ limit: 3 });
+      return res.data?.data?.products || [];
+    },
+    staleTime: 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: 2,
+  });
 
-    fetchHomeData();
-  }, []);
+  // 2. Gallery Query
+  const {
+    data: galleryData,
+    isLoading: isGalleryLoading,
+    isError: isGalleryError,
+    refetch: refetchGallery,
+  } = useQuery({
+    queryKey: ["home-gallery"],
+    queryFn: async () => {
+      const res = await getGallery();
+      const items = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+      return items.slice(0, 6);
+    },
+    staleTime: 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: 2,
+  });
+
+  // 3. Testimonials Query
+  const {
+    data: testimonialsData,
+    isLoading: isTestimonialsLoading,
+  } = useQuery({
+    queryKey: ["home-testimonials"],
+    queryFn: async () => {
+      const res = await getTestimonials();
+      return Array.isArray(res.data) ? res.data : (res.data?.data || []);
+    },
+    staleTime: 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: 2,
+  });
+
+  const services = productsData || [];
+  const gallery = galleryData || [];
+  const testimonials = testimonialsData || [];
 
   return (
     <div className="home-page">
@@ -55,8 +86,18 @@ function Home() {
             <div className="gold-divider"></div>
           </div>
 
-          {loading ? (
-            <p style={{ textAlign: "center", color: "var(--text-light)" }}>Loading decoration packages...</p>
+          {isProductsLoading ? (
+            <LoadingSkeleton count={3} type="card" />
+          ) : isProductsError ? (
+            <ErrorState
+              title="Unable to load packages"
+              message="Could not load our decoration packages. Please check your connection."
+              onRetry={() => refetchProducts()}
+            />
+          ) : services.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "40px 10px", color: "var(--text-light)" }}>
+              <p>No featured packages found. Browse our shop for available setups!</p>
+            </div>
           ) : (
             <div className="services-grid">
               {services.map((service) => (
@@ -66,8 +107,8 @@ function Home() {
           )}
 
           <div style={{ textAlign: "center", marginTop: "45px" }}>
-            <Link to="/services" className="btn btn-gold">
-              View All Services & Packages 🎈
+            <Link to="/shop" className="btn btn-gold">
+              Explore All Setups & Packages 🎈
             </Link>
           </div>
         </div>
@@ -149,8 +190,16 @@ function Home() {
             <div className="gold-divider"></div>
           </div>
 
-          {loading ? (
-            <p style={{ textAlign: "center", color: "var(--text-light)" }}>Loading gallery photos...</p>
+          {isGalleryLoading ? (
+            <LoadingSkeleton count={6} type="card" />
+          ) : isGalleryError ? (
+            <ErrorState
+              title="Unable to load gallery"
+              message="Could not load portfolio photos. Please check your connection."
+              onRetry={() => refetchGallery()}
+            />
+          ) : gallery.length === 0 ? (
+            <p style={{ textAlign: "center", color: "var(--text-light)" }}>Portfolio photos coming soon.</p>
           ) : (
             <div className="gallery-grid">
               {gallery.map((item) => (
@@ -179,11 +228,17 @@ function Home() {
             <div className="gold-divider"></div>
           </div>
 
-          <div className="why-choose-grid">
-            {testimonials.map((t) => (
-              <TestimonialCard key={t._id} testimonial={t} />
-            ))}
-          </div>
+          {isTestimonialsLoading ? (
+            <LoadingSkeleton count={3} type="card" />
+          ) : testimonials.length === 0 ? (
+            <p style={{ textAlign: "center", color: "var(--text-light)" }}>Reviews coming soon.</p>
+          ) : (
+            <div className="why-choose-grid">
+              {testimonials.map((t) => (
+                <TestimonialCard key={t._id} testimonial={t} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -226,6 +281,8 @@ function Home() {
               src={selectedImage.image}
               alt={selectedImage.title}
               className="lightbox-image"
+              width="800"
+              height="600"
             />
             <div className="lightbox-info">
               <div>

@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import WhatsAppButton from "./WhatsAppButton";
+import { usePublicSettings } from "../context/SettingsContext";
 import "../styles/footer.css";
 
 function Footer() {
+  const { phone, cleanPhone, business } = usePublicSettings();
   const currentYear = new Date().getFullYear();
   const [email, setEmail] = useState("");
   const [newsletterStatus, setNewsletterStatus] = useState({ state: "idle", message: "" });
@@ -169,8 +171,8 @@ function Footer() {
                 <span className="footer-contact-icon">📞</span>
                 <div>
                   <strong>Phone:</strong><br />
-                  <a href="tel:7015767715" style={{ color: "#ffffff" }}>
-                    +91 7015767715
+                  <a href={`tel:${cleanPhone}`} style={{ color: "#ffffff" }}>
+                    {phone}
                   </a>
                 </div>
               </div>
@@ -179,8 +181,8 @@ function Footer() {
                 <span className="footer-contact-icon">✉️</span>
                 <div>
                   <strong>Email:</strong><br />
-                  <a href="mailto:decorjoygurgaon@gmail.com" style={{ color: "#ffffff" }}>
-                    decorjoygurgaon@gmail.com
+                  <a href={`mailto:${business?.email || 'decorjoygurgaon@gmail.com'}`} style={{ color: "#ffffff" }}>
+                    {business?.email || "decorjoygurgaon@gmail.com"}
                   </a>
                 </div>
               </div>

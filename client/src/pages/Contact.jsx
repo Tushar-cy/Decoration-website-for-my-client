@@ -2,10 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import WhatsAppButton from "../components/WhatsAppButton";
 import PurposeForm from "../components/PurposeForm";
+import { usePublicSettings } from "../context/SettingsContext";
 import { createInquiry } from "../services/api";
 import "../styles/contact.css";
 
 function Contact() {
+  const { phone, cleanPhone, whatsapp } = usePublicSettings();
   const routerLocation = useLocation();
   const searchParams = new URLSearchParams(routerLocation.search);
   const prefilledService = searchParams.get("service") || "";
@@ -181,7 +183,7 @@ function Contact() {
                   Need urgent pricing or same-day decoration setup in Gurgaon? Message our team directly for immediate assistance!
                 </p>
                 <WhatsAppButton
-                  text="Chat +91 7015767715"
+                  text={`Chat ${whatsapp}`}
                   message="Hello Decor Joy Gurgaon! I need information about event decoration."
                   className="btn"
                   style={{ backgroundColor: "#ffffff", color: "#128c7e", fontWeight: "600" }}
@@ -210,7 +212,7 @@ function Contact() {
                   <div className="info-text">
                     <h4>Phone Number</h4>
                     <p>
-                      <a href="tel:7015767715">+91 7015767715</a>
+                      <a href={`tel:${cleanPhone}`}>{phone}</a>
                     </p>
                   </div>
                 </div>

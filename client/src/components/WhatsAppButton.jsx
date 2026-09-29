@@ -1,16 +1,16 @@
 import React from "react";
+import { usePublicSettings } from "../context/SettingsContext";
 
 // Reusable WhatsApp Button Component
-// phone: 917015767715 (Decor Joy Gurgaon)
 function WhatsAppButton({
   text = "Chat on WhatsApp",
   message = "Hello Decor Joy Gurgaon, I would like to inquire about event decorations!",
   className = "btn btn-whatsapp",
   isFloating = false,
 }) {
-  const phoneNumber = "917015767715";
+  const { cleanWhatsapp } = usePublicSettings();
   const encodedMessage = encodeURIComponent(message);
-  const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+  const whatsappUrl = `https://wa.me/${cleanWhatsapp}?text=${encodedMessage}`;
 
   if (isFloating) {
     return (

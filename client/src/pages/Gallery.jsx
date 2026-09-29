@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import GalleryCard from "../components/GalleryCard";
 import WhatsAppButton from "../components/WhatsAppButton";
+import { LoadingSkeleton } from "../components/common/LoadingSkeleton";
+import { ErrorState } from "../components/common/ErrorState";
 import { getGallery } from "../services/api";
 import "../styles/gallery.css";
 
@@ -14,26 +17,27 @@ const GALLERY_CATEGORIES = [
 ];
 
 function Gallery() {
-  const [galleryItems, setGalleryItems] = useState([]);
   const [activeCategory, setActiveCategory] = useState("All");
   const [selectedImage, setSelectedImage] = useState(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchGallery(activeCategory);
-  }, [activeCategory]);
+  const {
+    data: galleryItems,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["gallery", activeCategory],
+    queryFn: async () => {
+      const res = await getGallery(activeCategory);
+      return Array.isArray(res.data) ? res.data : (res.data?.data || []);
+    },
+    staleTime: 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: 2,
+  });
 
-  const fetchGallery = async (category) => {
-    try {
-      setLoading(true);
-      const res = await getGallery(category);
-      setGalleryItems(res.data);
-    } catch (error) {
-      console.error("Error fetching gallery items:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const items = galleryItems || [];
 
   return (
     <div className="gallery-page">
@@ -53,6 +57,7 @@ function Gallery() {
             {GALLERY_CATEGORIES.map((cat) => (
               <button
                 key={cat}
+                type="button"
                 className={`filter-chip ${activeCategory === cat ? "active" : ""}`}
                 onClick={() => setActiveCategory(cat)}
               >
@@ -62,15 +67,23 @@ function Gallery() {
           </div>
 
           {/* Photo Grid */}
-          {loading ? (
-            <p style={{ textAlign: "center", color: "var(--text-light)" }}>Loading gallery photos...</p>
-          ) : galleryItems.length === 0 ? (
+          {isLoading ? (
+            <div className="gallery-grid">
+              <LoadingSkeleton count={6} type="card" />
+            </div>
+          ) : isError ? (
+            <ErrorState
+              title="Unable to load gallery"
+              message={error?.response?.data?.message || "Could not retrieve photos."}
+              onRetry={() => refetch()}
+            />
+          ) : items.length === 0 ? (
             <div style={{ textAlign: "center", padding: "40px", color: "var(--text-light)" }}>
               <p>No photos found in this category yet.</p>
             </div>
           ) : (
             <div className="gallery-grid">
-              {galleryItems.map((item) => (
+              {items.map((item) => (
                 <GalleryCard key={item._id} item={item} onSelect={setSelectedImage} />
               ))}
             </div>
@@ -100,6 +113,7 @@ function Gallery() {
         <div className="lightbox-backdrop" onClick={() => setSelectedImage(null)}>
           <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
             <button
+              type="button"
               className="lightbox-close-btn"
               onClick={() => setSelectedImage(null)}
               aria-label="Close modal"
@@ -110,6 +124,8 @@ function Gallery() {
               src={selectedImage.image}
               alt={selectedImage.title}
               className="lightbox-image"
+              width="800"
+              height="600"
             />
             <div className="lightbox-info">
               <div>
