@@ -1,0 +1,256 @@
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import Hero from "../components/Hero";
+import ServiceCard from "../components/ServiceCard";
+import GalleryCard from "../components/GalleryCard";
+import TestimonialCard from "../components/TestimonialCard";
+import WhatsAppButton from "../components/WhatsAppButton";
+import { getServices, getGallery, getTestimonials } from "../services/api";
+import "../styles/services.css";
+import "../styles/gallery.css";
+
+function Home() {
+  const [services, setServices] = useState([]);
+  const [gallery, setGallery] = useState([]);
+  const [testimonials, setTestimonials] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchHomeData = async () => {
+      try {
+        setLoading(true);
+        const [servicesRes, galleryRes, testimonialsRes] = await Promise.all([
+          getServices(),
+          getGallery(),
+          getTestimonials(),
+        ]);
+        setServices(servicesRes.data.slice(0, 3)); // show top 3 on home
+        setGallery(galleryRes.data.slice(0, 6)); // show top 6 on home
+        setTestimonials(testimonialsRes.data);
+      } catch (error) {
+        console.error("Error fetching home data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHomeData();
+  }, []);
+
+  return (
+    <div className="home-page">
+      {/* 1. Hero Section */}
+      <Hero />
+
+      {/* 2. Services Section */}
+      <section className="section">
+        <div className="container">
+          <div className="section-header">
+            <span className="section-tagline">What We Create</span>
+            <h2 className="section-title">Signature Celebrations</h2>
+            <p className="section-subtitle">
+              From intimate surprise setups to grand birthday themes, explore our curated decoration packages crafted with love and attention to detail.
+            </p>
+            <div className="gold-divider"></div>
+          </div>
+
+          {loading ? (
+            <p style={{ textAlign: "center", color: "var(--text-light)" }}>Loading decoration packages...</p>
+          ) : (
+            <div className="services-grid">
+              {services.map((service) => (
+                <ServiceCard key={service._id} service={service} />
+              ))}
+            </div>
+          )}
+
+          <div style={{ textAlign: "center", marginTop: "45px" }}>
+            <Link to="/services" className="btn btn-gold">
+              View All Services & Packages 🎈
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. Why Choose Us Section */}
+      <section className="section section-bg-light">
+        <div className="container">
+          <div className="section-header">
+            <span className="section-tagline">Why Choose Us</span>
+            <h2 className="section-title">The Decor Joy Promise</h2>
+            <p className="section-subtitle">
+              We understand that every celebration marks a unique milestone. Here is why Gurgaon families and couples trust us.
+            </p>
+            <div className="gold-divider"></div>
+          </div>
+
+          <div className="why-choose-grid">
+            <div className="why-card">
+              <div className="why-icon-box">🎨</div>
+              <h3 className="why-card-title">Creative Designs</h3>
+              <p className="why-card-desc">
+                Fresh, contemporary balloon aesthetics, bespoke color palettes, and captivating focal points tailored to your vision.
+              </p>
+            </div>
+
+            <div className="why-card">
+              <div className="why-icon-box">✨</div>
+              <h3 className="why-card-title">Personalized Decorations</h3>
+              <p className="why-card-desc">
+                Every event is customized with tailored names, ages, themes, floral touches, and glowing LED neon letters.
+              </p>
+            </div>
+
+            <div className="why-card">
+              <div className="why-icon-box">💎</div>
+              <h3 className="why-card-title">Quality Materials</h3>
+              <p className="why-card-desc">
+                We use high-grade, durable latex and chrome balloons, premium fabrics, and spotless props that look exquisite in photos.
+              </p>
+            </div>
+
+            <div className="why-card">
+              <div className="why-icon-box">⏱️</div>
+              <h3 className="why-card-title">On-Time Setup</h3>
+              <p className="why-card-desc">
+                Punctuality is our core commitment. We arrive and execute seamlessly well before your guests arrive.
+              </p>
+            </div>
+
+            <div className="why-card">
+              <div className="why-icon-box">🏷️</div>
+              <h3 className="why-card-title">Affordable Packages</h3>
+              <p className="why-card-desc">
+                Honest, transparent pricing without hidden fees, giving you luxury event styling at pocket-friendly rates.
+              </p>
+            </div>
+
+            <div className="why-card">
+              <div className="why-icon-box">📍</div>
+              <h3 className="why-card-title">Serving Gurgaon Since 2021</h3>
+              <p className="why-card-desc">
+                Trusted by hundreds of families across DLF, Golf Course Road, Sohna Road, and Sector 57 Gurugram.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. Gallery Preview */}
+      <section className="section">
+        <div className="container">
+          <div className="section-header">
+            <span className="section-tagline">Our Portfolio</span>
+            <h2 className="section-title">Moments Made Beautiful</h2>
+            <p className="section-subtitle">
+              Take a glimpse into our real setups across Gurugram. Click any image to see high resolution details.
+            </p>
+            <div className="gold-divider"></div>
+          </div>
+
+          {loading ? (
+            <p style={{ textAlign: "center", color: "var(--text-light)" }}>Loading gallery photos...</p>
+          ) : (
+            <div className="gallery-grid">
+              {gallery.map((item) => (
+                <GalleryCard key={item._id} item={item} onSelect={setSelectedImage} />
+              ))}
+            </div>
+          )}
+
+          <div style={{ textAlign: "center", marginTop: "45px" }}>
+            <Link to="/gallery" className="btn btn-outline">
+              Explore Full Photo Gallery 📸
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Testimonials Section */}
+      <section className="section section-bg-light">
+        <div className="container">
+          <div className="section-header">
+            <span className="section-tagline">Client Reviews</span>
+            <h2 className="section-title">Loved by Celebrators in Gurgaon</h2>
+            <p className="section-subtitle">
+              Read what our happy clients have to say about their special days.
+            </p>
+            <div className="gold-divider"></div>
+          </div>
+
+          <div className="why-choose-grid">
+            {testimonials.map((t) => (
+              <TestimonialCard key={t._id} testimonial={t} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 6. Final Call to Action Banner */}
+      <section className="section" style={{ background: "linear-gradient(135deg, var(--gold-light), var(--cream))" }}>
+        <div className="container" style={{ textAlign: "center", maxWidth: "800px" }}>
+          <span className="section-tagline">Get Started</span>
+          <h2 className="section-title" style={{ marginTop: "12px" }}>
+            Let's Create Your Celebration
+          </h2>
+          <p className="section-subtitle" style={{ marginBottom: "32px" }}>
+            Ready to turn your venue into an extraordinary celebration? Connect with Decor Joy Gurgaon on WhatsApp or send an inquiry today.
+          </p>
+
+          <div style={{ display: "flex", justifyContent: "center", gap: "16px", flexWrap: "wrap" }}>
+            <WhatsAppButton
+              text="Plan on WhatsApp (Fastest)"
+              message="Hello Decor Joy Gurgaon! I'd love to book an event decoration with your team."
+              className="btn btn-whatsapp"
+            />
+            <Link to="/contact" className="btn btn-gold">
+              Submit Booking Form 📝
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Lightbox Modal for Image Preview */}
+      {selectedImage && (
+        <div className="lightbox-backdrop" onClick={() => setSelectedImage(null)}>
+          <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="lightbox-close-btn"
+              onClick={() => setSelectedImage(null)}
+              aria-label="Close modal"
+            >
+              ✕
+            </button>
+            <img
+              src={selectedImage.image}
+              alt={selectedImage.title}
+              className="lightbox-image"
+            />
+            <div className="lightbox-info">
+              <div>
+                <span className="badge-gold">{selectedImage.category}</span>
+                <h3 style={{ marginTop: "6px", fontFamily: "var(--font-heading)" }}>{selectedImage.title}</h3>
+                {selectedImage.description && (
+                  <p style={{ color: "var(--text-light)", fontSize: "0.9rem", marginTop: "4px" }}>
+                    {selectedImage.description}
+                  </p>
+                )}
+              </div>
+              <WhatsAppButton
+                text="Inquire This Look"
+                message={`Hi Decor Joy Gurgaon! I like the "${selectedImage.title}" look from your gallery. Can you create something similar?`}
+                className="btn btn-whatsapp"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating WhatsApp Quick Action Button */}
+      <WhatsAppButton isFloating={true} />
+    </div>
+  );
+}
+
+export default Home;
