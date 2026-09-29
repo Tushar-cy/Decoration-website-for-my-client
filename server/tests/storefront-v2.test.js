@@ -39,6 +39,7 @@ describe("Storefront v2 Architecture & Transaction Tests", () => {
     origProductFind = Product.find;
     Product.find = () => {
       const queryObj = {
+        select: () => queryObj,
         populate: () => queryObj,
         sort: () => queryObj,
         skip: () => queryObj,
@@ -65,15 +66,18 @@ describe("Storefront v2 Architecture & Transaction Tests", () => {
     Product.countDocuments = () => Promise.resolve(1);
 
     origCategoryFind = Category.find;
-    Category.find = () => ({
-      sort: () => ({
+    Category.find = () => {
+      const catQuery = {
+        select: () => catQuery,
+        sort: () => catQuery,
         lean: () =>
           Promise.resolve([
             { _id: "679900000000000000000001", name: "Birthdays", slug: "birthdays" },
             { _id: "679900000000000000000002", name: "Anniversaries", slug: "anniversaries" },
           ]),
-      }),
-    });
+      };
+      return catQuery;
+    };
   });
 
   after(() => {

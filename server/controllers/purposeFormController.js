@@ -5,8 +5,10 @@ const Settings = require("../models/Settings");
 const { verifyTurnstile } = require("../services/turnstileService");
 const { validateAndSanitizeSubmission } = require("../services/formValidationService");
 const { enqueueNotification } = require("../queues/orderQueue");
+const { notifyNewSubmission } = require("../services/whatsappService");
 const AppError = require("../utils/AppError");
 const { logger } = require("../utils/logger");
+const cache = require("../utils/cache");
 
 /**
  * Generates a pre-filled WhatsApp click-to-chat URL with the customer's details.
@@ -32,17 +34,24 @@ function buildWhatsAppUrl(businessWhatsapp, customerName, formTitle, eventDate, 
  */
 async function getActivePurposes(req, res, next) {
   try {
-    const forms = await FormSchema.find({ isActive: true })
-      .select("key title description version fields successMessage")
-      .lean();
+    const result = await cache.wrap(
+      "cache:forms:active",
+      600, // 10 minutes TTL
+      async () => {
+        const forms = await FormSchema.find({ isActive: true })
+          .select("key title description version fields successMessage")
+          .lean();
 
-    const result = forms.map((f) => ({
-      key: f.key,
-      title: f.title,
-      description: f.description,
-      version: f.version,
-      fieldCount: (f.fields || []).length,
-    }));
+        return forms.map((f) => ({
+          key: f.key,
+          title: f.title,
+          description: f.description,
+          version: f.version,
+          fieldCount: (f.fields || []).length,
+        }));
+      },
+      { tags: ["forms"] }
+    );
 
     return res.status(200).json({
       status: "success",
@@ -60,11 +69,20 @@ async function getActivePurposes(req, res, next) {
 async function getFormByKey(req, res, next) {
   try {
     const formKey = req.params.key.toLowerCase().trim();
-    const form = await FormSchema.findOne({ key: formKey, isActive: true }).lean();
+    const cacheKey = cache.buildCacheKey("forms", { key: formKey });
 
-    if (!form) {
-      throw new AppError(`Purpose form '${formKey}' not found or is currently inactive`, 404);
-    }
+    const form = await cache.wrap(
+      cacheKey,
+      600, // 10 minutes TTL
+      async () => {
+        const doc = await FormSchema.findOne({ key: formKey, isActive: true }).lean();
+        if (!doc) {
+          throw new AppError(`Purpose form '${formKey}' not found or is currently inactive`, 404);
+        }
+        return doc;
+      },
+      { tags: ["forms"] }
+    );
 
     return res.status(200).json({
       status: "success",
@@ -175,6 +193,14 @@ async function submitPurposeForm(req, res, next) {
       notifyEmails: schema.notifyEmails || [],
       answersSummary: answersSnapshot.slice(0, 5),
     });
+
+    // 7b. Fire-and-forget WhatsApp ping to owner (non-blocking)
+    notifyNewSubmission({
+      name,
+      phone,
+      formKey: schema.title,
+      submissionId: submission._id.toString(),
+    }).catch((err) => logger.warn({ err }, "WhatsApp submission notification failed (non-critical)"));
 
     // 8. Generate WhatsApp click-to-chat CTA link
     const eventDate = sanitizedAnswers.event_date || "";

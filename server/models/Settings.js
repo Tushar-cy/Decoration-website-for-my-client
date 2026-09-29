@@ -175,6 +175,25 @@ const settingsSchema = new mongoose.Schema(
         default: [],
       },
     },
+    // ── Graceful degradation switches (owner-controllable from admin Settings) ──
+    flags: {
+      onlinePayments: {
+        type: Boolean,
+        default: true,
+        // When false → all orders fall back to pay_on_confirmation
+      },
+      bookingsPaused: {
+        type: Boolean,
+        default: false,
+        // When true → POST /api/orders returns 503 with a helpful message
+      },
+      maintenanceBanner: {
+        type: String,
+        default: "",
+        maxlength: 300,
+        // Non-empty string shown as a top banner on the storefront
+      },
+    },
   },
   {
     timestamps: true,

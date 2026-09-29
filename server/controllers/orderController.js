@@ -11,6 +11,8 @@ const { parseISTMidnight, formatISTDate, isSameISTDate } = require("../utils/dat
 const { env } = require("../config/env");
 const { logger } = require("../utils/logger");
 const AppError = require("../utils/AppError");
+const featureFlags = require("../services/featureFlags");
+const { notifyNewOrder } = require("../services/whatsappService");
 
 const orderAddressSchema = z.object({
   line1: z.string().min(1, "Address line1 is required"),
@@ -89,7 +91,22 @@ async function createOrder(req, res, next) {
       });
     }
 
-    // 2. Validate request body
+    // 2. Check graceful degradation flags
+    const [flags, paused] = await Promise.all([
+      featureFlags.get(),
+      featureFlags.areBookingsPaused(),
+    ]);
+    if (paused) {
+      return res.status(503).json({
+        status: "error",
+        error: {
+          code: "BOOKINGS_PAUSED",
+          message: "Bookings are temporarily paused. Please check back soon or WhatsApp us directly.",
+        },
+      });
+    }
+
+    // 3. Validate request body
     const validated = createOrderSchema.parse(req.body);
 
     // 3. Recompute pricing from DB (Single Source of Truth)
@@ -210,11 +227,13 @@ async function createOrder(req, res, next) {
       );
     }
 
-    // 9. Create Razorpay order if advance payment is online
-    if (
+    // 9. Create Razorpay order only if online payments are available
+    const onlinePaymentsAvailable = await featureFlags.isOnlinePaymentsAvailable();
+    const useOnlinePayment = onlinePaymentsAvailable &&
       settings.paymentMode === "advance_online" &&
-      orderDoc.pricing.advanceDuePaise > 0
-    ) {
+      orderDoc.pricing.advanceDuePaise > 0;
+
+    if (useOnlinePayment) {
       const razorpayOrderId = await createRazorpayOrder({
         amountPaise: orderDoc.pricing.advanceDuePaise,
         receipt: orderDoc.orderNumber,
@@ -226,9 +245,12 @@ async function createOrder(req, res, next) {
 
       orderDoc.payment.razorpayOrderId = razorpayOrderId;
       await orderDoc.save();
+    } else if (!onlinePaymentsAvailable) {
+      // Log that we fell back to pay_on_confirmation due to flag or circuit breaker
+      logger.info({ orderNumber: orderDoc.orderNumber }, "Order created with pay_on_confirmation fallback");
     }
 
-    // 10. Enqueue asynchronous order placed notification
+    // 10. Enqueue async notification + WhatsApp ping to owner
     await enqueueNotification("ORDER_CREATED", {
       orderId: orderDoc._id.toString(),
       orderNumber: orderDoc.orderNumber,
@@ -237,16 +259,31 @@ async function createOrder(req, res, next) {
       totalPaise: orderDoc.pricing.totalPaise,
     });
 
+    // Fire-and-forget WhatsApp ping (non-blocking)
+    notifyNewOrder({
+      orderNumber: orderDoc.orderNumber,
+      customerName: customer.name,
+      phone: customer.phone,
+      totalPaise: orderDoc.pricing.totalPaise,
+      eventDate: formatISTDate(orderDoc.event.date),
+      slotKey: orderDoc.event.slotKey,
+    }).catch((err) => logger.warn({ err }, "WhatsApp order notification failed (non-critical)"));
+
     // 11. Return strictly whitelisted client view
+    const onlinePaymentsNow = await featureFlags.isOnlinePaymentsAvailable();
     return res.status(201).json({
       status: "success",
       data: {
         orderNumber: orderDoc.orderNumber,
         razorpayOrderId: orderDoc.payment.razorpayOrderId,
-        keyId: env?.RAZORPAY_KEY_ID || "",
+        keyId: onlinePaymentsNow ? (env?.RAZORPAY_KEY_ID || "") : "",
         amount: orderDoc.pricing.advanceDuePaise,
         totalPaise: orderDoc.pricing.totalPaise,
         status: orderDoc.status,
+        paymentMode: onlinePaymentsNow ? "online" : "pay_on_confirmation",
+        paymentMessage: onlinePaymentsNow
+          ? null
+          : "Online payment is temporarily unavailable. Our team will call you to confirm this booking within 2 hours.",
       },
     });
   } catch (error) {

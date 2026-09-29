@@ -3,6 +3,7 @@ const Razorpay = require("razorpay");
 const { env } = require("../config/env");
 const { logger } = require("../utils/logger");
 const AppError = require("../utils/AppError");
+const { razorpayBreaker } = require("../utils/circuitBreaker");
 
 let razorpayClient = null;
 
@@ -26,20 +27,20 @@ async function createRazorpayOrder({ amountPaise, receipt, notes = {} }) {
     return null;
   }
 
-  // If live Razorpay client is initialized, call Razorpay API
+  // If live Razorpay client is initialized, call Razorpay API protected by circuit breaker
   if (razorpayClient) {
-    try {
-      const order = await razorpayClient.orders.create({
-        amount: Math.round(amountPaise),
-        currency: "INR",
-        receipt: String(receipt).slice(0, 40),
-        notes,
-      });
-      return order.id;
-    } catch (err) {
-      logger.error({ err }, "Failed to create order on Razorpay");
-      throw new AppError("Payment gateway error: Failed to initiate payment order", 502);
-    }
+    return await razorpayBreaker.execute(
+      async () => {
+        const order = await razorpayClient.orders.create({
+          amount: Math.round(amountPaise),
+          currency: "INR",
+          receipt: String(receipt).slice(0, 40),
+          notes,
+        });
+        return order.id;
+      },
+      { maxRetries: 2, timeoutMs: 6000, baseDelayMs: 250 }
+    );
   }
 
   // Mock implementation for development/testing when keys are not configured
@@ -110,16 +111,16 @@ async function issueRefund({ paymentId, amountPaise, notes = {} }) {
   }
 
   if (razorpayClient) {
-    try {
-      const options = { notes };
-      if (amountPaise && amountPaise > 0) {
-        options.amount = Math.round(amountPaise);
-      }
-      return await razorpayClient.payments.refund(paymentId, options);
-    } catch (err) {
-      logger.error({ err, paymentId }, "Razorpay refund failed");
-      throw new AppError(err.error?.description || "Failed to process refund via Razorpay", 502);
-    }
+    return await razorpayBreaker.execute(
+      async () => {
+        const options = { notes };
+        if (amountPaise && amountPaise > 0) {
+          options.amount = Math.round(amountPaise);
+        }
+        return await razorpayClient.payments.refund(paymentId, options);
+      },
+      { maxRetries: 1, timeoutMs: 8000, baseDelayMs: 500 }
+    );
   }
 
   // Mock refund response

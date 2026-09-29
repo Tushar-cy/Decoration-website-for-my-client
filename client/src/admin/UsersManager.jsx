@@ -7,6 +7,7 @@ import {
   resetAdminUserPassword,
 } from "../services/api";
 import RoleGuard from "./components/RoleGuard";
+import { useAdminUser } from "./hooks/useAdminUser";
 
 function UsersManagerContent({ currentUser }) {
   const queryClient = useQueryClient();
@@ -322,7 +323,8 @@ function UsersManagerContent({ currentUser }) {
   );
 }
 
-function UsersManager({ currentUser }) {
+function UsersManager() {
+  const { currentUser } = useAdminUser();
   return (
     <RoleGuard user={currentUser} requiredRole="owner">
       <UsersManagerContent currentUser={currentUser} />

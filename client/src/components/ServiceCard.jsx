@@ -1,11 +1,14 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import WhatsAppButton from "./WhatsAppButton";
 import { useShop } from "../context/ShopContext";
 import { getOptimizedImageUrl, getImageSrcSet } from "../utils/cloudinary";
 import { formatPaise } from "../utils/money";
+import { usePrefetchHandlers } from "../utils/prefetch";
 
 function ServiceCard({ service }) {
+  const queryClient = useQueryClient();
   const {
     _id,
     title,
@@ -28,6 +31,8 @@ function ServiceCard({ service }) {
     slug,
   } = service;
 
+  const prefetchProps = usePrefetchHandlers(slug, queryClient);
+
   const { addToCart, toggleWishlist, isInWishlist } = useShop();
   const isWishlisted = isInWishlist(_id);
 
@@ -46,7 +51,7 @@ function ServiceCard({ service }) {
   const targetLink = slug ? `/p/${slug}` : `/shop`;
 
   return (
-    <div className="service-card" tabIndex="0">
+    <div className="service-card" tabIndex="0" {...prefetchProps}>
       {/* Badge Ribbon */}
       {(badge || isPopular) && (
         <span className="service-popular-badge">
@@ -56,7 +61,7 @@ function ServiceCard({ service }) {
 
       {/* Image Showcase */}
       <div className="service-image-box">
-        <Link to={targetLink}>
+        <Link to={targetLink} {...prefetchProps}>
           <img
             src={optimizedImage}
             srcSet={getImageSrcSet(rawImage, [320, 480, 600])}

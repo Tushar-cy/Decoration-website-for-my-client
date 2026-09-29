@@ -1,6 +1,7 @@
 const Testimonial = require("../models/Testimonial");
 const AppError = require("../utils/AppError");
 const asyncHandler = require("../utils/asyncHandler");
+const cache = require("../utils/cache");
 
 const testimonialProjection = "_id name location eventType review rating createdAt";
 
@@ -12,25 +13,36 @@ const getTestimonials = asyncHandler(async (req, res, next) => {
   const limit = Math.min(Math.max(1, parseInt(req.query.limit, 10) || 20), 100);
   const skip = (page - 1) * limit;
 
-  const [testimonials, total] = await Promise.all([
-    Testimonial.find()
-      .select(testimonialProjection)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean(),
-    Testimonial.countDocuments(),
-  ]);
+  const cacheKey = cache.buildCacheKey("testimonials", req.query);
 
-  res.json({
-    data: testimonials,
-    pagination: {
-      total,
-      page,
-      limit,
-      pages: Math.ceil(total / limit),
+  const result = await cache.wrap(
+    cacheKey,
+    600, // 10 minutes
+    async () => {
+      const [testimonials, total] = await Promise.all([
+        Testimonial.find()
+          .select(testimonialProjection)
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit)
+          .lean(),
+        Testimonial.countDocuments(),
+      ]);
+
+      return {
+        data: testimonials,
+        pagination: {
+          total,
+          page,
+          limit,
+          pages: Math.ceil(total / limit),
+        },
+      };
     },
-  });
+    { tags: ["testimonials"] }
+  );
+
+  res.json(result);
 });
 
 // @desc    Create a testimonial
@@ -48,6 +60,10 @@ const createTestimonial = asyncHandler(async (req, res, next) => {
   });
 
   const savedTestimonial = await testimonial.save();
+
+  // Invalidate cache
+  await cache.invalidateTags(["testimonials"]);
+
   res.status(201).json({
     message: "Testimonial created successfully",
     testimonial: {
@@ -79,6 +95,10 @@ const updateTestimonial = asyncHandler(async (req, res, next) => {
   if (rating !== undefined) testimonial.rating = Number(rating);
 
   const updatedTestimonial = await testimonial.save();
+
+  // Invalidate cache
+  await cache.invalidateTags(["testimonials"]);
+
   res.json({
     message: "Testimonial updated successfully",
     testimonial: {
@@ -102,6 +122,10 @@ const deleteTestimonial = asyncHandler(async (req, res, next) => {
   }
 
   await Testimonial.findByIdAndDelete(req.params.id);
+
+  // Invalidate cache
+  await cache.invalidateTags(["testimonials"]);
+
   res.json({ message: "Testimonial deleted successfully" });
 });
 

@@ -6,8 +6,10 @@ const redisClient = createClient({
   url: env.REDIS_URL,
   socket: {
     reconnectStrategy: (retries) => {
-      // Exponential backoff up to 3000ms
-      return Math.min(retries * 100, 3000);
+      if (retries > 3) {
+        return false; // Stop reconnect loop if Redis is not running
+      }
+      return Math.min(retries * 100, 1000);
     },
   },
 });

@@ -788,5 +788,155 @@
     display: none !important;
   }
 }
+/* ================= GALLERY ADMIN GRID ================= */
+.gallery-admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
 
+.gallery-admin-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.2s ease;
+}
+
+.gallery-admin-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.gallery-admin-image-wrap {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: #e2e8f0;
+}
+
+.gallery-admin-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.gallery-admin-card:hover .gallery-admin-image {
+  transform: scale(1.04);
+}
+
+.gallery-admin-badges {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gallery-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.3px;
+}
+
+.gallery-badge-hidden {
+  background: rgba(220, 38, 38, 0.9);
+  color: #fff;
+}
+
+.gallery-badge-featured {
+  background: rgba(184, 137, 50, 0.95);
+  color: #fff;
+}
+
+.gallery-admin-info {
+  padding: 12px 12px 8px;
+  flex: 1;
+}
+
+.gallery-admin-actions {
+  padding: 8px 12px 12px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  border-top: 1px solid #f1f5f9;
+}
+
+/* ================= TOGGLE BUTTON VARIANT ================= */
+.btn-action-toggle {
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  color: #64748b;
+  transition: all 0.15s ease;
+  min-height: 30px;
+  white-space: nowrap;
+}
+
+.btn-action-toggle:hover {
+  border-color: #b88932;
+  color: #b88932;
+  background: #fdf9f0;
+}
+
+.btn-action-toggle.active {
+  background: #f0fdf4;
+  border-color: #16a34a;
+  color: #16a34a;
+}
+
+.btn-action-toggle.featured {
+  background: #fef9ec;
+  border-color: #b88932;
+  color: #b88932;
+}
+
+.btn-action-toggle:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ================= PAGINATION BAR ================= */
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px 0;
+}
+
+/* ================= MOBILE RESPONSIVE EXTRAS ================= */
+@media (max-width: 480px) {
+  .gallery-admin-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .gallery-admin-actions {
+    gap: 4px;
+  }
+
+  .gallery-admin-actions .btn-action-edit,
+  .gallery-admin-actions .btn-action-delete,
+  .gallery-admin-actions .btn-action-toggle {
+    font-size: 0.72rem;
+    padding: 4px 8px;
+  }
+}
+
+@media (max-width: 360px) {
+  .gallery-admin-grid {
+    grid-template-columns: 1fr;
+  }
+}
 

@@ -1,6 +1,7 @@
 const Gallery = require("../models/Gallery");
 const AppError = require("../utils/AppError");
 const asyncHandler = require("../utils/asyncHandler");
+const cache = require("../utils/cache");
 
 const galleryProjection = "_id title category description image createdAt";
 
@@ -15,38 +16,60 @@ const getGallery = asyncHandler(async (req, res, next) => {
   const { category } = req.query;
   const filter = category && category !== "All" ? { category } : {};
 
-  const [galleryItems, total] = await Promise.all([
-    Gallery.find(filter)
-      .select(galleryProjection)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean(),
-    Gallery.countDocuments(filter),
-  ]);
+  const cacheKey = cache.buildCacheKey("gallery", req.query);
 
-  res.json({
-    data: galleryItems,
-    pagination: {
-      total,
-      page,
-      limit,
-      pages: Math.ceil(total / limit),
+  const result = await cache.wrap(
+    cacheKey,
+    600, // 10 minutes
+    async () => {
+      const [galleryItems, total] = await Promise.all([
+        Gallery.find(filter)
+          .select(galleryProjection)
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit)
+          .lean(),
+        Gallery.countDocuments(filter),
+      ]);
+
+      return {
+        data: galleryItems,
+        pagination: {
+          total,
+          page,
+          limit,
+          pages: Math.ceil(total / limit),
+        },
+      };
     },
-  });
+    { tags: ["gallery"] }
+  );
+
+  res.json(result);
 });
 
 // @desc    Get single gallery item by ID
 // @route   GET /api/gallery/:id
 // @access  Public
 const getGalleryById = asyncHandler(async (req, res, next) => {
-  const item = await Gallery.findById(req.params.id)
-    .select(galleryProjection)
-    .lean();
+  const cacheKey = cache.buildCacheKey("gallery_item", { id: req.params.id });
 
-  if (!item) {
-    return next(new AppError("Gallery item not found", 404));
-  }
+  const item = await cache.wrap(
+    cacheKey,
+    600,
+    async () => {
+      const doc = await Gallery.findById(req.params.id)
+        .select(galleryProjection)
+        .lean();
+
+      if (!doc) {
+        throw new AppError("Gallery item not found", 404);
+      }
+      return doc;
+    },
+    { tags: ["gallery"] }
+  );
+
   res.json(item);
 });
 
@@ -64,6 +87,10 @@ const createGallery = asyncHandler(async (req, res, next) => {
   });
 
   const savedItem = await item.save();
+
+  // Invalidate cache
+  await cache.invalidateTags(["gallery"]);
+
   res.status(201).json({
     message: "Gallery item created successfully",
     item: {
@@ -93,6 +120,10 @@ const updateGallery = asyncHandler(async (req, res, next) => {
   if (image !== undefined) item.image = image;
 
   const updatedItem = await item.save();
+
+  // Invalidate cache
+  await cache.invalidateTags(["gallery"]);
+
   res.json({
     message: "Gallery item updated successfully",
     item: {
@@ -115,6 +146,10 @@ const deleteGallery = asyncHandler(async (req, res, next) => {
   }
 
   await Gallery.findByIdAndDelete(req.params.id);
+
+  // Invalidate cache
+  await cache.invalidateTags(["gallery"]);
+
   res.json({ message: "Gallery item removed successfully" });
 });
 

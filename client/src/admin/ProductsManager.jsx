@@ -14,10 +14,12 @@ import {
   getPublicAddOns,
 } from "../services/api";
 import { useUndoToast } from "./context/UndoToastContext";
+import { useAdminUser } from "./hooks/useAdminUser";
 
-function ProductsManager({ currentUser }) {
+function ProductsManager() {
   const queryClient = useQueryClient();
   const { showUndoToast } = useUndoToast();
+  const { currentUser } = useAdminUser();
   const isOwner = currentUser?.role === "owner";
 
   // Filters & Pagination

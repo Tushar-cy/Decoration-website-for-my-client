@@ -35,15 +35,23 @@ async function getSubmissions(req, res, next) {
       filter.$or = [{ name: qRegex }, { phone: qRegex }, { email: qRegex }];
     }
 
+    // Cursor pagination support
+    if (req.query.cursor) {
+      filter._id = { $lt: req.query.cursor };
+    }
+
     const [submissions, total] = await Promise.all([
       Submission.find(filter)
+        .select("formKey formTitle version status name phone email answersSnapshot assignedTo notes tags createdAt updatedAt")
         .populate("assignedTo", "name email role")
         .sort({ createdAt: -1 })
-        .skip(skip)
+        .skip(req.query.cursor ? 0 : skip)
         .limit(limit)
         .lean(),
       Submission.countDocuments(filter),
     ]);
+
+    const nextCursor = submissions.length === limit ? submissions[submissions.length - 1]._id : null;
 
     return res.status(200).json({
       status: "success",
@@ -54,6 +62,7 @@ async function getSubmissions(req, res, next) {
           page,
           limit,
           pages: Math.ceil(total / limit),
+          nextCursor,
         },
       },
     });

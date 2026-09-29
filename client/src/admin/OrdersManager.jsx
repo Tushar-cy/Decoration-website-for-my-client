@@ -8,11 +8,13 @@ import {
   refundAdminOrder,
 } from "../services/api";
 import OrderJobSheet from "./components/OrderJobSheet";
+import { useAdminUser } from "./hooks/useAdminUser";
 
 const ORDER_STATUSES = ["pending", "confirmed", "in_progress", "completed", "cancelled"];
 
-function OrdersManager({ currentUser }) {
+function OrdersManager() {
   const queryClient = useQueryClient();
+  const { currentUser } = useAdminUser();
   const isOwner = currentUser?.role === "owner";
 
   // View state: 'table' or 'kanban'

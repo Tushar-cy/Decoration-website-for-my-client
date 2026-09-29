@@ -83,14 +83,21 @@ async function getOrders(req, res, next) {
       sort = { "event.date": order };
     }
 
+    // Cursor pagination support for scalable infinite feeds / high load
+    if (req.query.cursor) {
+      filter._id = { $lt: req.query.cursor };
+    }
+
     const [orders, total] = await Promise.all([
       Order.find(filter)
         .sort(sort)
-        .skip(skip)
+        .skip(req.query.cursor ? 0 : skip)
         .limit(limit)
         .lean(),
       Order.countDocuments(filter),
     ]);
+
+    const nextCursor = orders.length === limit ? orders[orders.length - 1]._id : null;
 
     return res.status(200).json({
       status: "success",
@@ -101,6 +108,7 @@ async function getOrders(req, res, next) {
           page,
           limit,
           pages: Math.ceil(total / limit),
+          nextCursor,
         },
       },
     });

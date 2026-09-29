@@ -17,13 +17,19 @@ import {
   deleteAdminCoupon,
 } from "../services/api";
 import { useUndoToast } from "./context/UndoToastContext";
+import { useAdminUser } from "./hooks/useAdminUser";
+import { useSearchParams } from "react-router-dom";
 
-function CategoriesManager({ currentUser }) {
+function CategoriesManager() {
   const queryClient = useQueryClient();
   const { showUndoToast } = useUndoToast();
+  const { currentUser } = useAdminUser();
   const isOwner = currentUser?.role === "owner";
+  const [searchParams] = useSearchParams();
 
-  const [activeTab, setActiveTab] = useState("categories"); // 'categories' | 'addons' | 'coupons'
+  const [activeTab, setActiveTab] = useState(
+    () => searchParams.get("tab") || "categories"
+  ); // 'categories' | 'addons' | 'coupons'
 
   // Modal states
   const [modalType, setModalType] = useState(null); // 'category' | 'addon' | 'coupon' | null

@@ -10,7 +10,7 @@ const gallerySchema = new mongoose.Schema(
     category: {
       type: String,
       required: [true, "Category is required"],
-      enum: ["Birthday", "Anniversary", "Baby Shower", "Proposal", "Other"],
+      enum: ["Birthday", "Anniversary", "Baby Shower", "Proposal", "Corporate", "Other"],
       default: "Other",
     },
     description: {
@@ -21,9 +21,17 @@ const gallerySchema = new mongoose.Schema(
       type: String,
       required: [true, "Image URL is required"],
     },
+    publicId: {
+      type: String,
+      default: "",
+    },
     isActive: {
       type: Boolean,
       default: true,
+    },
+    isFeatured: {
+      type: Boolean,
+      default: false,
     },
     sortOrder: {
       type: Number,
@@ -37,5 +45,6 @@ const gallerySchema = new mongoose.Schema(
 );
 
 gallerySchema.index({ category: 1, isActive: 1, sortOrder: 1 });
+gallerySchema.index({ isFeatured: 1, isActive: 1 });
 
 module.exports = mongoose.model("Gallery", gallerySchema);

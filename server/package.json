@@ -8,7 +8,11 @@
     "dev": "nodemon server.js",
     "seed": "node seed.js",
     "worker": "node worker.js",
-    "test": "node --test"
+    "test": "node --test",
+    "migrate:up": "migrate-mongo up",
+    "migrate:down": "migrate-mongo down",
+    "migrate:status": "migrate-mongo status",
+    "migrate:create": "migrate-mongo create"
   },
   "keywords": [
     "decor-joy",
@@ -19,6 +23,7 @@
   "author": "Decor Joy Gurgaon",
   "license": "ISC",
   "dependencies": {
+    "@sentry/node": "^11.1.0",
     "bcryptjs": "^2.4.3",
     "bullmq": "^6.3.10",
     "compression": "^1.8.2",
@@ -32,7 +37,9 @@
     "hpp": "^0.2.3",
     "ioredis": "^6.0.0",
     "jsonwebtoken": "^9.0.2",
+    "migrate-mongo": "^14.0.7",
     "mongoose": "^8.9.0",
+    "nodemailer": "^10.0.12",
     "pino": "^10.3.1",
     "pino-http": "^11.0.0",
     "rate-limit-redis": "^6.0.1",

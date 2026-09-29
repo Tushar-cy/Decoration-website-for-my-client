@@ -220,4 +220,20 @@ export const getAdminAvailabilityMonth = (params) => API.get("/admin/availabilit
 export const toggleAdminBlockDate = (date) => API.post("/admin/availability/toggle-block", { date });
 export const updateAdminSlotCapacity = (slotKey, capacityPerDay) => API.patch("/admin/availability/slot-capacity", { slotKey, capacityPerDay });
 
+// Admin Gallery (TanStack Query aware — includes inactive)
+export const getAdminGallery = (params) => API.get("/admin/gallery", { params });
+export const createAdminGallery = (data) => API.post("/admin/gallery", data);
+export const updateAdminGallery = (id, data) => API.put(`/admin/gallery/${id}`, data);
+export const deleteAdminGallery = (id) => API.delete(`/admin/gallery/${id}`);
+export const toggleAdminGalleryActive = (id) => API.patch(`/admin/gallery/${id}/toggle-active`);
+export const toggleAdminGalleryFeatured = (id) => API.patch(`/admin/gallery/${id}/toggle-featured`);
+export const bulkUploadAdminGallery = (items) => API.post("/admin/gallery/bulk", { items });
+
+// Admin Testimonials (TanStack Query aware — includes inactive)
+export const getAdminTestimonials = (params) => API.get("/admin/testimonials", { params });
+export const createAdminTestimonial = (data) => API.post("/admin/testimonials", data);
+export const updateAdminTestimonial = (id, data) => API.put(`/admin/testimonials/${id}`, data);
+export const deleteAdminTestimonial = (id) => API.delete(`/admin/testimonials/${id}`);
+export const toggleAdminTestimonialActive = (id) => API.patch(`/admin/testimonials/${id}/toggle-active`);
+
 export default API;

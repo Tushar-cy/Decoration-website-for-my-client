@@ -11,7 +11,14 @@ const connectDB = async (maxRetries = 5, initialDelayMs = 1000) => {
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const conn = await mongoose.connect(mongoUri);
+      const conn = await mongoose.connect(mongoUri, {
+        maxPoolSize: 50,
+        minPoolSize: 10,
+        serverSelectionTimeoutMS: 5000,
+        socketTimeoutMS: 45000,
+        retryWrites: true,
+        retryReads: true,
+      });
       logger.info(`MongoDB Connected successfully: ${conn.connection.host}`);
       return conn;
     } catch (error) {
