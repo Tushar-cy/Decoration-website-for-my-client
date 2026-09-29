@@ -221,13 +221,23 @@ Please confirm slot availability!`;
               <p style={{ fontSize: "0.9rem", marginBottom: "24px" }}>
                 Explore our signature balloon setups, floral cabanas, and neon arches.
               </p>
-              <button
-                type="button"
-                className="btn btn-gold"
-                onClick={() => setIsCartOpen(false)}
-              >
-                Browse Packages ✨
-              </button>
+              <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={() => setIsCartOpen(false)}
+                >
+                  Browse Packages
+                </button>
+                <Link
+                  to="/plan-my-event"
+                  className="btn btn-gold"
+                  onClick={() => setIsCartOpen(false)}
+                  style={{ textDecoration: "none" }}
+                >
+                  Plan Custom Event ✨
+                </Link>
+              </div>
             </div>
           ) : checkoutStep === 1 ? (
             /* STEP 1: ITEM LIST */
@@ -396,6 +406,43 @@ Please confirm slot availability!`;
                   <span>Total</span>
                   <span style={{ color: "var(--dark-gold)" }}>₹{finalTotal.toLocaleString("en-IN")}</span>
                 </div>
+              </div>
+
+              {/* Bespoke / Custom Purpose Request */}
+              <div
+                style={{
+                  marginTop: "16px",
+                  padding: "12px 14px",
+                  background: "linear-gradient(135deg, #fef9c3 0%, #fef08a 100%)",
+                  borderRadius: "var(--radius-md)",
+                  border: "1px solid #fde047",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "10px",
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "#854d0e" }}>
+                    Need a Custom Decor Theme?
+                  </div>
+                  <div style={{ fontSize: "0.75rem", color: "#a16207" }}>
+                    Bespoke styling for baby showers, proposals & corporate events.
+                  </div>
+                </div>
+                <Link
+                  to="/plan-my-event"
+                  onClick={() => setIsCartOpen(false)}
+                  className="btn btn-gold"
+                  style={{
+                    padding: "6px 12px",
+                    fontSize: "0.78rem",
+                    whiteSpace: "nowrap",
+                    textDecoration: "none",
+                  }}
+                >
+                  Plan Event ✨
+                </Link>
               </div>
             </div>
           ) : (

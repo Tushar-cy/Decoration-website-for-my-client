@@ -14,6 +14,7 @@ import Services from "./pages/Services";
 import Gallery from "./pages/Gallery";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import PlanMyEvent from "./pages/PlanMyEvent";
 
 // Admin Portal Pages
 import AdminLogin from "./admin/AdminLogin";
@@ -23,6 +24,8 @@ import ServicesManager from "./admin/ServicesManager";
 import GalleryManager from "./admin/GalleryManager";
 import InquiryManager from "./admin/InquiryManager";
 import TestimonialManager from "./admin/TestimonialManager";
+import FormBuilder from "./admin/FormBuilder";
+import SubmissionsManager from "./admin/SubmissionsManager";
 
 // Helper component to reset scroll position on route change
 function ScrollToTop() {
@@ -62,6 +65,7 @@ function App() {
         <Route path="/" element={<CustomerLayout />}>
           <Route index element={<Home />} />
           <Route path="services" element={<Services />} />
+          <Route path="plan-my-event" element={<PlanMyEvent />} />
           <Route path="gallery" element={<Gallery />} />
           <Route path="about" element={<About />} />
           <Route path="contact" element={<Contact />} />
@@ -74,6 +78,8 @@ function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="submissions" element={<SubmissionsManager />} />
+          <Route path="forms" element={<FormBuilder />} />
           <Route path="services" element={<ServicesManager />} />
           <Route path="gallery" element={<GalleryManager />} />
           <Route path="inquiries" element={<InquiryManager />} />

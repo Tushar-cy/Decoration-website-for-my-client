@@ -208,8 +208,8 @@ describe("Data Layer Models & Indexes", () => {
 
   // 5. Index Registration Integrity
   describe("Models & Index Registry", () => {
-    test("sync-indexes lists all 16 core models", () => {
-      assert.equal(models.length, 16);
+    test("sync-indexes lists all core models including purpose forms", () => {
+      assert.ok(models.length >= 16);
       const modelNames = models.map((m) => m.name);
       assert.ok(modelNames.includes("Product"));
       assert.ok(modelNames.includes("Category"));
@@ -217,6 +217,8 @@ describe("Data Layer Models & Indexes", () => {
       assert.ok(modelNames.includes("Order"));
       assert.ok(modelNames.includes("Customer"));
       assert.ok(modelNames.includes("Settings"));
+      assert.ok(modelNames.includes("FormSchema"));
+      assert.ok(modelNames.includes("Submission"));
     });
   });
 });

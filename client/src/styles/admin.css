@@ -430,3 +430,254 @@
     overflow-x: auto;
   }
 }
+
+/* ================= FORM BUILDER & SUBMISSIONS STYLES ================= */
+.fb-tabs-bar {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.fb-tab-btn {
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #475569;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.fb-tab-btn:hover {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.fb-tab-btn.active {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+}
+
+.fb-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(360px, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .fb-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.fb-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.fb-card-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fb-field-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #ffffff;
+  margin-bottom: 12px;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.fb-field-item:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.fb-field-item.dragging {
+  opacity: 0.4;
+  border-style: dashed;
+}
+
+.fb-field-header {
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  background: #fafafa;
+  border-radius: 10px;
+  user-select: none;
+}
+
+.fb-field-header.open {
+  border-bottom: 1px solid #e2e8f0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  background: #f8fafc;
+}
+
+.fb-field-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.fb-field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+.fb-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fb-input-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.fb-input,
+.fb-select,
+.fb-textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  color: #1e293b;
+  background: #ffffff;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.fb-input:focus,
+.fb-select:focus,
+.fb-textarea:focus {
+  outline: none;
+  border-color: #b88932;
+  box-shadow: 0 0 0 3px rgba(184, 137, 50, 0.15);
+}
+
+.fb-condition-box {
+  background: #fdf8eb;
+  border: 1px solid #f9e2af;
+  border-radius: 8px;
+  padding: 14px;
+  margin-top: 8px;
+}
+
+.fb-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.fb-option-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Status colors */
+.status-quoted {
+  background-color: #f3e8ff;
+  color: #6b21a8;
+}
+
+.status-converted {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.status-lost {
+  background-color: #f1f5f9;
+  color: #64748b;
+}
+
+/* Submissions Notes Timeline */
+.sub-notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.sub-note-card {
+  background: #f8fafc;
+  border-left: 3px solid #b88932;
+  padding: 10px 14px;
+  border-radius: 0 6px 6px 0;
+}
+
+.sub-note-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.sub-note-text {
+  font-size: 0.88rem;
+  color: #1e293b;
+  white-space: pre-wrap;
+}
+
+/* Snapshot Answers Display */
+.sub-answers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.sub-answer-item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.sub-answer-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.sub-answer-value {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #0f172a;
+  word-break: break-word;
+}
+

@@ -86,6 +86,22 @@ function AdminLayout() {
             </NavLink>
 
             <NavLink
+              to="/admin/submissions"
+              className={({ isActive }) => (isActive ? "admin-nav-item active" : "admin-nav-item")}
+            >
+              <span>📝</span>
+              <span>Submissions Inbox</span>
+            </NavLink>
+
+            <NavLink
+              to="/admin/forms"
+              className={({ isActive }) => (isActive ? "admin-nav-item active" : "admin-nav-item")}
+            >
+              <span>🛠️</span>
+              <span>Form Builder</span>
+            </NavLink>
+
+            <NavLink
               to="/admin/services"
               className={({ isActive }) => (isActive ? "admin-nav-item active" : "admin-nav-item")}
             >
@@ -106,7 +122,7 @@ function AdminLayout() {
               className={({ isActive }) => (isActive ? "admin-nav-item active" : "admin-nav-item")}
             >
               <span>📩</span>
-              <span>Inquiries</span>
+              <span>Legacy Inquiries</span>
             </NavLink>
 
             <NavLink

@@ -439,4 +439,29 @@ export const createTestimonial = (testimonialData) => API.post("/testimonials", 
 export const updateTestimonial = (id, testimonialData) => API.put(`/testimonials/${id}`, testimonialData);
 export const deleteTestimonial = (id) => API.delete(`/testimonials/${id}`);
 
+// ================= PURPOSE FORMS & SUBMISSIONS API =================
+export const getActivePurposes = () => API.get("/forms");
+export const getPurposeForm = (formKey) => API.get(`/forms/${formKey}`);
+export const submitPurposeForm = (formKey, submissionData) =>
+  API.post(`/forms/${formKey}/submissions`, submissionData);
+
+// Admin Form Builder API
+export const getAdminForms = () => API.get("/admin/forms");
+export const getAdminForm = (key) => API.get(`/admin/forms/${key}`);
+export const createAdminForm = (formData) => API.post("/admin/forms", formData);
+export const saveAdminForm = (key, formData) => API.put(`/admin/forms/${key}`, formData);
+export const toggleAdminFormStatus = (key) => API.patch(`/admin/forms/${key}/status`);
+
+// Admin Submissions API
+export const getAdminSubmissions = (params) => API.get("/admin/submissions", { params });
+export const getAdminSubmission = (id) => API.get(`/admin/submissions/${id}`);
+export const updateAdminSubmissionStatus = (id, status) =>
+  API.patch(`/admin/submissions/${id}/status`, { status });
+export const addAdminSubmissionNote = (id, text) =>
+  API.post(`/admin/submissions/${id}/notes`, { text });
+export const assignAdminSubmission = (id, assignedTo) =>
+  API.patch(`/admin/submissions/${id}/assign`, { assignedTo });
+export const convertAdminSubmission = (id, orderId) =>
+  API.post(`/admin/submissions/${id}/convert`, { orderId });
+
 export default API;

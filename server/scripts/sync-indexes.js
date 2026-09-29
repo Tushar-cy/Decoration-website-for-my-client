@@ -20,6 +20,8 @@ const Gallery = require("../models/Gallery");
 const Testimonial = require("../models/Testimonial");
 const Inquiry = require("../models/Inquiry");
 const Service = require("../models/Service");
+const FormSchema = require("../models/FormSchema");
+const Submission = require("../models/Submission");
 
 const models = [
   { name: "Admin", model: Admin },
@@ -38,6 +40,8 @@ const models = [
   { name: "Testimonial", model: Testimonial },
   { name: "Inquiry", model: Inquiry },
   { name: "Service", model: Service },
+  { name: "FormSchema", model: FormSchema },
+  { name: "Submission", model: Submission },
 ];
 
 const isDryRun = process.argv.includes("--dry-run") || process.argv.includes("--simulate");

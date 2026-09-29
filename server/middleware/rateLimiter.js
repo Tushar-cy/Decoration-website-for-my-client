@@ -111,9 +111,22 @@ const trackOrderLimiter = rateLimit({
   },
 });
 
+// 5. Submission Rate Limiter: 10 requests per minute on POST /api/forms/:key/submissions
+const submissionLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  store: new ResilientStore("rl:submission:"),
+  message: {
+    message: "Too many form submissions from this IP, please try again after a minute",
+  },
+});
+
 module.exports = {
   globalLimiter,
   inquiryLimiter,
   loginLimiter,
   trackOrderLimiter,
+  submissionLimiter,
 };

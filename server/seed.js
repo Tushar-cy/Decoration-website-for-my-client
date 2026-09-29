@@ -565,6 +565,11 @@ const seedDB = async () => {
       console.log(`Testimonials already exist (${testimonialCount} items).`);
     }
 
+    // 9. Seed Purpose Forms (Birthday, Anniversary, Baby Shower, Proposal, Corporate, Other)
+    const { seedPurposeForms } = require("./seed-forms");
+    await seedPurposeForms();
+    console.log("Seeded 6 schema-driven Purpose Forms.");
+
     console.log("Database seeding completed successfully!");
     process.exit(0);
   } catch (error) {

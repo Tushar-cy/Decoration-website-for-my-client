@@ -20,6 +20,31 @@ const createInquiry = asyncHandler(async (req, res, next) => {
 
   const savedInquiry = await inquiry.save();
 
+  // Also mirror into Submission collection for unified inbox
+  try {
+    const Submission = require("../models/Submission");
+    await Submission.create({
+      formKey: "legacy-inquiry",
+      formVersion: 1,
+      answers: {
+        eventType,
+        eventDate,
+        message: message || "",
+      },
+      answersSnapshot: [
+        { fieldId: "eventType", label: "Event Type", value: eventType, group: "General" },
+        { fieldId: "eventDate", label: "Event Date", value: eventDate, group: "General" },
+        { fieldId: "message", label: "Message / Requirements", value: message || "", group: "General" },
+      ],
+      name,
+      phone,
+      email: email || "",
+      status: "new",
+    });
+  } catch (err) {
+    // Non-blocking mirror
+  }
+
   // Public response returns only { message, id }, never raw document
   res.status(201).json({
     message: "Thank you! Your inquiry has been received. We will contact you shortly.",

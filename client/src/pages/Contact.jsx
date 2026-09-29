@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import WhatsAppButton from "../components/WhatsAppButton";
+import PurposeForm from "../components/PurposeForm";
 import { createInquiry } from "../services/api";
 import "../styles/contact.css";
 
@@ -112,144 +113,62 @@ function Contact() {
           </div>
 
           <div className="contact-layout">
-            {/* Inquiry Form Card */}
-            <div className="contact-form-card">
-              <h2 className="contact-form-title">Send Booking Inquiry</h2>
-              <p className="contact-form-subtitle">
-                Fill in your celebration details and we'll get back to you with custom package options within 2 hours.
-              </p>
+            {/* Schema-Driven Purpose Form Card */}
+            <div className="contact-form-card" style={{ padding: "20px 16px" }}>
+              <div style={{ marginBottom: "20px" }}>
+                <span className="section-tagline" style={{ fontSize: "0.8rem" }}>Schema-Driven Booking</span>
+                <h2 className="contact-form-title" style={{ fontSize: "1.5rem", marginBottom: "8px" }}>
+                  Plan Your Event Setup
+                </h2>
+                <p className="contact-form-subtitle" style={{ fontSize: "0.9rem", marginBottom: "16px" }}>
+                  Select your occasion to load customized styling questions and get immediate quotes.
+                </p>
 
-              {successMessage && (
-                <div className="form-alert form-alert-success">
-                  <strong>Success!</strong> {successMessage}
-                  <div style={{ marginTop: "12px" }}>
-                    <WhatsAppButton
-                      text="Follow up on WhatsApp with event details"
-                      message={`Hi Decor Joy Gurgaon! I just submitted an inquiry on your website for ${formData.eventType || "an event"}.`}
-                      className="btn btn-whatsapp"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {errorMessage && (
-                <div className="form-alert form-alert-error">
-                  <strong>Notice:</strong> {errorMessage}
-                </div>
-              )}
-
-              <form onSubmit={handleSubmit}>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label" htmlFor="name">
-                      Your Full Name <span className="required">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      className="form-control"
-                      placeholder="e.g. Priyanka Sharma"
-                      value={formData.name}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label className="form-label" htmlFor="phone">
-                      Phone / WhatsApp Number <span className="required">*</span>
-                    </label>
-                    <input
-                      type="tel"
-                      id="phone"
-                      name="phone"
-                      className="form-control"
-                      placeholder="e.g. 9876543210"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label" htmlFor="email">
-                      Email Address (Optional)
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      className="form-control"
-                      placeholder="e.g. priyanka@gmail.com"
-                      value={formData.email}
-                      onChange={handleChange}
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label className="form-label" htmlFor="eventDate">
-                      Event Date <span className="required">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      id="eventDate"
-                      name="eventDate"
-                      className="form-control"
-                      value={formData.eventDate}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label" htmlFor="eventType">
-                    Occasion / Event Type <span className="required">*</span>
-                  </label>
-                  <select
-                    id="eventType"
-                    name="eventType"
-                    className="form-control"
-                    value={formData.eventType}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="Birthday">Birthday Celebration</option>
-                    <option value="Anniversary">Romantic Anniversary</option>
-                    <option value="Baby Shower">Baby Shower / Welcome Baby</option>
-                    <option value="Proposal">Marry Me Proposal</option>
-                    <option value="Special Celebrations">Haldi / Ring Ceremony / Pre-Wedding</option>
-                    <option value="Kids Party">Kids Themed Birthday</option>
-                    <option value="Custom Decor">Other Custom Decoration</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label" htmlFor="message">
-                    Location & Special Requests (Optional)
-                  </label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    className="form-control"
-                    placeholder="e.g. Terrace setup in DLF Phase 5, pastel pink and gold balloon arch, neon sign needed..."
-                    value={formData.message}
-                    onChange={handleChange}
-                  ></textarea>
-                </div>
-
-                <button
-                  type="submit"
-                  className="btn btn-gold"
-                  style={{ width: "100%", padding: "14px" }}
-                  disabled={loading}
+                {/* Purpose Switcher Tabs */}
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "8px",
+                    marginBottom: "20px",
+                  }}
                 >
-                  {loading ? "Submitting Inquiry..." : "Submit Booking Inquiry ✨"}
-                </button>
-              </form>
+                  {[
+                    { key: "birthday", label: "🎂 Birthday" },
+                    { key: "anniversary", label: "💑 Anniversary" },
+                    { key: "baby-shower", label: "🍼 Baby Shower" },
+                    { key: "proposal", label: "💍 Proposal" },
+                    { key: "corporate", label: "🏢 Corporate" },
+                    { key: "other", label: "✨ Custom" },
+                  ].map((p) => (
+                    <button
+                      key={p.key}
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, eventType: p.key }))}
+                      style={{
+                        padding: "8px 14px",
+                        borderRadius: "999px",
+                        fontSize: "0.85rem",
+                        fontWeight: 600,
+                        border: "1.5px solid",
+                        borderColor: (formData.eventType || "birthday").toLowerCase().includes(p.key) ? "#d4af37" : "#e2e8f0",
+                        backgroundColor: (formData.eventType || "birthday").toLowerCase().includes(p.key) ? "#fffdf5" : "#f8fafc",
+                        color: (formData.eventType || "birthday").toLowerCase().includes(p.key) ? "#996515" : "#475569",
+                        cursor: "pointer",
+                        transition: "all 0.15s ease",
+                      }}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Dynamic PurposeForm */}
+              <PurposeForm
+                key={formData.eventType || "birthday"}
+                formKey={formData.eventType || "birthday"}
+              />
             </div>
 
             {/* Sidebar: Business Info & WhatsApp */}

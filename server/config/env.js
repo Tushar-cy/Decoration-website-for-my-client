@@ -34,6 +34,7 @@ const envSchema = z.object({
   SMTP_PORT: z.coerce.number().optional(),
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
+  CLOUDFLARE_TURNSTILE_SECRET_KEY: z.string().optional(),
 
   // Optional admin seed credentials
   ADMIN_EMAIL: z.string().email().optional(),

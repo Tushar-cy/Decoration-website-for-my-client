@@ -179,6 +179,12 @@ function Navbar() {
             </li>
 
             <li>
+              <NavLink to="/plan-my-event" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
+                🎉 Plan My Event
+              </NavLink>
+            </li>
+
+            <li>
               <a
                 href="/#decor-builder"
                 onClick={handleCustomizerClick}
@@ -329,6 +335,11 @@ function Navbar() {
           <li>
             <NavLink to="/services" className={({ isActive }) => (isActive ? "mobile-nav-link active" : "mobile-nav-link")} onClick={closeMobileMenu}>
               All Packages Catalog
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/plan-my-event" className={({ isActive }) => (isActive ? "mobile-nav-link active" : "mobile-nav-link")} onClick={closeMobileMenu}>
+              🎉 Plan My Event (Purpose Forms)
             </NavLink>
           </li>
 

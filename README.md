@@ -12,15 +12,20 @@
   - Responsive design for Desktop, Tablet, and Mobile with hamburger navigation.
   - Interactive categories: Birthdays, Anniversaries, Baby Showers, Proposals, Special Celebrations.
   - Dynamic photo gallery with filter tabs and full-screen lightbox image preview.
-  - Booking & inquiry form saving directly to MongoDB with instant WhatsApp follow-up.
-  - Reusable WhatsApp integration linked to business number: `+91 7015767715`.
+- **Schema-Driven Purpose Forms**:
+  - Dynamic purpose forms rendered 100% from backend schema without hardcoded client fields (`/plan-my-event` and embedded in `Contact.jsx` / `CartDrawer.jsx`).
+  - 6 Seeded celebrations: Birthday, Anniversary, Baby Shower / Welcome Baby, Marry Me Proposal, Corporate, and Other.
+  - Mobile-first stepper interface (one group per step with real-time progress bar, touch targets >= 44px, input font size >= 16px).
+  - Draft autosave to `localStorage`, inline field validation, and +91 phone normalization.
+  - Anti-spam suite: Cloudflare Turnstile verification, honeypot field (`_gotcha`), 10/min submission rate limiter, and 10-minute duplicate submission guard.
+  - Immutable `answersSnapshot` retaining historical question labels across schema version edits.
+  - Automated WhatsApp link generator pre-filling celebration details directly into customer chat.
 
-- **Admin Management Portal**:
-  - Separate, clean, professional dashboard design.
-  - Secure JWT authentication & bcrypt password encryption.
-  - Real-time statistics: Total Services, Gallery Photos, New Inquiries, and Customer Reviews.
-  - Full CRUD management for Services, Gallery, and Testimonials.
-  - Inquiry tracking system with status updates (`new` ➔ `contacted` ➔ `completed`) and 1-click WhatsApp customer chat.
+- **Admin Form Builder & Submissions Inbox**:
+  - **Form Builder**: Visual field editor with drag-and-drop reordering, type configuration, options editor, conditional `showIf` logic, live interactive preview, and automatic version bumping on save.
+  - **Submissions Inbox**: Filterable by purpose/status/date, search by name/phone, 5-stage status pipeline (`new`, `contacted`, `quoted`, `converted`, `lost`), internal notes history, staff assignment, WhatsApp click-to-chat, "Convert to Order" linking, and CSV export.
+  - Seamless migration script `scripts/migrate-inquiries-to-submissions.js` importing legacy inquiries into `Submission` records.
+
 
 ---
 
