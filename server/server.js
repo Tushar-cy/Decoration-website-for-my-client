@@ -49,7 +49,9 @@ app.use(
   })
 );
 
-// 6. Request Body Parsing with 100kb limit
+// 6. Request Body Parsing
+// Raw body for Razorpay Webhook signature verification
+app.use("/api/payments/razorpay/webhook", express.raw({ type: "*/*" }));
 app.use(express.json({ limit: "100kb" }));
 app.use(express.urlencoded({ extended: true, limit: "100kb" }));
 
@@ -108,6 +110,17 @@ app.use("/api/services", require("./routes/serviceRoutes"));
 app.use("/api/gallery", require("./routes/galleryRoutes"));
 app.use("/api/inquiries", require("./routes/inquiryRoutes"));
 app.use("/api/testimonials", require("./routes/testimonialRoutes"));
+
+// Order & Payment Engine Routes
+app.use("/api/availability", require("./routes/availabilityRoutes"));
+app.use("/api/quotes", require("./routes/quoteRoutes"));
+app.use("/api/orders", require("./routes/orderRoutes"));
+app.use("/api/payments", require("./routes/paymentRoutes"));
+
+// Admin Management Routes
+app.use("/api/admin/orders", require("./routes/adminOrderRoutes"));
+app.use("/api/admin/coupons", require("./routes/adminCouponRoutes"));
+app.use("/api/admin/settings", require("./routes/adminSettingsRoutes"));
 
 // Root Info Route
 app.get("/", (req, res) => {

@@ -99,8 +99,21 @@ const loginLimiter = rateLimit({
   },
 });
 
+// 4. Track Order Rate Limiter: 10 requests per minute on GET /api/orders/track
+const trackOrderLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  store: new ResilientStore("rl:track:"),
+  message: {
+    message: "Too many tracking lookups from this IP, please try again after a minute",
+  },
+});
+
 module.exports = {
   globalLimiter,
   inquiryLimiter,
   loginLimiter,
+  trackOrderLimiter,
 };
