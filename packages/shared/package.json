@@ -1,0 +1,20 @@
+{
+  "name": "@decorjoy/shared",
+  "version": "1.0.0",
+  "description": "Shared Zod schemas, API contracts, and utilities for Decor Joy Gurgaon (Web, Backend & Future Expo Native App)",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "node --test"
+  },
+  "keywords": [
+    "decorjoy",
+    "shared",
+    "schemas",
+    "validation"
+  ],
+  "author": "Decor Joy Gurgaon",
+  "license": "ISC",
+  "dependencies": {
+    "zod": "^3.23.8"
+  }
+}

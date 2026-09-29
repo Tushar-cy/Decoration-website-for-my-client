@@ -1,0 +1,99 @@
+/* =========================================================
+   CUSTOMER MOBILE BOTTOM TAB BAR
+   Optimized for 1-hand reachability on phones (360px - 768px)
+   ========================================================= */
+
+.customer-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(253, 251, 248, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid #e5d6bd;
+  z-index: 999;
+  padding: 6px 12px calc(8px + env(safe-area-inset-bottom));
+  box-shadow: 0 -4px 20px rgba(23, 32, 25, 0.08);
+}
+
+@media (max-width: 768px) {
+  .customer-bottom-nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+  }
+
+  /* Add bottom padding to body/layouts so content is never obscured by the tab bar */
+  body {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom));
+  }
+}
+
+.bottom-tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  padding: 6px 4px;
+  min-width: 52px;
+  min-height: 48px;
+  color: #64748b;
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: 12px;
+  position: relative;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bottom-tab-item:active {
+  transform: scale(0.94);
+}
+
+.bottom-tab-item.active {
+  color: #b88932;
+}
+
+.bottom-tab-icon {
+  font-size: 1.35rem;
+  line-height: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bottom-tab-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  line-height: 1;
+}
+
+.bottom-tab-badge {
+  position: absolute;
+  top: -4px;
+  right: -8px;
+  background-color: #b88932;
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #ffffff;
+}
+
+.bottom-tab-badge-dark {
+  background-color: #172019;
+  color: #fbbf24;
+  border-color: #fbbf24;
+}

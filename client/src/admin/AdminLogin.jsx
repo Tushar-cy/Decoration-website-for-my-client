@@ -91,7 +91,9 @@ function AdminLogin() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              inputMode="email"
               autoComplete="email"
+              enterKeyHint="next"
             />
           </div>
 
@@ -108,6 +110,7 @@ function AdminLogin() {
               onChange={(e) => setPassword(e.target.value)}
               required
               autoComplete="current-password"
+              enterKeyHint="go"
             />
           </div>
 

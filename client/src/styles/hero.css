@@ -20,19 +20,21 @@
 }
 
 .hero-circle-1 {
-  width: 500px;
-  height: 500px;
+  width: min(500px, 90vw);
+  height: min(500px, 90vw);
   background: linear-gradient(135deg, rgba(197, 155, 39, 0.2), rgba(212, 139, 139, 0.2));
   top: -100px;
-  right: -50px;
+  right: 0;
+  max-width: 100%;
 }
 
 .hero-circle-2 {
-  width: 420px;
-  height: 420px;
+  width: min(420px, 80vw);
+  height: min(420px, 80vw);
   background: linear-gradient(135deg, rgba(212, 139, 139, 0.15), rgba(245, 238, 223, 0.4));
   bottom: -50px;
-  left: -80px;
+  left: 0;
+  max-width: 100%;
 }
 
 .hero-container {

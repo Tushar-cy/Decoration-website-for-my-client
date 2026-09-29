@@ -17,6 +17,8 @@ export function CheckoutForm({ formState, onChange, onSubmit, isSubmitting }) {
           type="text"
           className={styles.input}
           required
+          autoComplete="name"
+          enterKeyHint="next"
           placeholder="e.g. Priyanshi Verma"
           value={formState.name || ""}
           onChange={(e) => handleFieldChange("name", e.target.value)}
@@ -29,6 +31,9 @@ export function CheckoutForm({ formState, onChange, onSubmit, isSubmitting }) {
           type="tel"
           className={styles.input}
           required
+          inputMode="tel"
+          autoComplete="tel"
+          enterKeyHint="next"
           placeholder="e.g. 9876543210"
           value={formState.phone || ""}
           onChange={(e) => handleFieldChange("phone", e.target.value)}
@@ -41,6 +46,7 @@ export function CheckoutForm({ formState, onChange, onSubmit, isSubmitting }) {
           type="date"
           className={styles.input}
           required
+          enterKeyHint="next"
           min={new Date().toISOString().split("T")[0]}
           value={formState.date || ""}
           onChange={(e) => handleFieldChange("date", e.target.value)}
@@ -77,6 +83,7 @@ export function CheckoutForm({ formState, onChange, onSubmit, isSubmitting }) {
         <select
           className={styles.select}
           required
+          autoComplete="postal-code"
           value={formState.pincode || ""}
           onChange={(e) => handleFieldChange("pincode", e.target.value)}
         >
@@ -104,6 +111,8 @@ export function CheckoutForm({ formState, onChange, onSubmit, isSubmitting }) {
           type="text"
           className={styles.input}
           required
+          autoComplete="street-address"
+          enterKeyHint="next"
           placeholder="e.g. Tower 3, Flat 902, The Crest, DLF 5"
           value={formState.address || ""}
           onChange={(e) => handleFieldChange("address", e.target.value)}

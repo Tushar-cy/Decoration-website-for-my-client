@@ -402,6 +402,9 @@ export default function ProductDetail() {
             <div className="pincode-input-wrap">
               <input
                 type="text"
+                inputMode="numeric"
+                autoComplete="postal-code"
+                enterKeyHint="go"
                 maxLength="6"
                 placeholder="Enter 6-digit Pincode"
                 className="pincode-input"

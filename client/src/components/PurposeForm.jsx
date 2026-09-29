@@ -407,6 +407,27 @@ function PurposeForm({ formKey, onCancel, onSuccess }) {
                   <input
                     id={field.id}
                     type={field.type === "phone" ? "tel" : field.type}
+                    inputMode={
+                      field.type === "phone"
+                        ? "tel"
+                        : field.type === "email"
+                        ? "email"
+                        : field.id.toLowerCase().includes("pincode")
+                        ? "numeric"
+                        : "text"
+                    }
+                    autoComplete={
+                      field.type === "phone"
+                        ? "tel"
+                        : field.type === "email"
+                        ? "email"
+                        : field.id.toLowerCase().includes("name")
+                        ? "name"
+                        : field.id.toLowerCase().includes("pincode")
+                        ? "postal-code"
+                        : undefined
+                    }
+                    enterKeyHint="next"
                     value={val}
                     onChange={(e) => handleFieldChange(field.id, e.target.value, field.type)}
                     placeholder={field.placeholder || ""}
@@ -431,6 +452,8 @@ function PurposeForm({ formKey, onCancel, onSuccess }) {
                   <input
                     id={field.id}
                     type="number"
+                    inputMode="numeric"
+                    enterKeyHint="next"
                     value={val}
                     min={field.min ?? undefined}
                     max={field.max ?? undefined}
@@ -446,6 +469,7 @@ function PurposeForm({ formKey, onCancel, onSuccess }) {
                     id={field.id}
                     type="date"
                     min={minDateString}
+                    enterKeyHint="next"
                     value={val}
                     onChange={(e) => handleFieldChange(field.id, e.target.value, "date")}
                     className="form-control"

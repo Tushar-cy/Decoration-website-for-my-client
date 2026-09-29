@@ -71,16 +71,17 @@
 .nav-links-desktop {
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: clamp(12px, 1.4vw, 24px);
   list-style: none;
 }
 
 .nav-link {
-  font-size: 0.92rem;
+  font-size: clamp(0.85rem, 0.9vw, 0.92rem);
   font-weight: 500;
   color: var(--dark);
   position: relative;
   padding: 6px 0;
+  white-space: nowrap;
 }
 
 .nav-link::after {
@@ -108,6 +109,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
+  flex-shrink: 0;
 }
 
 .nav-whatsapp-btn {
@@ -122,6 +124,7 @@
   font-weight: 500;
   box-shadow: 0 4px 12px rgba(37, 211, 102, 0.25);
   transition: var(--transition);
+  min-height: 44px;
 }
 
 .nav-whatsapp-btn:hover {
@@ -138,7 +141,11 @@
   font-size: 1.6rem;
   color: var(--dark);
   cursor: pointer;
-  padding: 6px;
+  padding: 8px;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
   line-height: 1;
 }
 
@@ -167,7 +174,8 @@
   font-weight: 500;
   color: var(--dark);
   display: block;
-  padding: 8px 0;
+  padding: 12px 0;
+  min-height: 44px;
   border-bottom: 1px dashed var(--border);
 }
 
@@ -183,14 +191,13 @@
   gap: 12px;
 }
 
-@media (max-width: 900px) {
-
+@media (max-width: 1080px) {
   .nav-links-desktop,
   .navbar-actions .nav-whatsapp-btn {
-    display: none;
+    display: none !important;
   }
 
   .hamburger-btn {
-    display: block;
+    display: flex !important;
   }
 }

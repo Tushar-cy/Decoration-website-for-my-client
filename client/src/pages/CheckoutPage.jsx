@@ -236,6 +236,8 @@ export default function CheckoutPage() {
                 <input
                   type="text"
                   required
+                  autoComplete="name"
+                  enterKeyHint="next"
                   placeholder="e.g. Radhika Sharma"
                   className="form-control"
                   value={formData.name}
@@ -249,6 +251,9 @@ export default function CheckoutPage() {
                   <input
                     type="tel"
                     required
+                    inputMode="tel"
+                    autoComplete="tel"
+                    enterKeyHint="next"
                     placeholder="e.g. 9876543210"
                     className="form-control"
                     value={formData.phone}
@@ -260,6 +265,9 @@ export default function CheckoutPage() {
                   <label className="input-label">Email Address (Optional)</label>
                   <input
                     type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    enterKeyHint="next"
                     placeholder="e.g. radhika@gmail.com"
                     className="form-control"
                     value={formData.email}
@@ -316,6 +324,7 @@ export default function CheckoutPage() {
                   <label className="input-label">Gurugram Pincode *</label>
                   <select
                     required
+                    autoComplete="postal-code"
                     className="form-control"
                     value={formData.pincode}
                     onChange={(e) => handleChange("pincode", e.target.value)}
@@ -343,6 +352,8 @@ export default function CheckoutPage() {
                 <input
                   type="text"
                   required
+                  autoComplete="street-address"
+                  enterKeyHint="next"
                   placeholder="e.g. Tower B, Flat 802, The Crest, DLF Phase 5"
                   className="form-control"
                   value={formData.addressLine}

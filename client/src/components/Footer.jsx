@@ -32,21 +32,8 @@ function Footer() {
     <footer className="site-footer" role="contentinfo">
       <div className="container">
         {/* Newsletter Signup Banner */}
-        <div
-          style={{
-            background: "rgba(255, 255, 255, 0.05)",
-            border: "1px solid rgba(255, 255, 255, 0.12)",
-            borderRadius: "var(--radius-xl)",
-            padding: "36px clamp(20px, 4vw, 48px)",
-            marginBottom: "60px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: "24px",
-          }}
-        >
-          <div style={{ maxWidth: "520px" }}>
+        <div className="newsletter-banner">
+          <div className="newsletter-text-col">
             <span
               style={{
                 fontSize: "0.75rem",
@@ -68,10 +55,13 @@ function Footer() {
             </p>
           </div>
 
-          <form onSubmit={handleSubscribe} style={{ flex: "1 1 320px", maxWidth: "440px" }}>
-            <div style={{ display: "flex", gap: "10px" }}>
+          <form onSubmit={handleSubscribe} className="newsletter-form">
+            <div className="newsletter-input-wrap">
               <input
                 type="email"
+                inputMode="email"
+                autoComplete="email"
+                enterKeyHint="go"
                 placeholder="Enter your email address..."
                 value={email}
                 onChange={(e) => {
@@ -79,21 +69,11 @@ function Footer() {
                   if (newsletterStatus.state !== "idle") setNewsletterStatus({ state: "idle", message: "" });
                 }}
                 aria-label="Email address for newsletter"
-                style={{
-                  flex: 1,
-                  padding: "12px 18px",
-                  borderRadius: "var(--radius-full)",
-                  border: newsletterStatus.state === "error" ? "1px solid #ef4444" : "1px solid rgba(255,255,255,0.25)",
-                  background: "rgba(255, 255, 255, 0.08)",
-                  color: "#ffffff",
-                  fontSize: "0.9rem",
-                  outline: "none",
-                }}
+                className="newsletter-input"
               />
               <button
                 type="submit"
-                className="btn btn-gold"
-                style={{ whiteSpace: "nowrap", padding: "12px 22px" }}
+                className="btn btn-gold newsletter-btn"
               >
                 Join & Save
               </button>

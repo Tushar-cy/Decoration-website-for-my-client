@@ -7,6 +7,9 @@ import CartDrawer from "./components/CartDrawer";
 import WishlistModal from "./components/WishlistModal";
 import ProductQuickViewModal from "./components/ProductQuickViewModal";
 import Toast from "./components/Toast";
+import CustomerBottomNav from "./components/CustomerBottomNav";
+import InstallPrompt from "./components/pwa/InstallPrompt";
+import PwaUpdatePrompt from "./components/pwa/PwaUpdatePrompt";
 import { ShopProvider } from "./context/ShopContext";
 import { SettingsProvider } from "./context/SettingsContext";
 
@@ -82,17 +85,22 @@ function ScrollToTop() {
 // Layout wrapper for customer pages
 function CustomerLayout() {
   return (
-    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", minHeight: "100dvh" }}>
+      <InstallPrompt />
       <Navbar />
       <main style={{ flexGrow: 1 }}>
         <Outlet />
       </main>
       <Footer />
+      {/* Mobile Customer Bottom Navigation Bar */}
+      <CustomerBottomNav />
       {/* Global Modals & Drawers */}
       <CartDrawer />
       <WishlistModal />
       <ProductQuickViewModal />
       <Toast />
+      {/* PWA Update Banner */}
+      <PwaUpdatePrompt />
     </div>
   );
 }

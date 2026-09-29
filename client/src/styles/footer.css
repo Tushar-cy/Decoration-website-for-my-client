@@ -8,6 +8,72 @@
   padding: 80px 0 30px;
   position: relative;
   border-top: 3px solid var(--gold);
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Newsletter Signup Banner */
+.newsletter-banner {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-xl);
+  padding: clamp(20px, 4vw, 36px);
+  margin-bottom: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.newsletter-text-col {
+  max-width: 520px;
+}
+
+.newsletter-form {
+  flex: 1 1 260px;
+  max-width: 440px;
+  width: 100%;
+}
+
+.newsletter-input-wrap {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.newsletter-input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 18px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  font-size: 16px !important;
+  outline: none;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-sizing: border-box;
+}
+
+.newsletter-btn {
+  white-space: nowrap;
+  padding: 12px 22px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 520px) {
+  .newsletter-input-wrap {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .newsletter-btn {
+    width: 100%;
+  }
+  .newsletter-form {
+    max-width: 100%;
+  }
 }
 
 .footer-grid {

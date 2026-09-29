@@ -15,7 +15,8 @@
 .panel {
   width: 100%;
   max-width: 480px;
-  height: 100%;
+  height: 100vh;
+  height: 100dvh;
   background-color: var(--white, #ffffff);
   box-shadow: -8px 0 35px rgba(0, 0, 0, 0.25);
   display: flex;
@@ -357,7 +358,7 @@
 
 /* Footer Actions */
 .footer {
-  padding: 16px 20px;
+  padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--border, #e5e0d8);
   background: var(--white, #ffffff);
   display: flex;

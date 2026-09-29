@@ -149,14 +149,16 @@
   background-color: #b91c1c;
 }
 
-/* Main Content Area */
 .admin-main {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
   background-color: #f8fafc;
   overflow-y: auto;
+  overflow-x: hidden;
   min-height: 100vh;
+  min-height: 100dvh;
+  max-width: 100vw;
 }
 
 .admin-topbar {
@@ -728,14 +730,14 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: 60px;
+    height: calc(60px + env(safe-area-inset-bottom, 0px));
     background: #ffffff;
     border-top: 1px solid #e2e8f0;
     box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.05);
     z-index: 2500;
     justify-content: space-around;
     align-items: center;
-    padding-bottom: env(safe-area-inset-bottom, 0);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   .admin-bottom-nav a,

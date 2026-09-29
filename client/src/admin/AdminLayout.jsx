@@ -6,6 +6,7 @@ import AdminErrorBoundary from "./components/AdminErrorBoundary";
 import { UndoToastProvider } from "./context/UndoToastContext";
 import { AdminRealtimeProvider, useAdminRealtime } from "./context/AdminRealtimeContext";
 import AdminBottomNav from "./components/AdminBottomNav";
+import AdminPushNotificationPrompt from "./components/AdminPushNotificationPrompt";
 import "../styles/admin.css";
 
 const adminQueryClient = new QueryClient({
@@ -181,6 +182,7 @@ function AdminLayoutInner({ currentUser, onLogout }) {
           </header>
 
           <div className="admin-content-body">
+            <AdminPushNotificationPrompt />
             <Outlet context={{ currentUser }} />
           </div>
 
@@ -196,6 +198,22 @@ function AdminLayout() {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Set Admin manifest and dark theme color so owner can install Admin as a standalone PWA
+  useEffect(() => {
+    const manifestEl = document.getElementById("app-manifest");
+    const themeMeta = document.querySelector('meta[name="theme-color"]');
+    const prevManifestHref = manifestEl ? manifestEl.getAttribute("href") : "/manifest.webmanifest";
+    const prevThemeColor = themeMeta ? themeMeta.getAttribute("content") : "#b88932";
+
+    if (manifestEl) manifestEl.setAttribute("href", "/admin-manifest.webmanifest");
+    if (themeMeta) themeMeta.setAttribute("content", "#172019");
+
+    return () => {
+      if (manifestEl) manifestEl.setAttribute("href", prevManifestHref);
+      if (themeMeta) themeMeta.setAttribute("content", prevThemeColor);
+    };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;

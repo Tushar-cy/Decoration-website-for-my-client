@@ -1,0 +1,26 @@
+{
+  "name": "Decor Joy Admin",
+  "short_name": "DecorJoyAdmin",
+  "description": "Decor Joy Gurgaon Operations, Real-Time Bookings & Leads Management",
+  "start_url": "/admin",
+  "scope": "/admin",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#172019",
+  "background_color": "#172019",
+  "icons": [
+    {
+      "src": "/admin-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/admin-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["business", "productivity"]
+}

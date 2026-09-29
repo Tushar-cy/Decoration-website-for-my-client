@@ -6,3 +6,7 @@ logs
 *.log
 dist
 .DS_Store
+test-results/
+playwright-report/
+client/test-results/
+client/playwright-report/
