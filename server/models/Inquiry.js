@@ -24,7 +24,7 @@ const inquirySchema = new mongoose.Schema(
       trim: true,
     },
     eventDate: {
-      type: String,
+      type: Date,
       required: [true, "Event date is required"],
     },
     message: {
@@ -39,7 +39,11 @@ const inquirySchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    autoIndex: process.env.NODE_ENV !== "production",
   }
 );
+
+inquirySchema.index({ status: 1, createdAt: -1 });
+inquirySchema.index({ eventDate: 1 });
 
 module.exports = mongoose.model("Inquiry", inquirySchema);

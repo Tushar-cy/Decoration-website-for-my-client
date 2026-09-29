@@ -21,10 +21,21 @@ const gallerySchema = new mongoose.Schema(
       type: String,
       required: [true, "Image URL is required"],
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    sortOrder: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
+    autoIndex: process.env.NODE_ENV !== "production",
   }
 );
+
+gallerySchema.index({ category: 1, isActive: 1, sortOrder: 1 });
 
 module.exports = mongoose.model("Gallery", gallerySchema);

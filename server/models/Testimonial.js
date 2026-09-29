@@ -27,10 +27,21 @@ const testimonialSchema = new mongoose.Schema(
       min: 1,
       max: 5,
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    sortOrder: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
+    autoIndex: process.env.NODE_ENV !== "production",
   }
 );
+
+testimonialSchema.index({ isActive: 1, sortOrder: 1, createdAt: -1 });
 
 module.exports = mongoose.model("Testimonial", testimonialSchema);
