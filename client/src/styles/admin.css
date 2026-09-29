@@ -681,3 +681,110 @@
   word-break: break-word;
 }
 
+/* ================= MOBILE BOTTOM NAV & RESPONSIVENESS ================= */
+.admin-bottom-nav {
+  display: none;
+}
+
+.mobile-card-list {
+  display: none;
+}
+
+.desktop-only-table {
+  display: table;
+}
+
+.nav-badge-pill {
+  background-color: #ef4444;
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 10px;
+  line-height: 1;
+}
+
+@media (max-width: 768px) {
+  .admin-sidebar {
+    display: none;
+  }
+
+  .admin-content-body {
+    padding: 16px 12px 80px; /* Space for bottom nav */
+  }
+
+  .desktop-only-table {
+    display: none;
+  }
+
+  .mobile-card-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .admin-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: #ffffff;
+    border-top: 1px solid #e2e8f0;
+    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.05);
+    z-index: 2500;
+    justify-content: space-around;
+    align-items: center;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .admin-bottom-nav a,
+  .admin-bottom-nav button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    color: #64748b;
+    text-decoration: none;
+    font-size: 0.72rem;
+    font-weight: 600;
+    min-width: 44px;
+    min-height: 44px;
+    transition: color 0.15s ease;
+  }
+
+  .admin-bottom-nav a.active {
+    color: #b88932;
+  }
+}
+
+/* Print Friendly Job Sheet Styles */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .job-sheet-printable,
+  .job-sheet-printable * {
+    visibility: visible;
+  }
+
+  .job-sheet-printable {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
+
+

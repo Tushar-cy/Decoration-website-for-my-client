@@ -464,4 +464,65 @@ export const assignAdminSubmission = (id, assignedTo) =>
 export const convertAdminSubmission = (id, orderId) =>
   API.post(`/admin/submissions/${id}/convert`, { orderId });
 
+// ================= ADMIN V2 EXTENDED API =================
+
+// Dashboard
+export const getAdminDashboardStats = () => API.get("/admin/dashboard");
+
+// Orders
+export const getAdminOrders = (params) => API.get("/admin/orders", { params });
+export const getAdminOrder = (id) => API.get(`/admin/orders/${id}`);
+export const updateAdminOrderStatus = (id, status) => API.patch(`/admin/orders/${id}/status`, { status });
+export const updateAdminOrderDetails = (id, data) => API.patch(`/admin/orders/${id}`, data);
+export const refundAdminOrder = (id, data) => API.post(`/admin/orders/${id}/refund`, data);
+
+// Products
+export const getAdminProducts = (params) => API.get("/admin/products", { params });
+export const getAdminProduct = (id) => API.get(`/admin/products/${id}`);
+export const createAdminProduct = (data) => API.post("/admin/products", data);
+export const updateAdminProduct = (id, data) => API.put(`/admin/products/${id}`, data);
+export const deleteAdminProduct = (id) => API.delete(`/admin/products/${id}`);
+export const restoreAdminProduct = (id) => API.post(`/admin/products/${id}/restore`);
+export const duplicateAdminProduct = (id) => API.post(`/admin/products/${id}/duplicate`);
+export const bulkUpdateProductStatus = (ids, isActive) => API.patch("/admin/products/bulk-status", { ids, isActive });
+export const getUploadSignature = (folder) => API.post("/admin/uploads/signature", { folder });
+
+// Categories & AddOns
+export const getPublicCategories = () => API.get("/categories");
+export const getPublicAddOns = () => API.get("/addons");
+export const createAdminCategory = (data) => API.post("/admin/categories", data);
+export const updateAdminCategory = (id, data) => API.put(`/admin/categories/${id}`, data);
+export const deleteAdminCategory = (id) => API.delete(`/admin/categories/${id}`);
+export const restoreAdminCategory = (id) => API.post(`/admin/categories/${id}/restore`);
+
+export const createAdminAddOn = (data) => API.post("/admin/addons", data);
+export const updateAdminAddOn = (id, data) => API.put(`/admin/addons/${id}`, data);
+export const deleteAdminAddOn = (id) => API.delete(`/admin/addons/${id}`);
+export const restoreAdminAddOn = (id) => API.post(`/admin/addons/${id}/restore`);
+
+// Coupons
+export const getAdminCoupons = (params) => API.get("/admin/coupons", { params });
+export const createAdminCoupon = (data) => API.post("/admin/coupons", data);
+export const updateAdminCoupon = (id, data) => API.put(`/admin/coupons/${id}`, data);
+export const deleteAdminCoupon = (id) => API.delete(`/admin/coupons/${id}`);
+
+// Settings
+export const getAdminSettings = () => API.get("/admin/settings");
+export const updateAdminSettings = (data) => API.patch("/admin/settings", data);
+export const getPublicSettings = () => API.get("/settings/public");
+
+// Users (Owner Only)
+export const getAdminUsers = () => API.get("/admin/users");
+export const inviteAdminUser = (data) => API.post("/admin/users/invite", data);
+export const toggleAdminUserStatus = (id, isActive) => API.patch(`/admin/users/${id}/status`, { isActive });
+export const resetAdminUserPassword = (id, newPassword) => API.post(`/admin/users/${id}/reset-password`, { newPassword });
+
+// Audit Logs
+export const getAdminAuditLogs = (params) => API.get("/admin/audit-logs", { params });
+
+// Availability Management
+export const getAdminAvailabilityMonth = (params) => API.get("/admin/availability/month", { params });
+export const toggleAdminBlockDate = (date) => API.post("/admin/availability/toggle-block", { date });
+export const updateAdminSlotCapacity = (slotKey, capacityPerDay) => API.patch("/admin/availability/slot-capacity", { slotKey, capacityPerDay });
+
 export default API;

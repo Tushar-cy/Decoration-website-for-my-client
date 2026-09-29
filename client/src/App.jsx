@@ -16,16 +16,39 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import PlanMyEvent from "./pages/PlanMyEvent";
 
-// Admin Portal Pages
-import AdminLogin from "./admin/AdminLogin";
-import AdminLayout from "./admin/AdminLayout";
-import Dashboard from "./admin/Dashboard";
-import ServicesManager from "./admin/ServicesManager";
-import GalleryManager from "./admin/GalleryManager";
-import InquiryManager from "./admin/InquiryManager";
-import TestimonialManager from "./admin/TestimonialManager";
-import FormBuilder from "./admin/FormBuilder";
-import SubmissionsManager from "./admin/SubmissionsManager";
+// Admin Portal Pages (Code-split with React.lazy so customers NEVER download admin code)
+const AdminLogin = React.lazy(() => import("./admin/AdminLogin"));
+const AdminLayout = React.lazy(() => import("./admin/AdminLayout"));
+const Dashboard = React.lazy(() => import("./admin/Dashboard"));
+const OrdersManager = React.lazy(() => import("./admin/OrdersManager"));
+const ProductsManager = React.lazy(() => import("./admin/ProductsManager"));
+const CategoriesManager = React.lazy(() => import("./admin/CategoriesManager"));
+const AvailabilityManager = React.lazy(() => import("./admin/AvailabilityManager"));
+const FormBuilder = React.lazy(() => import("./admin/FormBuilder"));
+const SubmissionsManager = React.lazy(() => import("./admin/SubmissionsManager"));
+const GalleryManager = React.lazy(() => import("./admin/GalleryManager"));
+const TestimonialManager = React.lazy(() => import("./admin/TestimonialManager"));
+const SettingsManager = React.lazy(() => import("./admin/SettingsManager"));
+const UsersManager = React.lazy(() => import("./admin/UsersManager"));
+const AuditLogManager = React.lazy(() => import("./admin/AuditLogManager"));
+
+function AdminLoading() {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "100vh",
+        backgroundColor: "#f8f9fa",
+        color: "#64748b",
+        fontFamily: "inherit",
+      }}
+    >
+      <span>Loading Admin Module...</span>
+    </div>
+  );
+}
 
 // Helper component to reset scroll position on route change
 function ScrollToTop() {
@@ -71,19 +94,38 @@ function App() {
           <Route path="contact" element={<Contact />} />
         </Route>
 
-        {/* Admin Login Route */}
-        <Route path="/admin/login" element={<AdminLogin />} />
+        {/* Code-Split Admin Portal Routes */}
+        <Route
+          path="/admin/login"
+          element={
+            <React.Suspense fallback={<AdminLoading />}>
+              <AdminLogin />
+            </React.Suspense>
+          }
+        />
 
-        {/* Protected Admin Portal Routes */}
-        <Route path="/admin" element={<AdminLayout />}>
+        <Route
+          path="/admin"
+          element={
+            <React.Suspense fallback={<AdminLoading />}>
+              <AdminLayout />
+            </React.Suspense>
+          }
+        >
           <Route index element={<Dashboard />} />
           <Route path="dashboard" element={<Dashboard />} />
-          <Route path="submissions" element={<SubmissionsManager />} />
+          <Route path="orders" element={<OrdersManager />} />
+          <Route path="products" element={<ProductsManager />} />
+          <Route path="categories" element={<CategoriesManager />} />
+          <Route path="coupons" element={<CategoriesManager />} />
+          <Route path="availability" element={<AvailabilityManager />} />
           <Route path="forms" element={<FormBuilder />} />
-          <Route path="services" element={<ServicesManager />} />
+          <Route path="submissions" element={<SubmissionsManager />} />
           <Route path="gallery" element={<GalleryManager />} />
-          <Route path="inquiries" element={<InquiryManager />} />
           <Route path="testimonials" element={<TestimonialManager />} />
+          <Route path="settings" element={<SettingsManager />} />
+          <Route path="users" element={<UsersManager />} />
+          <Route path="audit-logs" element={<AuditLogManager />} />
         </Route>
 
         {/* 404 Fallback Route */}

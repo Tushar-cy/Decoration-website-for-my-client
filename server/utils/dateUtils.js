@@ -43,7 +43,7 @@ function parseISTMidnight(dateInput) {
 /**
  * Formats a Date object to "YYYY-MM-DD" string in IST.
  */
-function formatISTDate(date) {
+function formatISTDate(date = new Date()) {
   if (!date) return "";
   const d = new Date(date);
   if (isNaN(d.getTime())) return "";
@@ -79,6 +79,7 @@ module.exports = {
   IST_OFFSET_MS,
   parseISTMidnight,
   formatISTDate,
+  getISTDateString: formatISTDate,
   isSameISTDate,
   getISTDateTime,
 };

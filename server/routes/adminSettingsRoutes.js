@@ -8,11 +8,12 @@ const {
 const router = express.Router();
 
 router.use(protect);
+router.use(authorize("owner"));
 
-// GET /api/admin/settings
+// GET /api/admin/settings (owner only)
 router.get("/", getSettings);
 
 // PATCH /api/admin/settings (owner only)
-router.patch("/", authorize("owner"), updateSettings);
+router.patch("/", updateSettings);
 
 module.exports = router;

@@ -117,15 +117,26 @@ app.use("/api/quotes", require("./routes/quoteRoutes"));
 app.use("/api/orders", require("./routes/orderRoutes"));
 app.use("/api/payments", require("./routes/paymentRoutes"));
 
+// Products, Categories & AddOns Routes
+app.use("/api/products", require("./routes/productRoutes"));
+app.get("/api/categories", require("./controllers/productController").getPublicCategories);
+app.get("/api/addons", require("./controllers/productController").getPublicAddOns);
+app.use("/api/settings", require("./routes/publicSettingsRoutes"));
+
 // Schema-Driven Purpose Forms Routes
 app.use("/api/forms", require("./routes/purposeFormRoutes"));
 
 // Admin Management Routes
+app.use("/api/admin/dashboard", require("./routes/adminDashboardRoutes"));
 app.use("/api/admin/orders", require("./routes/adminOrderRoutes"));
+app.use("/api/admin", require("./routes/adminProductRoutes"));
 app.use("/api/admin/coupons", require("./routes/adminCouponRoutes"));
 app.use("/api/admin/settings", require("./routes/adminSettingsRoutes"));
 app.use("/api/admin/forms", require("./routes/adminFormRoutes"));
 app.use("/api/admin/submissions", require("./routes/adminSubmissionRoutes"));
+app.use("/api/admin/users", require("./routes/adminUserRoutes"));
+app.use("/api/admin/audit-logs", require("./routes/adminAuditRoutes"));
+app.use("/api/admin/availability", require("./routes/adminAvailabilityRoutes"));
 
 // Root Info Route
 app.get("/", (req, res) => {
