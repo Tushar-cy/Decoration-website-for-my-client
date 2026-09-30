@@ -24,8 +24,15 @@ router.get("/public", publicCache(60, 600), async (req, res, next) => {
             phone: settings.business?.phone || "+91 7015767715",
             whatsapp: settings.business?.whatsapp || "+91 7015767715",
             email: settings.business?.email || "decorjoygurgaon@gmail.com",
-            address: settings.business?.address || "Sector 57, Gurugram, Haryana",
-            geo: settings.business?.geo || { lat: 28.4239, lng: 77.0863 },
+            address: settings.business?.address || "166GF Sector 57 Gurugram, Haryana 122003",
+            geo: settings.business?.geo || { lat: 28.435, lng: 77.086 },
+            openingHours: settings.business?.openingHours || "Mo-Su 08:00-22:00",
+            googleReviewUrl: settings.business?.googleReviewUrl || "https://g.page/r/decorjoygurgaon/review",
+            sameAs: [
+              settings.socials?.instagram,
+              settings.socials?.facebook,
+              settings.socials?.youtube,
+            ].filter(Boolean),
           },
           slots: (settings.slots || []).map((s) => ({
             key: s.key,

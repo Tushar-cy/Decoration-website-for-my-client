@@ -77,12 +77,22 @@ const settingsSchema = new mongoose.Schema(
       },
       address: {
         type: String,
-        default: "166GF, Sector 57, Housing Board Colony, Gurugram, Haryana",
+        default: "166GF Sector 57 Gurugram, Haryana 122003",
         trim: true,
       },
       geo: {
         lat: { type: Number, default: 28.435 },
         lng: { type: Number, default: 77.086 },
+      },
+      openingHours: {
+        type: String,
+        default: "Mo-Su 08:00-22:00",
+        trim: true,
+      },
+      googleReviewUrl: {
+        type: String,
+        default: "https://g.page/r/decorjoygurgaon/review",
+        trim: true,
       },
     },
     slots: {

@@ -5,6 +5,8 @@ import WhatsAppButton from "../components/WhatsAppButton";
 import { LoadingSkeleton } from "../components/common/LoadingSkeleton";
 import { ErrorState } from "../components/common/ErrorState";
 import { getGallery } from "../services/api";
+import SEO from "../components/SEO";
+import { buildBreadcrumbJsonLd } from "../utils/jsonLd";
 import "../styles/gallery.css";
 
 const GALLERY_CATEGORIES = [
@@ -38,9 +40,19 @@ function Gallery() {
   });
 
   const items = galleryItems || [];
+  const breadcrumbSchema = buildBreadcrumbJsonLd([
+    { name: "Home", url: "/" },
+    { name: "Gallery", url: "/gallery" },
+  ]);
 
   return (
     <div className="gallery-page">
+      <SEO
+        title="Event Decoration Photo Gallery | Decor Joy Gurgaon"
+        description="Explore our authentic setup photos across Gurgaon: balloon arches, neon rings, birthday backdrops, anniversary cabanas, and corporate celebrations."
+        canonical="/gallery"
+        jsonLd={breadcrumbSchema}
+      />
       <section className="section">
         <div className="container">
           <div className="section-header">

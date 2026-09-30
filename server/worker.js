@@ -13,6 +13,83 @@ const FormSchema = require("./models/FormSchema");
 const cache = require("./utils/cache");
 const { releaseSlotAtomic } = require("./services/slotService");
 const { recordAudit } = require("./services/auditService");
+const whatsappService = require("./services/whatsappService");
+
+/**
+ * Sweeps for orders whose event slot ended >= 2 hours ago and sends
+ * Google review requests to customers via WhatsApp.
+ */
+async function sendReviewRequestsSweep() {
+  try {
+    const settings = await Settings.getSettings();
+    const googleReviewUrl =
+      settings.business?.googleReviewUrl || "https://g.page/r/decorjoygurgaon/review";
+    const slotConfigs = settings.slots || [];
+    const slotMap = new Map(slotConfigs.map((s) => [s.key, s.endTime]));
+
+    // Find orders eligible for review trigger:
+    // Event date is today or past (within last 7 days), status confirmed/completed/scheduled, reviewPromptSentAt is null
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const now = new Date();
+
+    const orders = await Order.find({
+      status: { $in: ["confirmed", "completed", "scheduled"] },
+      reviewPromptSentAt: null,
+      "event.date": { $gte: sevenDaysAgo, $lte: now },
+    }).lean();
+
+    let sentCount = 0;
+    for (const order of orders) {
+      const slotKey = order.event?.slotKey;
+      const rawEndTime = slotMap.get(slotKey) || "18:00";
+      const [endH, endM] = rawEndTime.split(":").map(Number);
+
+      // Event date converted to IST slot end timestamp
+      const eventDate = new Date(order.event.date);
+      // IST is UTC + 5:30. To convert IST hour:min to UTC:
+      const slotEndUtc = new Date(
+        Date.UTC(
+          eventDate.getUTCFullYear(),
+          eventDate.getUTCMonth(),
+          eventDate.getUTCDate(),
+          endH - 5,
+          endM - 30,
+          0,
+          0
+        )
+      );
+
+      // Trigger condition: 2 hours after slot ended
+      const triggerTime = new Date(slotEndUtc.getTime() + 2 * 60 * 60 * 1000);
+
+      if (now >= triggerTime) {
+        const updated = await Order.findOneAndUpdate(
+          { _id: order._id, reviewPromptSentAt: null },
+          { $set: { reviewPromptSentAt: new Date() } }
+        );
+
+        if (updated) {
+          await whatsappService.sendReviewRequest({
+            customerPhone: order.customerSnapshot?.phone,
+            customerName: order.customerSnapshot?.name,
+            orderNumber: order.orderNumber,
+            googleReviewUrl,
+          });
+          sentCount++;
+          logger.info(
+            { orderNumber: order.orderNumber, phone: order.customerSnapshot?.phone },
+            "Sent automated Google review request 2h post-slot"
+          );
+        }
+      }
+    }
+
+    return { sentCount };
+  } catch (err) {
+    logger.warn({ err: err.message }, "Error during sendReviewRequestsSweep");
+    return { sentCount: 0 };
+  }
+}
 
 /**
  * Sweeps the database for pending unpaid orders older than 15 minutes,
@@ -228,6 +305,7 @@ async function processNotificationJob(job) {
 let notificationWorker = null;
 let sweepInterval = null;
 let warmupInterval = null;
+let reviewInterval = null;
 
 async function startWorker() {
   logger.info("Starting Decor Joy background worker (BullMQ + Slot Expiry + Cache Warmup)...");
@@ -281,10 +359,19 @@ async function startWorker() {
     } catch (e) {}
   }, 10 * 60 * 1000);
 
+  // 3. Local Google review collection sweep: every 15 minutes
+  await sendReviewRequestsSweep();
+  reviewInterval = setInterval(async () => {
+    try {
+      await sendReviewRequestsSweep();
+    } catch (e) {}
+  }, 15 * 60 * 1000);
+
   const shutdown = async (signal) => {
     logger.info(`Worker received ${signal}. Shutting down cleanly...`);
     if (sweepInterval) clearInterval(sweepInterval);
     if (warmupInterval) clearInterval(warmupInterval);
+    if (reviewInterval) clearInterval(reviewInterval);
     if (notificationWorker) await notificationWorker.close();
     await redisConnection.quit();
     await closeRedis();
@@ -311,4 +398,5 @@ module.exports = {
   cancelExpiredOrders,
   warmUpCache,
   processNotificationJob,
+  sendReviewRequestsSweep,
 };

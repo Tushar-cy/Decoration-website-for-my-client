@@ -8,13 +8,22 @@ import { useShop } from "../context/ShopContext";
 import { usePublicSettings } from "../context/SettingsContext";
 import { LoadingSkeleton } from "../components/common/LoadingSkeleton";
 import { ErrorState } from "../components/common/ErrorState";
+import SEO from "../components/SEO";
+import { buildProductJsonLd, buildBreadcrumbJsonLd } from "../utils/jsonLd";
+import { trackViewItem } from "../utils/analytics";
 import "../styles/productDetail.css";
 
 export default function ProductDetail() {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const { addToCart, toggleWishlist, isInWishlist } = useShop();
-  const { cleanWhatsapp, serviceablePincodes } = usePublicSettings();
+  const { cleanWhatsapp, serviceablePincodes, business } = usePublicSettings();
+
+  // Track product view in analytics
+  useEffect(() => {
+    if (product) {
+      trackViewItem(product);
+    }
+  }, [product]);
 
   // 1. Fetch Product Data
   const {
@@ -204,8 +213,31 @@ export default function ProductDetail() {
   const waMsg = `Hi Decor Joy Gurgaon! I'm interested in "${product.title}" (${formatPaise(livePricePaise)}) for date ${selectedDate}. Is this available?`;
   const waUrl = `https://wa.me/${cleanWhatsapp}?text=${encodeURIComponent(waMsg)}`;
 
+  const productSchema = buildProductJsonLd(product, business);
+  const breadcrumbSchema = buildBreadcrumbJsonLd([
+    { name: "Home", url: "/" },
+    { name: "Shop", url: "/shop" },
+    { name: product.title, url: `/p/${product.slug}` },
+  ]);
+
   return (
     <div className="product-page">
+      <SEO
+        title={`${product.title} | Decor Joy Gurgaon`}
+        description={
+          product.description
+            ? product.description.slice(0, 160)
+            : `Book ${product.title} in Gurgaon. Professional balloon decoration, themed backdrops, and same-day event setups starting ₹${((product.basePricePaise || 0) / 100).toFixed(0)}.`
+        }
+        canonical={`/p/${product.slug}`}
+        ogType="product"
+        ogImage={activeImg.url}
+        ogPrice={{
+          amount: ((product.basePricePaise || 0) / 100).toFixed(2),
+          currency: "INR",
+        }}
+        jsonLd={[productSchema, breadcrumbSchema]}
+      />
       {/* Breadcrumb */}
       <nav className="container product-breadcrumb" aria-label="Breadcrumb">
         <Link to="/">Home</Link>

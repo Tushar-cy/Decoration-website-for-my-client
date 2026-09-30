@@ -9,6 +9,8 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const mongoSanitize = require("express-mongo-sanitize");
 const hpp = require("hpp");
+const path = require("path");
+const fs = require("fs");
 const mongoose = require("mongoose");
 
 const { env } = require("./config/env");
@@ -148,7 +150,8 @@ app.get("/api/settings/flags", async (req, res) => {
   }
 });
 
-// 12. Application API Routes
+// 12. Application API Routes & SEO Routes
+app.use("/", require("./routes/seoRoutes"));
 
 // Private, no-store transactional & auth routes
 app.use("/api/auth", noStoreCache(), require("./routes/authRoutes"));
@@ -189,26 +192,62 @@ app.use("/api/admin/availability", require("./routes/adminAvailabilityRoutes"));
 app.use("/api/admin/gallery", require("./routes/adminGalleryRoutes"));
 app.use("/api/admin/testimonials", require("./routes/adminTestimonialRoutes"));
 
-// Root Info Route
-app.get("/", (req, res) => {
-  res.json({
-    name: "Decor Joy Gurgaon API",
-    status: "Active",
-    since: 2021,
-    location: "Sector 57, Gurugram, Haryana",
-    endpoints: [
-      "/healthz",
-      "/readyz",
-      "/api/auth",
-      "/api/services",
-      "/api/gallery",
-      "/api/inquiries",
-      "/api/testimonials",
-    ],
-  });
-});
+// 13. Static Asset & Prerendered HTML Serving (for SEO and web traffic)
+const clientDistPath = path.resolve(__dirname, "../client/dist");
+if (fs.existsSync(clientDistPath)) {
+  // First priority: Serve prerendered HTML files for public routes so crawlers receive 200 OK directly
+  app.get("*", (req, res, next) => {
+    // Let API routes and health endpoints fall through to router
+    if (
+      req.path.startsWith("/api") ||
+      req.path.startsWith("/healthz") ||
+      req.path.startsWith("/readyz") ||
+      req.path === "/sitemap.xml" ||
+      req.path === "/robots.txt"
+    ) {
+      return next();
+    }
 
-// 404 Handler
+    const cleanPath = req.path.replace(/^\/|\/$/g, "");
+    const candidateFile = cleanPath
+      ? path.resolve(clientDistPath, cleanPath, "index.html")
+      : path.resolve(clientDistPath, "index.html");
+
+    if (fs.existsSync(candidateFile)) {
+      return res.sendFile(candidateFile);
+    }
+
+    next();
+  });
+
+  // Second priority: Serve static assets (JS, CSS, images, manifests)
+  app.use(
+    express.static(clientDistPath, {
+      index: false,
+      redirect: false,
+      maxAge: process.env.NODE_ENV === "production" ? "1d" : 0,
+    })
+  );
+
+  // Fallback to primary SPA index.html for unmatched client-side routes
+  app.get("*", (req, res, next) => {
+    if (req.path.startsWith("/api")) return next();
+    return res.sendFile(path.resolve(clientDistPath, "index.html"));
+  });
+} else {
+  // Headless API mode: Root Info Route
+  app.get("/", (req, res) => {
+    res.json({
+      name: "Decor Joy Gurgaon API",
+      status: "Active",
+      since: 2021,
+      location: "Sector 57, Gurugram, Haryana",
+      endpoints: ["/healthz", "/readyz", "/sitemap.xml", "/robots.txt", "/api/products"],
+    });
+  });
+}
+
+// 404 Handler for unmatched API endpoints
 app.all("*", (req, res, next) => {
   next(new AppError(`Endpoint '${req.originalUrl}' not found on this server`, 404));
 });

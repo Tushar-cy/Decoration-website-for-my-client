@@ -5,6 +5,8 @@ import { usePublicSettings } from "../context/SettingsContext";
 import { createOrder, verifyPayment } from "../services/api";
 import { QuoteSummary } from "../components/cart/QuoteSummary";
 import { formatPaise } from "../utils/money";
+import { trackBeginCheckout, trackPurchase } from "../utils/analytics";
+import SEO from "../components/SEO";
 import "../styles/checkoutPage.css";
 
 export default function CheckoutPage() {
@@ -41,6 +43,13 @@ export default function CheckoutPage() {
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
+
+  // Track checkout initiation
+  React.useEffect(() => {
+    if (cart.length > 0) {
+      trackBeginCheckout(cart, pricing?.totalPaise || 0);
+    }
+  }, []);
 
   // Dynamically load Razorpay SDK if not already in window
   const loadRazorpayScript = () => {
@@ -147,6 +156,11 @@ export default function CheckoutPage() {
             } catch (vErr) {
               console.error("Payment verification warning:", vErr);
             }
+            trackPurchase({
+              orderNumber: orderData.orderNumber,
+              pricing: { totalPaise: orderData.amount || pricing?.totalPaise },
+              items: cart,
+            });
             clearCart();
             navigate(`/order/${orderData.orderNumber}`);
           },
@@ -168,6 +182,11 @@ export default function CheckoutPage() {
         rzp.open();
       } else {
         // Pay-on-confirmation path
+        trackPurchase({
+          orderNumber: orderData.orderNumber,
+          pricing: { totalPaise: pricing?.totalPaise },
+          items: cart,
+        });
         showToast("Order placed successfully! Pay on confirmation 🎉");
         clearCart();
         navigate(`/order/${orderData.orderNumber}`);
@@ -198,6 +217,11 @@ export default function CheckoutPage() {
 
   return (
     <div className="checkout-page">
+      <SEO
+        title="Checkout & Slot Booking | Decor Joy Gurgaon"
+        canonical="/checkout"
+        noindex={true}
+      />
       <div className="container">
         <div className="checkout-header">
           <Link to="/cart" className="checkout-back-link">

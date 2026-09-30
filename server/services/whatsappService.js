@@ -150,10 +150,32 @@ async function notifyRazorpayFallback() {
   await sendWhatsAppText(ownerNum, text);
 }
 
+/**
+ * Send customer Google Business review request 2 hours after their event slot ends.
+ */
+async function sendReviewRequest({ customerPhone, customerName, orderNumber, googleReviewUrl }) {
+  if (!customerPhone) return false;
+  const rawNum = customerPhone.replace(/\D/g, "");
+  const formattedNum = rawNum.startsWith("91") ? rawNum : `91${rawNum}`;
+  const reviewUrl = googleReviewUrl || "https://g.page/r/decorjoygurgaon/review";
+
+  const text =
+    `Hi ${customerName || "there"}! 🎉\n\n` +
+    `Thank you for choosing *Decor Joy Gurgaon* for your celebration (Order #${orderNumber})! ` +
+    `We hope our decoration added joy and magic to your event.\n\n` +
+    `Could you please take 30 seconds to leave us a quick review on Google? It really helps our local Gurgaon team grow:\n` +
+    `👉 ${reviewUrl}\n\n` +
+    `Warm regards,\n` +
+    `Decor Joy Gurgaon Team ✨`;
+
+  return sendWhatsAppText(formattedNum, text);
+}
+
 module.exports = {
   sendWhatsAppText,
   notifyNewSubmission,
   notifyNewOrder,
   notifyPaymentConfirmed,
   notifyRazorpayFallback,
+  sendReviewRequest,
 };

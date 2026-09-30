@@ -4,10 +4,17 @@ import WhatsAppButton from "../components/WhatsAppButton";
 import PurposeForm from "../components/PurposeForm";
 import { usePublicSettings } from "../context/SettingsContext";
 import { createInquiry } from "../services/api";
+import SEO from "../components/SEO";
+import { buildLocalBusinessJsonLd, buildBreadcrumbJsonLd } from "../utils/jsonLd";
 import "../styles/contact.css";
 
 function Contact() {
-  const { phone, cleanPhone, whatsapp } = usePublicSettings();
+  const { phone, cleanPhone, whatsapp, business } = usePublicSettings();
+  const localBusinessSchema = buildLocalBusinessJsonLd(business);
+  const breadcrumbSchema = buildBreadcrumbJsonLd([
+    { name: "Home", url: "/" },
+    { name: "Contact & Booking", url: "/contact" },
+  ]);
   const routerLocation = useLocation();
   const searchParams = new URLSearchParams(routerLocation.search);
   const prefilledService = searchParams.get("service") || "";
@@ -103,6 +110,12 @@ function Contact() {
 
   return (
     <div className="contact-page">
+      <SEO
+        title="Contact & Book Event Decoration in Gurgaon | Decor Joy"
+        description="Book your balloon decoration or celebration setup in Gurgaon. Studio at 166GF Sector 57. WhatsApp +91 7015767715 or submit an inquiry for rapid response."
+        canonical="/contact"
+        jsonLd={[localBusinessSchema, breadcrumbSchema]}
+      />
       <section className="section">
         <div className="container">
           <div className="section-header">

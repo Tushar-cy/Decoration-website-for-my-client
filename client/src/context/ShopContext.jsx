@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getQuote } from "../services/api";
+import { trackAddToCart } from "../utils/analytics";
 
 const ShopContext = createContext(null);
 
@@ -181,6 +182,7 @@ export function ShopProvider({ children }) {
       });
 
       showToast(`Added "${title}" to your celebration bag!`);
+      trackAddToCart({ _id: productId, title, basePricePaise: 0 }, quantity);
       setIsCartOpen(true);
     },
     [showToast]

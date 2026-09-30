@@ -9,6 +9,9 @@ import WhatsAppButton from "../components/WhatsAppButton";
 import { LoadingSkeleton } from "../components/common/LoadingSkeleton";
 import { ErrorState } from "../components/common/ErrorState";
 import { getPublicProducts, getGallery, getTestimonials } from "../services/api";
+import { usePublicSettings } from "../context/SettingsContext";
+import SEO from "../components/SEO";
+import { buildLocalBusinessJsonLd } from "../utils/jsonLd";
 import "../styles/services.css";
 import "../styles/gallery.css";
 
@@ -68,9 +71,17 @@ function Home() {
   const services = productsData || [];
   const gallery = galleryData || [];
   const testimonials = testimonialsData || [];
+  const { business } = usePublicSettings();
+  const localBusinessSchema = buildLocalBusinessJsonLd(business);
 
   return (
     <div className="home-page">
+      <SEO
+        title="Decor Joy Gurgaon | Best Balloon & Event Decoration Services in Gurugram"
+        description="Gurgaon's top event decoration service operating since 2021. Same-day balloon decoration, birthdays, romantic cabanas, baby showers across DLF, Golf Course Road, Cyber City, and Sohna Road."
+        canonical="/"
+        jsonLd={localBusinessSchema}
+      />
       {/* 1. Hero Section */}
       <Hero />
 

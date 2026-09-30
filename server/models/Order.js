@@ -213,6 +213,11 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: "web",
     },
+    reviewPromptSentAt: {
+      type: Date,
+      default: null,
+      index: true,
+    },
   },
   {
     timestamps: true,
@@ -223,6 +228,7 @@ const orderSchema = new mongoose.Schema(
 // Indexes
 orderSchema.index({ status: 1, createdAt: -1 });
 orderSchema.index({ "event.date": 1 });
+orderSchema.index({ status: 1, "event.date": 1, reviewPromptSentAt: 1 });
 
 // Pre-validate hook to assign orderNumber atomically if not provided
 orderSchema.pre("validate", async function () {

@@ -13,6 +13,7 @@ import PwaUpdatePrompt from "./components/pwa/PwaUpdatePrompt";
 import { ShopProvider } from "./context/ShopContext";
 import { SettingsProvider } from "./context/SettingsContext";
 import MaintenanceBanner from "./components/MaintenanceBanner";
+import CookieConsentBanner from "./components/CookieConsentBanner";
 
 // Storefront Pages (Route-level code splitting with React.lazy)
 const Home = React.lazy(() => import("./pages/Home"));
@@ -25,6 +26,7 @@ const Gallery = React.lazy(() => import("./pages/Gallery"));
 const About = React.lazy(() => import("./pages/About"));
 const Contact = React.lazy(() => import("./pages/Contact"));
 const PlanMyEvent = React.lazy(() => import("./pages/PlanMyEvent"));
+const LocalityPage = React.lazy(() => import("./pages/LocalityPage"));
 
 // Admin Portal Pages (Code-split with React.lazy so customers NEVER download admin code)
 const AdminLogin = React.lazy(() => import("./admin/AdminLogin"));
@@ -124,6 +126,8 @@ function CustomerLayout() {
       <Toast />
       {/* PWA Update Banner */}
       <PwaUpdatePrompt />
+      {/* Cookie Consent Banner */}
+      <CookieConsentBanner />
     </div>
   );
 }
@@ -148,6 +152,7 @@ function App() {
               <Route path="gallery" element={<Gallery />} />
               <Route path="about" element={<About />} />
               <Route path="contact" element={<Contact />} />
+              <Route path="locations/:slug" element={<LocalityPage />} />
             </Route>
 
             {/* Code-Split Admin Portal Routes */}

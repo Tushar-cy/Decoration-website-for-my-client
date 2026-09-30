@@ -21,6 +21,16 @@
   - Immutable `answersSnapshot` retaining historical question labels across schema version edits.
   - Automated WhatsApp link generator pre-filling celebration details directly into customer chat.
 
+- **SEO & Local Search Engine Optimization (Gurgaon)**:
+  - React 19 native per-route document metadata (`<title>`, `<meta>`, `<link rel="canonical">`, Open Graph, Twitter cards, product price tags).
+  - Dynamic Schema.org structured data (JSON-LD): `LocalBusiness` (dynamic from settings), `Product` + `Offer`, `BreadcrumbList`, and `FAQPage`.
+  - Dynamic DB-backed `GET /sitemap.xml` and `GET /robots.txt` with Redis caching.
+  - Build-time static prerendering via Vite SSR (`entry-server.jsx` + `scripts/prerender.js`) producing crawler-ready static HTML with real `<h1>` elements.
+  - 5 High-intent Gurgaon locality landing pages (`/locations/dlf-phase-5`, `golf-course-road`, `cyber-city`, `sohna-road`, `sector-57-gurugram`) with localized copy, society names, real testimonials, and local FAQs.
+  - Automated WhatsApp review collection trigger in background worker dispatched 2 hours after event slot ends.
+  - Consent-first tracking supporting GA4 & Meta Pixel with Do Not Track (DNT) detection and GTM e-commerce dataLayer events.
+  - Full architectural documentation available in [docs/SEO.md](docs/SEO.md).
+
 - **Admin Form Builder & Submissions Inbox**:
   - **Form Builder**: Visual field editor with drag-and-drop reordering, type configuration, options editor, conditional `showIf` logic, live interactive preview, and automatic version bumping on save.
   - **Submissions Inbox**: Filterable by purpose/status/date, search by name/phone, 5-stage status pipeline (`new`, `contacted`, `quoted`, `converted`, `lost`), internal notes history, staff assignment, WhatsApp click-to-chat, "Convert to Order" linking, and CSV export.
@@ -137,6 +147,14 @@ npm run dev       # Starts Vite React on http://localhost:5173
 - **Initial Setup**: Configured via `ADMIN_EMAIL` and `ADMIN_PASSWORD` (minimum 12 characters, never default passwords) in `server/.env`.
 - **Note**: Never commit or share admin credentials. Use the seed script with environment variables set.
 
+
+## 📚 Architecture & Operations Documentation
+
+- [docs/SEO.md](docs/SEO.md): Comprehensive guide to SEO, React 19 document metadata, dynamic JSON-LD schemas, XML sitemap/robots, Vite SSR static prerendering, Gurgaon locality landing pages, and consent-first analytics.
+- [docs/PERF.md](docs/PERF.md): Performance, caching, Redis optimizations, circuit breakers, and load testing guide.
+- [docs/RUNBOOK.md](docs/RUNBOOK.md): Operations runbook, zero-downtime deployments, backup and restore drills, and incident response.
+- [docs/CLIENT_GUIDE.md](docs/CLIENT_GUIDE.md): Store owner manual for orders, slots, discounts, and inventory management.
+- [docs/CLOUDFLARE.md](docs/CLOUDFLARE.md): CDN and WAF security guidelines.
 
 ## 📍 Business Information
 

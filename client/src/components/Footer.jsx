@@ -135,6 +135,18 @@ function Footer() {
             </ul>
           </div>
 
+          {/* Gurgaon Localities */}
+          <div className="footer-col">
+            <h4 className="footer-col-title">Gurgaon Areas</h4>
+            <ul className="footer-links-list">
+              <li><Link to="/locations/dlf-phase-5">DLF Phase 5 Decor</Link></li>
+              <li><Link to="/locations/golf-course-road">Golf Course Road</Link></li>
+              <li><Link to="/locations/cyber-city">Cyber City Office Parties</Link></li>
+              <li><Link to="/locations/sohna-road">Sohna Road Baby Showers</Link></li>
+              <li><Link to="/locations/sector-57-gurugram">Sector 57 Studio HQ</Link></li>
+            </ul>
+          </div>
+
           {/* Contact Details */}
           <div className="footer-col">
             <h4 className="footer-col-title">Visit & Connect</h4>

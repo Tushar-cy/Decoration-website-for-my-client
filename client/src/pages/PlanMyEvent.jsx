@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import PurposeForm from "../components/PurposeForm";
 import { getActivePurposes } from "../services/api";
+import SEO from "../components/SEO";
+import { buildBreadcrumbJsonLd } from "../utils/jsonLd";
 
 const PURPOSE_ICONS = {
   birthday: "🎂",
@@ -56,8 +58,19 @@ function PlanMyEvent() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const breadcrumbSchema = buildBreadcrumbJsonLd([
+    { name: "Home", url: "/" },
+    { name: "Plan My Event", url: "/plan-my-event" },
+  ]);
+
   return (
     <div className="plan-event-page" style={{ padding: "40px 16px 80px 16px", backgroundColor: "#fafaf8" }}>
+      <SEO
+        title="Plan My Event — Custom Celebration Form | Decor Joy Gurgaon"
+        description="Share your event details, theme ideas, and venue location in Gurgaon. Our design stylists will send a customized proposal within 2 hours."
+        canonical="/plan-my-event"
+        jsonLd={breadcrumbSchema}
+      />
       {/* Hero Header */}
       <div style={{ maxWidth: "800px", margin: "0 auto 40px auto", textAlign: "center" }}>
         <span

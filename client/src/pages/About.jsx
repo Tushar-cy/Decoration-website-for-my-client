@@ -2,12 +2,26 @@ import React from "react";
 import { Link } from "react-router-dom";
 import WhatsAppButton from "../components/WhatsAppButton";
 import { usePublicSettings } from "../context/SettingsContext";
+import SEO from "../components/SEO";
+import { buildLocalBusinessJsonLd, buildBreadcrumbJsonLd } from "../utils/jsonLd";
 import "../styles/about.css";
 
 function About() {
-  const { phone, cleanPhone } = usePublicSettings();
+  const { phone, cleanPhone, business } = usePublicSettings();
+  const localBusinessSchema = buildLocalBusinessJsonLd(business);
+  const breadcrumbSchema = buildBreadcrumbJsonLd([
+    { name: "Home", url: "/" },
+    { name: "About Us", url: "/about" },
+  ]);
+
   return (
     <div className="about-page">
+      <SEO
+        title="About Us | Luxury Event & Balloon Decorators in Gurgaon"
+        description="Learn about Decor Joy Gurgaon. Operating from 166GF Sector 57 since 2021, styling 1,500+ birthdays, romantic anniversaries, and luxury celebrations."
+        canonical="/about"
+        jsonLd={[localBusinessSchema, breadcrumbSchema]}
+      />
       <section className="section">
         <div className="container">
           <div className="section-header">

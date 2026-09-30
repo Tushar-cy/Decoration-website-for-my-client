@@ -7,6 +7,8 @@ import { getOptimizedImageUrl, getImageSrcSet } from "../utils/cloudinary";
 import { useShop } from "../context/ShopContext";
 import { LoadingSkeleton } from "../components/common/LoadingSkeleton";
 import { ErrorState } from "../components/common/ErrorState";
+import SEO from "../components/SEO";
+import { buildBreadcrumbJsonLd, buildFaqJsonLd } from "../utils/jsonLd";
 import "../styles/shop.css";
 
 export default function Shop() {
@@ -102,8 +104,37 @@ export default function Shop() {
     setCurrentPage(1);
   };
 
+  const breadcrumbSchema = buildBreadcrumbJsonLd([
+    { name: "Home", url: "/" },
+    { name: "Shop", url: "/shop" },
+  ]);
+
+  const serviceFaqsSchema = buildFaqJsonLd([
+    {
+      question: "How far in advance should I book my decoration setup?",
+      answer:
+        "While we accept same-day bookings up to 3 hours in advance depending on slot availability, we recommend reserving 2 to 3 days prior for customized color themes.",
+    },
+    {
+      question: "What is included in the package price?",
+      answer:
+        "All listed prices include the balloons, metal frame rental, LED fairy lights/neons (if specified), on-site installation by our stylists, and pickup of rental frames.",
+    },
+    {
+      question: "Do you decorate outdoor balconies and terraces?",
+      answer:
+        "Yes, our cabanas and balloon arches include weighted structural stands engineered for windy outdoor terraces and condominium balconies across Gurgaon.",
+    },
+  ]);
+
   return (
     <div className="shop-page">
+      <SEO
+        title="Event Decoration Packages & Balloon Themes | Decor Joy Gurgaon"
+        description="Browse premium event decoration packages in Gurgaon. Birthday balloon arches, romantic cabanas, baby shower setups, and custom celebrations."
+        canonical="/shop"
+        jsonLd={[breadcrumbSchema, serviceFaqsSchema]}
+      />
       {/* Header Banner */}
       <section className="shop-header">
         <div className="container">
