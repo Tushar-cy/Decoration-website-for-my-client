@@ -53,6 +53,16 @@ jobs:
         run: npm audit --omit=dev --audit-level=high
         working-directory: client
 
+      # ── Build Client & Prerender SSR ──────────────────────────────
+      - name: Build client
+        run: npm run build
+        working-directory: client
+        env:
+          VITE_API_URL: ${{ vars.STAGING_API_URL || 'https://api.decorjoygurgaon.com' }}
+          VITE_SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          VITE_RAZORPAY_KEY: ${{ secrets.RAZORPAY_KEY_ID_STAGING }}
+          VITE_SENTRY_RELEASE: ${{ github.sha }}
+
       # ── Unit Tests ─────────────────────────────────────────────────
       - name: Run server unit tests
         run: npm test
@@ -64,16 +74,6 @@ jobs:
           JWT_REFRESH_SECRET: test_refresh_secret_at_least_32_chars_long
           CLIENT_URL: http://localhost:5173
           REDIS_URL: redis://localhost:6379
-
-      # ── Build ──────────────────────────────────────────────────────
-      - name: Build client
-        run: npm run build
-        working-directory: client
-        env:
-          VITE_API_URL: ${{ vars.STAGING_API_URL || 'https://api.decorjoygurgaon.com' }}
-          VITE_SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-          VITE_RAZORPAY_KEY: ${{ secrets.RAZORPAY_KEY_ID_STAGING }}
-          VITE_SENTRY_RELEASE: ${{ github.sha }}
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4

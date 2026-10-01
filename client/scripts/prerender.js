@@ -10,7 +10,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CLIENT_ROOT = path.resolve(__dirname, "..");
@@ -45,8 +45,8 @@ async function prerender() {
     throw new Error(`dist-ssr/entry-server.js not found. Run "vite build --ssr" first.`);
   }
 
-  // Convert Windows path to valid file URL for dynamic import
-  const entryServerUrl = new URL(`file:///${entryServerPath.replace(/\\/g, "/")}`);
+  // Cross-platform file URL conversion for dynamic import (works on Linux and Windows)
+  const entryServerUrl = pathToFileURL(entryServerPath);
   const { render } = await import(entryServerUrl.href);
 
   let successCount = 0;
