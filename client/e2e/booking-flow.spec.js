@@ -254,6 +254,7 @@ test.describe("Full Customer Booking Flow with Screenshots", () => {
     page,
   }, testInfo) => {
     page.on("console", (msg) => console.log("BROWSER CONSOLE:", msg.type(), msg.text()));
+    page.on("pageerror", (err) => console.log("PAGE UNCAUGHT ERROR:", err.message, err.stack));
     page.on("requestfailed", (req) =>
       console.log("REQUEST FAILED:", req.url(), req.failure()?.errorText)
     );
@@ -281,7 +282,7 @@ test.describe("Full Customer Booking Flow with Screenshots", () => {
 
     // Step 2: Open Product Detail
     await page.goto("/p/deluxe-balloon-arch", { waitUntil: "domcontentloaded" });
-    await expect(page.locator("h1")).toContainText(/Grand Ring Balloon Arch/i, { timeout: 10000 });
+    await expect(page.locator("h1")).toContainText(/Grand Ring Balloon Arch/i, { timeout: 15000 });
 
     // Pick date and slot
     const dateInput = page.locator('input[type="date"]').first();

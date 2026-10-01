@@ -17,13 +17,7 @@ export default function ProductDetail() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { cleanWhatsapp, serviceablePincodes, business } = usePublicSettings();
-
-  // Track product view in analytics
-  useEffect(() => {
-    if (product) {
-      trackViewItem(product);
-    }
-  }, [product]);
+  const { addToCart, isInWishlist, toggleWishlist } = useShop();
 
   // 1. Fetch Product Data
   const {
@@ -45,6 +39,13 @@ export default function ProductDetail() {
 
   const product = productData?.product;
   const relatedProducts = productData?.related || [];
+
+  // Track product view in analytics
+  useEffect(() => {
+    if (product) {
+      trackViewItem(product);
+    }
+  }, [product]);
 
   // Active gallery index
   const [activeImageIdx, setActiveImageIdx] = useState(0);

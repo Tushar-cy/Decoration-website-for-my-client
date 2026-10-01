@@ -30,7 +30,7 @@ function PurposeForm({ formKey, onCancel, onSuccess }) {
     setFetchError(null);
     try {
       const res = await getPurposeForm(formKey);
-      const formDoc = res.data?.data?.form || res.data?.form;
+      const formDoc = res.data?.data?.form || res.data?.form || (res.data?.data?.fields ? res.data?.data : null);
       if (!formDoc) {
         throw new Error("Form schema not found");
       }

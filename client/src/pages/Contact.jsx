@@ -129,9 +129,9 @@ function Contact() {
 
           <div className="contact-layout">
             {/* Schema-Driven Purpose Form Card */}
-            <div className="contact-form-card" style={{ padding: "20px 16px" }}>
-              <div style={{ marginBottom: "20px" }}>
-                <span className="section-tagline" style={{ fontSize: "0.8rem" }}>Schema-Driven Booking</span>
+            <div className="contact-form-card">
+              <div style={{ marginBottom: "20px", maxWidth: "100%" }}>
+                <span className="section-tagline" style={{ fontSize: "0.8rem", maxWidth: "100%" }}>Schema-Driven Booking</span>
                 <h2 className="contact-form-title" style={{ fontSize: "1.5rem", marginBottom: "8px" }}>
                   Plan Your Event Setup
                 </h2>
@@ -146,6 +146,7 @@ function Contact() {
                     flexWrap: "wrap",
                     gap: "8px",
                     marginBottom: "20px",
+                    maxWidth: "100%",
                   }}
                 >
                   {[
