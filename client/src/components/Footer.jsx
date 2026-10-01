@@ -185,6 +185,28 @@ function Footer() {
         {/* Footer Bottom Bar */}
         <div className="footer-bottom">
           <p>© {currentYear} Decor Joy Gurgaon. All Rights Reserved. Serving Gurugram since 2021.</p>
+          <div className="footer-dev-credits">
+            <span>Crafted with ❤️ by </span>
+            <a
+              href="https://github.com/Tushar-cy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="footer-dev-link"
+              title="Tushar Chawla GitHub Profile"
+            >
+              Tushar Chawla
+            </a>
+            <span> & </span>
+            <a
+              href="https://github.com/ansh2028"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="footer-dev-link"
+              title="Ansh Bhola GitHub Profile"
+            >
+              Ansh Bhola
+            </a>
+          </div>
           <div>
             <Link to="/admin/login" className="footer-admin-link">
               Admin Portal 🔒

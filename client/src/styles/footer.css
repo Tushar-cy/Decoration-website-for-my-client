@@ -187,6 +187,27 @@
   color: var(--gold);
 }
 
+.footer-dev-credits {
+  color: #a0afa0;
+  font-size: 0.84rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.footer-dev-link {
+  color: var(--gold, #d4af37);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease, text-decoration 0.2s ease;
+}
+
+.footer-dev-link:hover {
+  color: #f39c12;
+  text-decoration: underline;
+}
+
 @media (max-width: 992px) {
   .footer-grid {
     grid-template-columns: 1fr 1fr;
