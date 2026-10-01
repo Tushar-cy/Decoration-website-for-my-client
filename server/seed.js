@@ -253,8 +253,23 @@ const seedDB = async () => {
           compareAtPricePaise: 549900,
           images: [
             {
-              url: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1000&q=80",
-              alt: "Enchanted Ring Arch Birthday",
+              url: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1200&q=80",
+              alt: "Enchanted Ring Arch Birthday with Pastel Chrome Balloons",
+              publicId: "",
+            },
+            {
+              url: "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?auto=format&fit=crop&w=1200&q=80",
+              alt: "Celebration Party Setup with Happy Birthday LED Sign",
+              publicId: "",
+            },
+            {
+              url: "https://images.unsplash.com/photo-1464349153735-7db50ed83c84?auto=format&fit=crop&w=1200&q=80",
+              alt: "Stylized Birthday Cake Table and Metallic Pedestals",
+              publicId: "",
+            },
+            {
+              url: "https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=1200&q=80",
+              alt: "Close-up Organic Balloon Garland Arrangement",
               publicId: "",
             },
           ],
@@ -304,8 +319,23 @@ const seedDB = async () => {
           compareAtPricePaise: 699900,
           images: [
             {
-              url: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1000&q=80",
-              alt: "Romantic Candlelight Cabana",
+              url: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80",
+              alt: "Romantic White Cabana with Fairy Lights Canopy",
+              publicId: "",
+            },
+            {
+              url: "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&w=1200&q=80",
+              alt: "Rose Petal Runway with Warm Candlelight Lanterns",
+              publicId: "",
+            },
+            {
+              url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=80",
+              alt: "Intimate Anniversary Balcony Dinner Table Decor",
+              publicId: "",
+            },
+            {
+              url: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=1200&q=80",
+              alt: "Evening Ambient Fairy Glow and Helium Hearts",
               publicId: "",
             },
           ],
@@ -347,8 +377,23 @@ const seedDB = async () => {
           compareAtPricePaise: 599900,
           images: [
             {
-              url: "https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=1000&q=80",
-              alt: "Pastel Cloud Baby Shower",
+              url: "https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=1200&q=80",
+              alt: "Pastel Cloud Baby Shower Balloon Backdrop",
+              publicId: "",
+            },
+            {
+              url: "https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?auto=format&fit=crop&w=1200&q=80",
+              alt: "Plush Teddy Bear Props & Welcome Pedestals",
+              publicId: "",
+            },
+            {
+              url: "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?auto=format&fit=crop&w=1200&q=80",
+              alt: "Warm Glow Oh Baby Neon Sign and Cloud Sculptures",
+              publicId: "",
+            },
+            {
+              url: "https://images.unsplash.com/photo-1533294455009-a77b7557d2d1?auto=format&fit=crop&w=1200&q=80",
+              alt: "Baby Shower Cake Table Display in Gurgaon",
               publicId: "",
             },
           ],
@@ -391,8 +436,23 @@ const seedDB = async () => {
           compareAtPricePaise: 999900,
           images: [
             {
-              url: "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&w=1000&q=80",
-              alt: "Grand Marry Me Proposal",
+              url: "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&w=1200&q=80",
+              alt: "Grand Marry Me Illuminated Rooftop Setup",
+              publicId: "",
+            },
+            {
+              url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=80",
+              alt: "40 Glass Lantern Pathway with Fresh Rose Petals",
+              publicId: "",
+            },
+            {
+              url: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80",
+              alt: "Floral Heart Arch with Warm Ambient Lighting",
+              publicId: "",
+            },
+            {
+              url: "https://images.unsplash.com/photo-1529636798458-92182e662485?auto=format&fit=crop&w=1200&q=80",
+              alt: "Cold Pyro Sparkler Moment under the Night Sky",
               publicId: "",
             },
           ],
@@ -434,8 +494,23 @@ const seedDB = async () => {
           compareAtPricePaise: 899900,
           images: [
             {
-              url: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1000&q=80",
-              alt: "Traditional Haldi Decor",
+              url: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1200&q=80",
+              alt: "Traditional Indian Haldi Decor with Fresh Marigold Cascades",
+              publicId: "",
+            },
+            {
+              url: "https://images.unsplash.com/photo-1600093463592-8e36ae95ef56?auto=format&fit=crop&w=1200&q=80",
+              alt: "Yellow and Orange Genda Phool Garland Photography Wall",
+              publicId: "",
+            },
+            {
+              url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=1200&q=80",
+              alt: "Brass Urli Bowls with Floating Candles and Petals",
+              publicId: "",
+            },
+            {
+              url: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1200&q=80",
+              alt: "Royal Rani Pink and Festive Yellow Silk Drapes",
               publicId: "",
             },
           ],
@@ -477,8 +552,23 @@ const seedDB = async () => {
           compareAtPricePaise: 299900,
           images: [
             {
-              url: "https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=1000&q=80",
-              alt: "Cozy Living Room Birthday",
+              url: "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?auto=format&fit=crop&w=1200&q=80",
+              alt: "Cozy Living Room Birthday Balloon Canopy Surprise",
+              publicId: "",
+            },
+            {
+              url: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1200&q=80",
+              alt: "Ceiling Balloons with Metallic Curling Ribbons",
+              publicId: "",
+            },
+            {
+              url: "https://images.unsplash.com/photo-1464349153735-7db50ed83c84?auto=format&fit=crop&w=1200&q=80",
+              alt: "Cake Table Celebration Setup with Warm Fairy Lights",
+              publicId: "",
+            },
+            {
+              url: "https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=1200&q=80",
+              alt: "Damage-Free Wall Decor Adhesives Detail",
               publicId: "",
             },
           ],
