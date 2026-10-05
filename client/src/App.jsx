@@ -107,7 +107,7 @@ function ScrollToTop() {
 // Layout wrapper for customer pages
 function CustomerLayout() {
   return (
-    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", minHeight: "100dvh" }}>
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100dvh" }}>
       <InstallPrompt />
       <MaintenanceBanner />
       <Navbar />

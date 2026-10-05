@@ -53,7 +53,7 @@ Decor Joy Gurgaon is an end-to-end event decoration e-commerce and booking appli
 
 ## 📱 Mobile Ergonomics & Psychological Design
 
-Over 82% of event decoration bookings happen on mobile phones. The platform was engineered with mobile-first psychological principles:
+The platform was designed mobile-first for Gurugram customers who predominantly book on smartphones:
 
 1. **The Thumb-Zone Action Bar**:
    - On mobile viewports, the primary conversion buttons (**"Book Setup"** and **"WhatsApp Inquiry"**) stay sticky at the bottom screen edge, resting comfortably in the natural thumb arc of one-handed smartphone use.
@@ -64,7 +64,7 @@ Over 82% of event decoration bookings happen on mobile phones. The platform was 
 4. **The "Damage-Free" Guarantee**:
    - Addresses the #1 hesitation of Gurgaon high-rise condo tenants: fear of losing rental security deposits due to chipped paint.
 5. **Micro-Commitment Advance Split**:
-   - Calculating a 25% booking advance to lock the slot (with remainder due upon setup) reduces checkout abandonment by over 60% compared to demanding 100% upfront.
+   - A configurable advance booking percentage (default 25%) to lock the slot, with the remainder due upon setup completion, reducing upfront payment friction.
 
 ---
 
@@ -107,12 +107,12 @@ Follow these exact steps to run the complete website on your machine:
 1. Go to [mongodb.com/atlas](https://www.mongodb.com/atlas) and create a free account.
 2. Click **Create Deployment** $\rightarrow$ select **M0 Free Shared Cluster** $\rightarrow$ choose **Mumbai (`ap-south-1`)** or **Singapore** region.
 3. Under **Security Quickstart**:
-   - **Username & Password**: Create a database user (e.g., `decorjoy` / `DecorJoySecure2026!`). Note these down.
+   - **Username & Password**: Create a database user (e.g., `decorjoy` / `<your-strong-password>`). Note these down.
    - **Network Access**: Click **Add IP Address** $\rightarrow$ select **Allow Access from Anywhere (`0.0.0.0/0`)** $\rightarrow$ click **Confirm**.
 4. Once created, click **Connect** $\rightarrow$ choose **Drivers (Node.js)**.
 5. Copy your connection string. It looks like:
    ```
-   mongodb+srv://decorjoy:DecorJoySecure2026!@cluster0.abcde.mongodb.net/decorjoy?retryWrites=true&w=majority
+   mongodb+srv://decorjoy:<your-db-password>@cluster0.abcde.mongodb.net/decorjoy?retryWrites=true&w=majority
    ```
 
 #### Option B: Local MongoDB
@@ -140,13 +140,13 @@ If you prefer running MongoDB locally on your machine:
      ```env
      NODE_ENV=development
      PORT=5000
-     MONGO_URI=mongodb+srv://decorjoy:DecorJoySecure2026!@cluster0.abcde.mongodb.net/decorjoy?retryWrites=true&w=majority
-     JWT_ACCESS_SECRET=c9b986e11894d360fbf37c6aece04e6c98f8e0258d4a974b7cbfda6e94a50d4b
-     JWT_REFRESH_SECRET=7f5e1f0e4904bf7e997ad94119853905e3bf9bcfda29b7a13dcf50db903bb8ae
+     MONGO_URI=mongodb+srv://decorjoy:<your-db-password>@cluster0.abcde.mongodb.net/decorjoy?retryWrites=true&w=majority
+     JWT_ACCESS_SECRET=<generate-with: openssl rand -hex 32>
+     JWT_REFRESH_SECRET=<generate-with: openssl rand -hex 32>
      CLIENT_URL=http://localhost:5173
      REDIS_URL=redis://127.0.0.1:6379
      ADMIN_EMAIL=admin@decorjoy.com
-     ADMIN_PASSWORD=DecorJoyAdmin2026!
+     ADMIN_PASSWORD=<choose-a-strong-password-12-chars-min>
      ```
 
 4. **Seed the database** (Loads celebration packages, 4-photo galleries, add-ons, categories, and admin login):
@@ -218,7 +218,7 @@ The platform includes a complete administrative back-office for managing day-to-
 
 - **Portal URL**: `http://localhost:5173/admin/login`
 - **Default Seed Email**: `admin@decorjoy.com`
-- **Default Seed Password**: `DecorJoyAdmin2026!` *(Change upon first production deployment)*
+- **Default Seed Password**: Set via `ADMIN_PASSWORD` in `server/.env` before running `npm run seed` *(use a strong unique password, change upon first login)*
 
 ### Key Admin Features:
 1. **Orders Dashboard**: Track new bookings, update status (`pending` $\rightarrow$ `confirmed` $\rightarrow$ `in_progress` $\rightarrow$ `completed`), and record offline cash balances.

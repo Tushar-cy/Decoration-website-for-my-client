@@ -397,6 +397,7 @@ async function refundOrder(req, res, next) {
 /**
  * GET /api/admin/orders/export.csv
  * Exports orders matching current filters as a CSV download.
+ * Hard-limited to 10,000 rows to prevent unbounded DB scan / OOM.
  */
 async function exportOrdersCsv(req, res, next) {
   try {
@@ -404,7 +405,7 @@ async function exportOrdersCsv(req, res, next) {
     if (req.query.status) filter.status = req.query.status;
     if (req.query.paymentStatus) filter["payment.status"] = req.query.paymentStatus;
 
-    const orders = await Order.find(filter).sort({ createdAt: -1 }).lean();
+    const orders = await Order.find(filter).sort({ createdAt: -1 }).limit(10000).lean();
 
     const headers = [
       "Order Number",
