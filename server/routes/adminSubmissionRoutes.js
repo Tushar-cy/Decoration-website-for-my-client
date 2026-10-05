@@ -6,7 +6,7 @@ const {
   updateSubmissionStatus,
   addSubmissionNote,
   assignSubmission,
-  convertSubmissionToOrder,
+  markSubmissionConverted,
   exportSubmissionsCsv,
 } = require("../controllers/adminSubmissionController");
 
@@ -33,6 +33,6 @@ router.post("/:id/notes", addSubmissionNote);
 router.patch("/:id/assign", assignSubmission);
 
 // POST /api/admin/submissions/:id/convert
-router.post("/:id/convert", convertSubmissionToOrder);
+router.post("/:id/convert", markSubmissionConverted);
 
 module.exports = router;

@@ -99,7 +99,7 @@ const submissionSchema = new mongoose.Schema(
       type: [submissionNoteSchema],
       default: [],
     },
-    convertedOrderId: {
+    conversionRef: {
       type: String,
       default: null,
     },

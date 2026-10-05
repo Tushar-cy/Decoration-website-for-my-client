@@ -84,7 +84,7 @@ GitHub -> Actions -> "Deploy — Production" -> Run workflow
 ```bash
 curl https://api.decorjoygurgaon.com/readyz
 # Expected:
-# {"status":"ready","mongo":"connected","redis":"connected","razorpay":"CLOSED","uptime":42}
+# {"status":"ready","mongo":"connected","redis":"connected","uptime":42}
 ```
 
 ---
@@ -136,15 +136,6 @@ node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 
 pm2 reload decorjoy-prod --update-env
 ```
-
-### Razorpay Keys
-
-1. Generate new key pair in Razorpay Dashboard -> Settings -> API Keys
-2. Update RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in server env
-3. Also update VITE_RAZORPAY_KEY in client CI secrets
-4. Update webhook endpoint secret in Razorpay Dashboard
-5. Deploy both client and server
-6. Revoke old key pair after confirming new one works
 
 ### WhatsApp Access Token
 
@@ -204,7 +195,7 @@ tar -czf backup-$(date +%Y%m%d).tar.gz ./backup-*/
 mongosh "$SCRATCH_MONGO_URI" --eval "
   db = db.getSiblingDB('decorjoy');
   print('Products:', db.products.countDocuments());
-  print('Orders:', db.orders.countDocuments());
+  print('Submissions:', db.submissions.countDocuments());
   print('Settings:', db.settings.countDocuments());
 "
 
@@ -244,14 +235,12 @@ Toggle from **Admin -> Settings -> Operational Switches** — no deploy needed. 
 
 | Switch | Effect |
 |--------|--------|
-| Online Payments OFF | Orders fall back to Pay-on-Confirmation. Customer is told team will call within 2 hours. |
-| Bookings Paused ON | POST /api/orders returns 503. Customer sees message to WhatsApp owner directly. |
+| Bookings Paused ON | Shows "temporarily paused" banner. WhatsApp link remains active for manual enquiries. |
 | Maintenance Banner | Sticky amber bar on storefront. Leave blank to hide. |
 
 **Automatic degradation (no action needed):**
-- Razorpay circuit OPEN -> Auto-falls back to Pay-on-Confirmation. Owner gets WhatsApp alert.
-- Redis down -> Cache bypassed. Requests hit MongoDB directly. No user impact.
-- MongoDB election -> Retry with exponential backoff; returns 503 Retry-After: 10 if exhausted.
+- Redis down → Cache bypassed. Requests hit MongoDB directly. No user impact.
+- MongoDB election → Retry with exponential backoff; returns 503 Retry-After: 10 if exhausted.
 
 ---
 
@@ -285,19 +274,18 @@ Alert channels: Owner phone (SMS + call) + decorjoygurgaon@gmail.com
 - [ ] SSH into server: pm2 list — is the process running?
 - [ ] Check Mongo status in /readyz output
 - [ ] Check Sentry for recent errors
-- [ ] If Razorpay issue: toggle "Online Payments" OFF in admin settings
 - [ ] Rollback if recent deploy caused it (see section 4)
 
-### P2 — Payments failing / Razorpay error
+### P2 — Enquiry submissions not arriving
 
-- [ ] Admin -> Settings -> Uncheck Online Payments. Save.
-- [ ] Check https://status.razorpay.com
-- [ ] Re-enable once Razorpay confirms resolution
+- [ ] POST /api/forms/:key/submissions — check server logs in Sentry
+- [ ] Verify MongoDB is connected via /readyz
+- [ ] Check WhatsApp notification logs (WHATSAPP_ACCESS_TOKEN configured?)
 
-### P3 — Booking surge / capacity issue
+### P3 — Enquiry surge / capacity issue
 
-- [ ] Admin -> Settings -> Check Bookings Paused -> set banner message
-- [ ] Process existing orders manually
+- [ ] Admin → Settings → Check "Pause New Enquiries" → set banner message
+- [ ] Process existing leads manually via WhatsApp
 - [ ] Re-open once caught up
 
 ---

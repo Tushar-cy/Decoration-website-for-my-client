@@ -137,7 +137,7 @@ export const addAdminSubmissionNote = (id, text) =>
 export const assignAdminSubmission = (id, assignedTo) =>
   API.patch(`/admin/submissions/${id}/assign`, { assignedTo });
 export const convertAdminSubmission = (id, data = {}) =>
-  API.post(`/admin/submissions/${id}/convert`, typeof data === "string" ? { orderId: data } : data);
+  API.post(`/admin/submissions/${id}/convert`, typeof data === "string" ? { conversionRef: data } : data);
 
 // ================= ADMIN V2 EXTENDED API =================
 

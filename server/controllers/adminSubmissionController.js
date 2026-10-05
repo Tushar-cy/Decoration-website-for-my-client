@@ -216,24 +216,24 @@ async function assignSubmission(req, res, next) {
 }
 
 const convertSchema = z.object({
-  orderId: z.string().optional(),
-  bookingRef: z.string().optional(),
+  conversionRef: z.string().optional(),
 });
 
 /**
  * POST /api/admin/submissions/:id/convert
+ * Marks a lead as converted (deal closed/won). Optionally stores a reference note.
  */
-async function convertSubmissionToOrder(req, res, next) {
+async function markSubmissionConverted(req, res, next) {
   try {
-    const { orderId, bookingRef } = convertSchema.parse(req.body);
+    const { conversionRef } = convertSchema.parse(req.body);
     const submission = await Submission.findById(req.params.id);
 
     if (!submission) {
       throw new AppError(`Submission '${req.params.id}' not found`, 404);
     }
 
-    const ref = orderId || bookingRef || `BOOK-${Date.now().toString().slice(-6)}`;
-    submission.convertedOrderId = ref;
+    const ref = conversionRef || `REF-${Date.now().toString().slice(-6)}`;
+    submission.conversionRef = ref;
     submission.status = "converted";
     await submission.save();
 
@@ -243,7 +243,7 @@ async function convertSubmissionToOrder(req, res, next) {
       entity: "Submission",
       entityId: submission._id,
       before: null,
-      after: { convertedOrderId: ref, status: "converted" },
+      after: { conversionRef: ref, status: "converted" },
       ip: req.ip,
     });
 
@@ -315,6 +315,6 @@ module.exports = {
   updateSubmissionStatus,
   addSubmissionNote,
   assignSubmission,
-  convertSubmissionToOrder,
+  markSubmissionConverted,
   exportSubmissionsCsv,
 };

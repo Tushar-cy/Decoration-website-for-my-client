@@ -9,23 +9,20 @@ import { useFeatureFlags } from "../hooks/useFeatureFlags";
 import "./MaintenanceBanner.css";
 
 export default function MaintenanceBanner() {
-  const { maintenanceBanner, bookingsPaused, onlinePayments } = useFeatureFlags();
+  const { maintenanceBanner, bookingsPaused } = useFeatureFlags();
   const [dismissed, setDismissed] = useState(false);
 
-  // Priority: maintenance > bookings paused > payment mode
+  // Priority: maintenance message > bookings paused
   const message = maintenanceBanner ||
     (bookingsPaused
       ? "🛑 Bookings are temporarily paused. Please WhatsApp us to enquire."
-      : null) ||
-    (!onlinePayments
-      ? "⚠️ Online payment is temporarily unavailable. We'll confirm your booking via call within 2 hours."
       : null);
 
   if (!message || dismissed) return null;
 
   return (
     <div
-      className={`maintenance-banner ${maintenanceBanner ? "banner-maintenance" : bookingsPaused ? "banner-paused" : "banner-payment"}`}
+      className={`maintenance-banner ${maintenanceBanner ? "banner-maintenance" : "banner-paused"}`}
       role="alert"
       aria-live="polite"
     >

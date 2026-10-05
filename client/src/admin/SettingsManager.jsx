@@ -126,10 +126,10 @@ function SettingsManagerContent({ currentUser }) {
               </div>
               <div>
                 <label htmlFor="flag-bookings-paused" style={{ fontWeight: 700, cursor: "pointer", fontSize: "0.95rem" }}>
-                  🛑 Pause New Bookings
+                  🛑 Pause New Enquiries
                 </label>
                 <p style={{ fontSize: "0.8rem", color: "#64748b", margin: "2px 0 0" }}>
-                  Check to block new orders with a friendly message. Existing orders are unaffected.
+                  Check to show a "temporarily paused" message on the site. WhatsApp contact remains active.
                 </p>
               </div>
             </div>

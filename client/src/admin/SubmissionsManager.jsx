@@ -155,23 +155,23 @@ function SubmissionsManager() {
     }
   };
 
-  // Mark as Converted (Deal Closed)
-  const handleConvertToOrder = async () => {
+  // Mark as Converted (Deal Closed / Won)
+  const handleMarkConverted = async () => {
     if (!activeSubmission) return;
-    const defaultRef = `BOOK-${Date.now().toString().slice(-6)}`;
-    const ref = window.prompt("Enter or confirm Booking/Deal Reference (e.g. client name or code):", defaultRef);
+    const defaultRef = `REF-${Date.now().toString().slice(-6)}`;
+    const ref = window.prompt("Enter an optional conversion reference (e.g. client name or deal note):", defaultRef);
     if (ref === null) return;
 
     try {
-      const res = await convertAdminSubmission(activeSubmission._id, { orderId: ref || defaultRef });
+      const res = await convertAdminSubmission(activeSubmission._id, { conversionRef: ref || defaultRef });
       const updated = res.data?.data?.submission;
       setActiveSubmission(updated);
 
       setSubmissions((prev) =>
-        prev.map((s) => (s._id === updated._id ? { ...s, status: "converted", convertedOrderId: ref || defaultRef } : s))
+        prev.map((s) => (s._id === updated._id ? { ...s, status: "converted", conversionRef: ref || defaultRef } : s))
       );
 
-      alert(`Submission marked as CONVERTED! Ref: ${ref || defaultRef}`);
+      alert(`Lead marked as CONVERTED! Ref: ${ref || defaultRef}`);
     } catch (err) {
       alert("Failed to mark submission as converted.");
     }
@@ -759,7 +759,7 @@ function SubmissionsManager() {
                       type="button"
                       className="btn-admin-primary"
                       style={{ fontSize: "0.85rem", padding: "8px 14px", background: "#b88932" }}
-                      onClick={() => handleConvertToOrder(activeSubmission)}
+                      onClick={() => handleMarkConverted(activeSubmission)}
                     >
                       🎯 Mark Converted
                     </button>
@@ -774,7 +774,7 @@ function SubmissionsManager() {
                         fontWeight: 700,
                       }}
                     >
-                      ✓ Converted: {activeSubmission.convertedOrderId || "Yes"}
+                      ✓ Converted: {activeSubmission.conversionRef || "Yes"}
                     </span>
                   )}
 

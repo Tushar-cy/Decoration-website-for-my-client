@@ -159,22 +159,14 @@ Tap any card to jump directly to that order or submission.
 
 These are in **Settings** (owner only). They take effect **within 60 seconds** — no tech help needed.
 
-### Turning off online payments temporarily
-If Razorpay has an issue and customers can't pay online:
+### Pausing new enquiries temporarily
+If your team is away or fully booked:
 
 1. Go to **Settings**
-2. Under "Operational Switches", **uncheck** "Online Payments Enabled"
+2. Under "Operational Switches", **tick** "Pause New Enquiries"
 3. Click **Save Settings**
 
-Customers will now see: *"Online payment is temporarily unavailable. Our team will call you to confirm this booking within 2 hours."* They can still place the order — you confirm it manually.
-
-### Pausing all new bookings
-If your team is fully booked or away:
-
-1. Settings → tick **"Pause New Bookings"**
-2. Save
-
-New orders will be blocked with a friendly message telling customers to WhatsApp you.
+Customers will see a friendly message asking them to WhatsApp you directly. The WhatsApp button stays active.
 
 ### Showing an announcement banner
 For Diwali closures, special offers, etc.:
@@ -190,19 +182,17 @@ A yellow banner will appear at the top of your website. Delete the text and save
 ## 9. Useful Tips
 
 - **Your website auto-saves product photos** to Cloudinary. You don't need to manage file storage.
-- **All prices are set by you on the server** — customers cannot change prices.
-- **Slots fill up automatically** — once a slot is full, customers can't book it.
-- **WhatsApp notifications** come to your phone for every new inquiry and order.
-- If a customer contacts you directly on WhatsApp, you can still create the order manually from the admin orders panel.
+- **WhatsApp notifications** come to your phone for every new enquiry submitted via the form.
+- **Lead notes** — add internal notes to any customer lead in the Submissions Manager to track conversations.
+- **Mark leads converted** once a deal is closed — this moves them to "converted" status and keeps your pipeline clean.
 
 ---
 
 ## 10. Getting Help
 
 - **Tech issues:** Contact your tech support (see RUNBOOK.md for contacts)
-- **Razorpay payment issues:** Call Razorpay 24x7 helpline: **+91-22-7100-7100**
 - **Your admin login stopped working:** Ask tech support to reset your password
 
 ---
 
-*Last updated: 2026-09-30*
+*Last updated: 2026-10-06*

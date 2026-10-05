@@ -1,12 +1,10 @@
 /**
  * client/src/hooks/useFeatureFlags.js
  * Polls /api/settings/flags every 60 seconds.
- * Returns: { onlinePayments, bookingsPaused, maintenanceBanner, isLoading }
+ * Returns: { bookingsPaused, maintenanceBanner, isLoading }
  *
  * Used by:
- *  - CheckoutPage: show pay-on-confirmation message when onlinePayments=false
- *  - App: show MaintenanceBanner when maintenanceBanner is non-empty
- *  - Shop/ProductDetail: show "bookings paused" warning
+ *  - App: show MaintenanceBanner when maintenanceBanner is non-empty or bookingsPaused=true
  */
 import { useQuery } from "@tanstack/react-query";
 import API from "../services/api";
