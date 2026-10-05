@@ -142,17 +142,6 @@ const settingsSchema = new mongoose.Schema(
         { pincode: "122018", deliveryFeePaise: 0 },
       ],
     },
-    advancePercent: {
-      type: Number,
-      default: 25,
-      min: 0,
-      max: 100,
-    },
-    paymentMode: {
-      type: String,
-      enum: ["advance_online", "pay_on_confirmation"],
-      default: "advance_online",
-    },
     notificationEmails: {
       type: [String],
       default: ["decorjoygurgaon@gmail.com"],
@@ -187,15 +176,10 @@ const settingsSchema = new mongoose.Schema(
     },
     // ── Graceful degradation switches (owner-controllable from admin Settings) ──
     flags: {
-      onlinePayments: {
-        type: Boolean,
-        default: true,
-        // When false → all orders fall back to pay_on_confirmation
-      },
       bookingsPaused: {
         type: Boolean,
         default: false,
-        // When true → POST /api/orders returns 503 with a helpful message
+        // When true → shows bookings paused message
       },
       maintenanceBanner: {
         type: String,

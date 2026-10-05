@@ -542,19 +542,19 @@
 /* Mobile Sticky Bottom Bar (Screens <= 768px) */
 .mobile-sticky-bar {
   position: fixed;
-  bottom: calc(62px + env(safe-area-inset-bottom));
+  bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-top: 1px solid var(--border, #ede8e1);
-  padding: 10px 16px;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
   display: flex;
   justify-content: space-between;
   align-items: center;
-  z-index: 998;
-  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
+  z-index: 1000;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.09);
 }
 
 @media (min-width: 769px) {

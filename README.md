@@ -1,4 +1,4 @@
-# 🎈 Decor Joy Gurgaon - Event Decoration E-Commerce & Booking Platform
+# 🎈 Decor Joy Gurgaon - Showcase Catalogue, Event Inquiries & Admin CRM
 
 > **"Your Celebration. Our Creation."**  
 > Gurugram's premier event and party decoration styling service, operating since 2021.
@@ -12,59 +12,71 @@
 ---
 
 ## 📋 Table of Contents
-1. [🌟 Platform Overview](#-platform-overview)
+1. [🌟 Platform Overview & Business Model](#-platform-overview--business-model)
 2. [📱 Mobile Ergonomics & Psychological Design](#-mobile-ergonomics--psychological-design)
 3. [⚡ Prerequisites](#-prerequisites)
-4. [🚀 Complete Step-by-Step Setup Guide (For New Users & Clients)](#-complete-step-by-step-setup-guide-for-new-users--clients)
+4. [🚀 1-Click Production VPS Deployment](#-1-click-production-vps-deployment)
+5. [💻 Manual Step-by-Step Setup Guide (For Local Development)](#-manual-step-by-step-setup-guide-for-local-development)
    - [Step 1: MongoDB Setup (Free Atlas Cloud or Local)](#step-1-mongodb-setup-free-atlas-cloud-or-local)
    - [Step 2: Backend Setup & Database Seeding](#step-2-backend-setup--database-seeding)
    - [Step 3: Frontend Client Startup](#step-3-frontend-client-startup)
-5. [⚠️ Troubleshooting: Fixing `connect ECONNREFUSED 127.0.0.1:27017`](#-troubleshooting-fixing-connect-econnrefused-12700127017)
-6. [🔐 Admin Command Center Guide](#-admin-command-center-guide)
-7. [💬 WhatsApp Booking & Inquiries Pipeline](#-whatsapp-booking--inquiries-pipeline)
-8. [🧪 Testing & Quality Assurance](#-testing--quality-assurance)
-9. [👨‍💻 Developed By](#-developed-by)
-10. [📍 Business Contact](#-business-contact)
+6. [⚠️ Troubleshooting: Fixing `connect ECONNREFUSED 127.0.0.1:27017`](#-troubleshooting-fixing-connect-econnrefused-12700127017)
+7. [🔐 Admin Command Center & Lead Pipeline Guide](#-admin-command-center--lead-pipeline-guide)
+8. [💬 WhatsApp Inquiries & Event Planner Flow](#-whatsapp-inquiries--event-planner-flow)
+9. [🧪 Testing & Quality Assurance](#-testing--quality-assurance)
+10. [👨‍💻 Developed By](#-developed-by)
+11. [📍 Business Contact](#-business-contact)
 
 ---
 
-## 🌟 Platform Overview
+## 🌟 Platform Overview & Business Model
 
-Decor Joy Gurgaon is an end-to-end event decoration e-commerce and booking application built for luxury celebration setups across Gurugram condos and residences.
+Decor Joy Gurgaon operates on a **high-touch showcase and consultation model**:
+```
+Catalogue Showcase → WhatsApp Inquiry / Custom Event Form → Admin Leads Inbox → Manual Consultation & Setup
+```
 
-- **Storefront & Catalog**:
+The client handles all customers personally to tailor party themes, balloon palettes, and venue specifics for Gurugram condominiums and residences. There is **no impersonal online cart or automated payment checkout**.
+
+- **Storefront & Catalogue Showcase**:
   - Luxury celebration aesthetics: Ivory canvas, warm golds (`#b88932`), rose accents, and Playfair Display typography.
-  - Curated packages for **Birthdays, Anniversaries, Baby Showers, Proposals, and Special Celebrations**.
-  - Dynamic variant pricing: Live price recalculation based on backdrop scales (6ft vs 8ft) and color palettes.
-  - Interactive Add-ons (fairy light canopies, cold pyro sparklers, LED neon signs) with instant cart totals.
-  - High-definition multi-image galleries with interactive thumbnail previews.
-- **Double Booking Protection & Slot Availability**:
-  - Daily capacity-capped slots (Morning: 09:00–12:00, Evening: 16:30–19:30).
-  - Pincode delivery validator for Gurgaon sectors.
-- **Transactions & Security**:
-  - Prices stored strictly in **paise as integers** (₹1 = 100 paise) preventing floating-point calculation errors.
-  - Razorpay payment gateway integration with webhook signature verification and idempotency keys.
-  - Rate limiting, CSRF verification, Helmet security headers, and Mongo sanitize defense against NoSQL injection.
-- **Schema-Driven Dynamic Purpose Forms**:
-  - 6 Occasions (Birthday, Anniversary, Baby Shower, Proposal, Corporate, Other) rendered 100% from backend schema.
-  - Pre-filled WhatsApp direct-chat inquiry generation.
+  - Curated showcases for **Birthdays, Anniversaries, Baby Showers, Proposals, and Special Celebrations**.
+  - Indicative starting prices and variant options (scales & color palettes) to set clear expectations.
+  - High-definition multi-image galleries with interactive previews.
+  - Primary CTA on every package: **"Enquire on WhatsApp"** with pre-filled context.
+  - Secondary CTA on every package: **"Plan My Event"** linking to the custom event form.
+- **WhatsApp Direct Inquiries**:
+  - Contextual click-to-chat links pre-filled with package name and customer enquiry text.
+  - Direct communication on business WhatsApp (`+91 7015767715`).
+- **Dynamic Purpose Event Forms**:
+  - Schema-driven multi-step planner for 6 occasions (Birthday, Anniversary, Baby Shower, Proposal, Corporate, Other).
+  - Validation on frontend and backend with Cloudflare Turnstile anti-spam protection.
+  - Stores submissions directly into MongoDB and pings the owner on WhatsApp instantly.
+- **Admin Leads CRM**:
+  - Real-time pipeline tracking: `new` $\rightarrow$ `contacted` $\rightarrow$ `quoted` $\rightarrow$ `converted` $\rightarrow$ `closed` / `spam`.
+  - 1-click WhatsApp follow-up button for every customer lead.
+  - Internal staff notes and assignment tracking.
+- **Security & Performance**:
+  - Edge caching with Redis single-flight deduplication.
+  - Rate limiting, CSRF custom header verification (`X-Requested-With: decorjoy`), Helmet headers, and Mongo sanitize defense.
+  - Prerendered HTML for all public routes ensuring instant load times and perfect SEO rankings.
 
 ---
 
 ## 📱 Mobile Ergonomics & Psychological Design
 
-The platform was designed mobile-first for Gurugram customers who predominantly book on smartphones:
+The platform is designed mobile-first (optimized at 360px, 390px, and 412px viewports) for Gurugram customers browsing on smartphones:
 
 1. **The Thumb-Zone Action Bar**:
-   - On mobile viewports, the primary conversion buttons (**"Book Setup"** and **"WhatsApp Inquiry"**) stay sticky at the bottom screen edge, resting comfortably in the natural thumb arc of one-handed smartphone use.
+   - On mobile viewports, the primary conversion buttons (**"Enquire on WhatsApp"** and **"Plan Event"**) stay sticky at the bottom screen edge, resting comfortably in the natural thumb arc of one-handed smartphone use without overlapping navigation bars.
 2. **Strict Touch Target Compliance ($\ge 44\text{px} \times 44\text{px}$)**:
-   - All interactive controls, quantity adjusters, and color swatches meet or exceed the 44px minimum touch target size to prevent misclicks.
+   - All interactive controls, quick-view triggers, and swatches meet or exceed the 44px minimum touch target size to prevent misclicks.
 3. **No iOS Auto-Zoom Jars**:
-   - All form input fields use font sizes $\ge 16\text{px}$, preventing Safari on iOS from jarringly zooming in when typing.
+   - All form input fields use font sizes $\ge 16\text{px}$, preventing Safari on iOS from auto-zooming when typing.
 4. **The "Damage-Free" Guarantee**:
    - Addresses the #1 hesitation of Gurgaon high-rise condo tenants: fear of losing rental security deposits due to chipped paint.
-5. **Micro-Commitment Advance Split**:
-   - A configurable advance booking percentage (default 25%) to lock the slot, with the remainder due upon setup completion, reducing upfront payment friction.
+5. **No Native App Nagging**:
+   - Clean, lightweight mobile web application running directly in any modern mobile browser without fake PWA install banners.
 
 ---
 
@@ -74,12 +86,13 @@ Before running the application, make sure you have:
 - **Node.js**: `v20.0.0` or higher installed ([Download Node.js](https://nodejs.org/))
 - **Git**: Installed on your system ([Download Git](https://git-scm.com/))
 - **MongoDB**: EITHER a free **MongoDB Atlas cloud database** (recommended, takes 3 minutes, no local software required) OR a local MongoDB instance.
+- **Redis**: Optional in development (bypasses gracefully if offline; required in production for rate-limit and edge caching).
 
 ---
 
 ## 🚀 1-Click Production VPS Deployment (For Client & Linux Servers)
 
-If your client is setting up the site on a Linux VPS (Ubuntu / Debian), they can deploy the entire stack with **one command without writing or changing a single line of code**:
+If deploying on a Linux VPS (Ubuntu / Debian), deploy the entire stack with **one command without writing or changing a single line of code**:
 
 ```bash
 # Make script executable & deploy with automatic database seed
@@ -88,26 +101,24 @@ chmod +x deploy.sh
 ```
 
 **What this automated script does:**
-1. ✅ Automatically installs all server and client dependencies.
+1. ✅ Automatically installs all server and client production dependencies.
 2. ✅ Auto-generates secure random 64-character JWT secrets in `server/.env`.
-3. ✅ Builds and prerenders all 11 static pages and optimizes all 251 authentic gallery photos.
+3. ✅ Builds and prerenders all 11 static pages and optimizes all authentic portfolio photos.
 4. ✅ Seeds categories, packages, add-ons, and admin credentials into MongoDB.
-5. ✅ Boots the Node.js API cluster & background worker under PM2 with auto-restart on system reboot.
+5. ✅ Boots the Node.js API cluster under PM2 with auto-restart on system reboot.
 6. ✅ Provides a ready-to-copy `nginx.conf` file to connect to your domain with SSL.
 
 ---
 
 ## 💻 Manual Step-by-Step Setup Guide (For Local Development)
 
-Follow these exact steps to run the complete website on your machine:
-
 ### Step 1: MongoDB Setup (Free Atlas Cloud or Local)
 
 #### Option A: MongoDB Atlas Cloud (Recommended — Free & No Installation)
 1. Go to [mongodb.com/atlas](https://www.mongodb.com/atlas) and create a free account.
-2. Click **Create Deployment** $\rightarrow$ select **M0 Free Shared Cluster** $\rightarrow$ choose **Mumbai (`ap-south-1`)** or **Singapore** region.
+2. Click **Create Deployment** $\rightarrow$ select **M0 Free Shared Cluster** $\rightarrow$ choose **Mumbai (`ap-south-1`)** region.
 3. Under **Security Quickstart**:
-   - **Username & Password**: Create a database user (e.g., `decorjoy` / `<your-strong-password>`). Note these down.
+   - **Username & Password**: Create a database user (e.g., `decorjoy` / `<your-strong-password>`).
    - **Network Access**: Click **Add IP Address** $\rightarrow$ select **Allow Access from Anywhere (`0.0.0.0/0`)** $\rightarrow$ click **Confirm**.
 4. Once created, click **Connect** $\rightarrow$ choose **Drivers (Node.js)**.
 5. Copy your connection string. It looks like:
@@ -135,21 +146,20 @@ If you prefer running MongoDB locally on your machine:
    ```
 
 3. Configure your environment file:
-   - Open `server/.env` in your code editor.
-   - Set `MONGO_URI` to your connection string from Step 1:
+   - Create or edit `server/.env`:
      ```env
      NODE_ENV=development
      PORT=5000
      MONGO_URI=mongodb+srv://decorjoy:<your-db-password>@cluster0.abcde.mongodb.net/decorjoy?retryWrites=true&w=majority
-     JWT_ACCESS_SECRET=<generate-with: openssl rand -hex 32>
-     JWT_REFRESH_SECRET=<generate-with: openssl rand -hex 32>
+     JWT_ACCESS_SECRET=your_32_character_minimum_random_secret_here
+     JWT_REFRESH_SECRET=your_32_character_minimum_random_secret_here
      CLIENT_URL=http://localhost:5173
      REDIS_URL=redis://127.0.0.1:6379
      ADMIN_EMAIL=admin@decorjoy.com
-     ADMIN_PASSWORD=<choose-a-strong-password-12-chars-min>
+     ADMIN_PASSWORD=DecorJoyAdmin2026!
      ```
 
-4. **Seed the database** (Loads celebration packages, 4-photo galleries, add-ons, categories, and admin login):
+4. **Seed the database** (Loads showcase packages, galleries, add-ons, categories, and admin credentials):
    ```powershell
    npm run seed
    ```
@@ -184,7 +194,7 @@ If you prefer running MongoDB locally on your machine:
    ```
    http://localhost:5173
    ```
-   *All celebration packages, multi-photo carousels, category filters, and cart functionality will load dynamically!*
+   *All decoration showcases, multi-photo carousels, category filters, and WhatsApp inquiry buttons will load!*
 
 ---
 
@@ -196,9 +206,6 @@ Seeding Error: MongooseServerSelectionError: connect ECONNREFUSED 127.0.0.1:2701
 [ERROR]: MongoDB connection attempt failed: connect ECONNREFUSED 127.0.0.1:27017
 ```
 
-### Why did this happen?
-Your backend is configured with `MONGO_URI=mongodb://127.0.0.1:27017/decorjoy`, which looks for a MongoDB database installed directly on your local computer. If you have not installed or started the local MongoDB Windows service, the connection is refused.
-
 ### How to fix in 30 seconds:
 1. Create a free database at [mongodb.com/atlas](https://www.mongodb.com/atlas) (see Step 1 above).
 2. Open `server/.env` and replace `MONGO_URI` with your cloud Atlas connection string:
@@ -207,33 +214,31 @@ Your backend is configured with `MONGO_URI=mongodb://127.0.0.1:27017/decorjoy`, 
    ```
 3. Run `npm run seed` and `npm run dev`. It connects instantly!
 
-### Why did the website show "Unable to load packages"?
-Per **Architecture Rule 6**, this application is built to enterprise standards with **zero fake mock data**. If the backend server is offline, the client does not show outdated fake products—it displays the graceful Error & Retry card. Once your backend is connected to MongoDB, all packages appear automatically.
-
 ---
 
-## 🔐 Admin Command Center Guide
+## 🔐 Admin Command Center & Lead Pipeline Guide
 
-The platform includes a complete administrative back-office for managing day-to-day operations:
+The platform includes an administrative CRM for managing decoration inquiries, showcase catalogues, and business settings:
 
 - **Portal URL**: `http://localhost:5173/admin/login`
 - **Default Seed Email**: `admin@decorjoy.com`
-- **Default Seed Password**: Set via `ADMIN_PASSWORD` in `server/.env` before running `npm run seed` *(use a strong unique password, change upon first login)*
+- **Default Seed Password**: Configured via `ADMIN_PASSWORD` in `server/.env`
 
 ### Key Admin Features:
-1. **Orders Dashboard**: Track new bookings, update status (`pending` $\rightarrow$ `confirmed` $\rightarrow$ `in_progress` $\rightarrow$ `completed`), and record offline cash balances.
-2. **Downloadable Stylist Job Sheets**: Generate printable A4 job sheets for on-ground decoration teams with customer address, slot timings, and selected add-ons.
-3. **Products & Catalog Manager**: Create or edit celebration packages, upload images, set base prices in paise, and configure color/scale variants.
-4. **Dynamic Purpose Form Builder**: Edit questions, toggle required fields, and reorder steps for customer inquiry forms without code deployments.
-5. **Coupons & Discounts**: Create percentage or flat ₹ discount codes with minimum order limits and expiration dates.
+1. **Lead Enquiries & Pipeline Dashboard**: Real-time stats on today's inquiries, this week's inquiries, occasion breakdown, and pipeline status (`new`, `contacted`, `quoted`, `converted`, `closed`, `spam`).
+2. **Submissions Manager**: View complete customer responses, add internal follow-up notes, assign to staff, and mark deals as converted. Includes 1-click WhatsApp follow-up link.
+3. **Showcase Catalogue Manager**: Create or edit decoration packages, upload photos, set starting prices, and toggle active status.
+4. **Dynamic Purpose Form Builder**: Customize inquiry questions, validation rules, and success messages for each celebration type.
+5. **Store Settings**: Update business contact numbers, announcement banner, and serviceable Gurugram pincodes.
+6. **Audit Logs & Users**: Security audit trail tracking all administrative actions.
 
 ---
 
-## 💬 WhatsApp Booking & Inquiries Pipeline
+## 💬 WhatsApp Inquiries & Event Planner Flow
 
-Customers have two seamless ways to connect via WhatsApp (`+91 7015767715`):
-1. **Instant Package Inquiries**: Every product card and detail page features a **"WhatsApp Inquiry"** button that encodes the package title, selected date, and live price into a pre-composed chat link.
-2. **Purpose Form Inquiries**: Submitting the multi-step celebration planner (`/plan-my-event`) stores the submission in the database and generates a direct WhatsApp link containing all celebration details.
+Customers connect with the team through two streamlined paths:
+1. **Instant Package Inquiries**: Every package card and detail page includes an **"Enquire on WhatsApp"** button pre-populated with the package name and inquiry context.
+2. **"Plan My Event" Planner**: Submitting the multi-step planner (`/plan-my-event`) records customer preferences in the database, notifies the owner, and provides a direct WhatsApp link to finalize mockups.
 
 ---
 
@@ -241,26 +246,26 @@ Customers have two seamless ways to connect via WhatsApp (`+91 7015767715`):
 
 The codebase includes automated test suites covering all critical paths:
 
-- **Backend Unit & Integration Tests (97 Tests Passing)**:
+- **Backend Unit & Integration Tests (66 Tests Passing)**:
   ```powershell
   cd server
   npm test
   ```
-  *Tests money calculations in paise, slot availability, Razorpay payment verification, JWT auth, dynamic purpose forms, and rate limiting.*
+  *Tests showcase catalogue queries, money validation, phone normalization, JWT authentication, role guards, purpose forms, and rate limiting.*
 
-- **End-to-End Browser Tests (168 Tests Passing)**:
+- **Frontend Lint & Type Checks**:
   ```powershell
   cd client
-  npm run test:e2e
+  npm run lint
   ```
-  *Runs Playwright tests across Mobile (360px), Tablet (768px), and Desktop (1440px) viewports.*
+  *Zero errors across all client source files.*
 
 - **Production Build Validation**:
   ```powershell
   cd client
   npm run build
   ```
-  *Static SSR prerendering generated for 11/11 routes with zero build or lint warnings.*
+  *Vite production build and static SSR prerendering for all 11 routes with <h1> tags.*
 
 ---
 

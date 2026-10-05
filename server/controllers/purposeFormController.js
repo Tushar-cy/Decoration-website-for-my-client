@@ -4,7 +4,6 @@ const Submission = require("../models/Submission");
 const Settings = require("../models/Settings");
 const { verifyTurnstile } = require("../services/turnstileService");
 const { validateAndSanitizeSubmission } = require("../services/formValidationService");
-const { enqueueNotification } = require("../queues/orderQueue");
 const { notifyNewSubmission } = require("../services/whatsappService");
 const AppError = require("../utils/AppError");
 const { logger } = require("../utils/logger");
@@ -182,17 +181,6 @@ async function submitPurposeForm(req, res, next) {
 
     logger.info({ submissionId: submission._id, formKey, name, phone }, "Created new purpose form submission");
 
-    // 7. Enqueue background notification to owner/staff
-    await enqueueNotification("SUBMISSION_RECEIVED", {
-      submissionId: submission._id.toString(),
-      formKey,
-      formTitle: schema.title,
-      name,
-      phone,
-      email,
-      notifyEmails: schema.notifyEmails || [],
-      answersSummary: answersSnapshot.slice(0, 5),
-    });
 
     // 7b. Fire-and-forget WhatsApp ping to owner (non-blocking)
     notifyNewSubmission({

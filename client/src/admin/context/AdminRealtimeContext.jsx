@@ -36,13 +36,11 @@ export function AdminRealtimeProvider({ children }) {
       if (data) {
         setStats(data);
         const newSubs = data.newSubmissionsCount || 0;
-        const newOrders = data.ordersNeedingAction || 0;
-        const totalBadges = newSubs + newOrders;
-        setUnreadCount(totalBadges);
+        setUnreadCount(newSubs);
 
         // Update document title badge
-        if (totalBadges > 0) {
-          document.title = `(${totalBadges}) Decor Joy Admin`;
+        if (newSubs > 0) {
+          document.title = `(${newSubs}) Decor Joy Admin`;
         } else {
           document.title = "Decor Joy Admin";
         }
@@ -50,13 +48,12 @@ export function AdminRealtimeProvider({ children }) {
         // Detect if count increased
         if (
           prevSubmissionsRef.current !== null &&
-          (newSubs > prevSubmissionsRef.current || newOrders > (prevOrdersRef.current || 0))
+          newSubs > prevSubmissionsRef.current
         ) {
           playAlertSound();
         }
 
         prevSubmissionsRef.current = newSubs;
-        prevOrdersRef.current = newOrders;
       }
     } catch (_err) {
       // Silently retry on next poll interval

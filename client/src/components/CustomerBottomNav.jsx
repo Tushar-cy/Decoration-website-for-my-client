@@ -1,10 +1,21 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { useShop } from "../context/ShopContext";
+import { usePublicSettings } from "../context/SettingsContext";
 import "../styles/customerBottomNav.css";
 
 function CustomerBottomNav() {
-  const { cartCount, wishlist, setIsCartOpen, setIsWishlistOpen } = useShop();
+  const location = useLocation();
+  const { wishlist, setIsWishlistOpen } = useShop();
+  const { cleanWhatsapp } = usePublicSettings();
+
+  // Hide general bottom nav on product detail pages because they have dedicated package-level sticky enquiry CTAs
+  if (location.pathname.startsWith("/p/")) {
+    return null;
+  }
+
+  const waMsg = encodeURIComponent("Hi Decor Joy Gurgaon! I am planning an event and would like to inquire about your decoration packages.");
+  const waUrl = `https://wa.me/${cleanWhatsapp || "917015767715"}?text=${waMsg}`;
 
   return (
     <nav className="customer-bottom-nav" aria-label="Mobile Bottom Navigation">
@@ -21,13 +32,13 @@ function CustomerBottomNav() {
         <span className="bottom-tab-label">Home</span>
       </NavLink>
 
-      {/* Shop Setups */}
+      {/* Catalog Setups */}
       <NavLink
         to="/shop"
         className={({ isActive }) =>
           isActive ? "bottom-tab-item active" : "bottom-tab-item"
         }
-        aria-label="Shop Setups"
+        aria-label="Catalog Packages"
       >
         <span className="bottom-tab-icon">🎈</span>
         <span className="bottom-tab-label">Catalog</span>
@@ -61,23 +72,18 @@ function CustomerBottomNav() {
         <span className="bottom-tab-label">Saved</span>
       </button>
 
-      {/* Celebration Bag / Cart */}
-      <button
-        type="button"
+      {/* 1-Tap WhatsApp Inquire CTA */}
+      <a
+        href={waUrl}
+        target="_blank"
+        rel="noopener noreferrer"
         className="bottom-tab-item"
-        onClick={() => setIsCartOpen(true)}
-        aria-label={`Celebration bag (${cartCount} items)`}
+        aria-label="Inquire on WhatsApp"
+        style={{ color: "#25D366" }}
       >
-        <span className="bottom-tab-icon">
-          🛍️
-          {cartCount > 0 && (
-            <span className="bottom-tab-badge bottom-tab-badge-dark">
-              {cartCount}
-            </span>
-          )}
-        </span>
-        <span className="bottom-tab-label">Bag</span>
-      </button>
+        <span className="bottom-tab-icon">💬</span>
+        <span className="bottom-tab-label">WhatsApp</span>
+      </a>
     </nav>
   );
 }

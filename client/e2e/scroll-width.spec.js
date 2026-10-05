@@ -5,13 +5,10 @@ const ROUTES = [
   "/",
   "/shop",
   "/p/deluxe-balloon-arch",
-  "/cart",
-  "/checkout",
   "/plan-my-event",
   "/gallery",
   "/about",
   "/contact",
-  "/order/DJ-2026-TEST889",
   "/admin/login",
 ];
 

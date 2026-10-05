@@ -10,11 +10,6 @@ const Category = require("../models/Category");
 const Product = require("../models/Product");
 const AddOn = require("../models/AddOn");
 const Settings = require("../models/Settings");
-const SlotBooking = require("../models/SlotBooking");
-const { Customer } = require("../models/Customer");
-const Counter = require("../models/Counter");
-const Order = require("../models/Order");
-const Coupon = require("../models/Coupon");
 const AuditLog = require("../models/AuditLog");
 const Gallery = require("../models/Gallery");
 const Testimonial = require("../models/Testimonial");
@@ -30,11 +25,6 @@ const models = [
   { name: "Product", model: Product },
   { name: "AddOn", model: AddOn },
   { name: "Settings", model: Settings },
-  { name: "SlotBooking", model: SlotBooking },
-  { name: "Customer", model: Customer },
-  { name: "Counter", model: Counter },
-  { name: "Order", model: Order },
-  { name: "Coupon", model: Coupon },
   { name: "AuditLog", model: AuditLog },
   { name: "Gallery", model: Gallery },
   { name: "Testimonial", model: Testimonial },

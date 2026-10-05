@@ -1,15 +1,12 @@
 import React, { useEffect } from "react";
-import { Routes, Route, useLocation, Outlet, Navigate } from "react-router-dom";
+import { Routes, Route, useLocation, Outlet } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-import CartDrawer from "./components/CartDrawer";
 import WishlistModal from "./components/WishlistModal";
 import ProductQuickViewModal from "./components/ProductQuickViewModal";
 import Toast from "./components/Toast";
 import CustomerBottomNav from "./components/CustomerBottomNav";
-import InstallPrompt from "./components/pwa/InstallPrompt";
-import PwaUpdatePrompt from "./components/pwa/PwaUpdatePrompt";
 import { ShopProvider } from "./context/ShopContext";
 import { SettingsProvider } from "./context/SettingsContext";
 import MaintenanceBanner from "./components/MaintenanceBanner";
@@ -19,23 +16,18 @@ import CookieConsentBanner from "./components/CookieConsentBanner";
 const Home = React.lazy(() => import("./pages/Home"));
 const Shop = React.lazy(() => import("./pages/Shop"));
 const ProductDetail = React.lazy(() => import("./pages/ProductDetail"));
-const CartPage = React.lazy(() => import("./pages/CartPage"));
-const CheckoutPage = React.lazy(() => import("./pages/CheckoutPage"));
-const OrderTracking = React.lazy(() => import("./pages/OrderTracking"));
 const Gallery = React.lazy(() => import("./pages/Gallery"));
 const About = React.lazy(() => import("./pages/About"));
 const Contact = React.lazy(() => import("./pages/Contact"));
 const PlanMyEvent = React.lazy(() => import("./pages/PlanMyEvent"));
 const LocalityPage = React.lazy(() => import("./pages/LocalityPage"));
 
-// Admin Portal Pages (Code-split with React.lazy so customers NEVER download admin code)
+// Admin Portal Pages (Code-split with React.lazy)
 const AdminLogin = React.lazy(() => import("./admin/AdminLogin"));
 const AdminLayout = React.lazy(() => import("./admin/AdminLayout"));
 const Dashboard = React.lazy(() => import("./admin/Dashboard"));
-const OrdersManager = React.lazy(() => import("./admin/OrdersManager"));
 const ProductsManager = React.lazy(() => import("./admin/ProductsManager"));
 const CategoriesManager = React.lazy(() => import("./admin/CategoriesManager"));
-const AvailabilityManager = React.lazy(() => import("./admin/AvailabilityManager"));
 const FormBuilder = React.lazy(() => import("./admin/FormBuilder"));
 const SubmissionsManager = React.lazy(() => import("./admin/SubmissionsManager"));
 const GalleryManager = React.lazy(() => import("./admin/GalleryManager"));
@@ -108,7 +100,6 @@ function ScrollToTop() {
 function CustomerLayout() {
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100dvh" }}>
-      <InstallPrompt />
       <MaintenanceBanner />
       <Navbar />
       <main style={{ flexGrow: 1 }}>
@@ -119,13 +110,10 @@ function CustomerLayout() {
       <Footer />
       {/* Mobile Customer Bottom Navigation Bar */}
       <CustomerBottomNav />
-      {/* Global Modals & Drawers */}
-      <CartDrawer />
+      {/* Global Modals */}
       <WishlistModal />
       <ProductQuickViewModal />
       <Toast />
-      {/* PWA Update Banner */}
-      <PwaUpdatePrompt />
       {/* Cookie Consent Banner */}
       <CookieConsentBanner />
     </div>
@@ -145,9 +133,6 @@ function App() {
               <Route path="shop" element={<Shop />} />
               <Route path="services" element={<Shop />} />
               <Route path="p/:slug" element={<ProductDetail />} />
-              <Route path="cart" element={<CartPage />} />
-              <Route path="checkout" element={<CheckoutPage />} />
-              <Route path="order/:orderNumber" element={<OrderTracking />} />
               <Route path="plan-my-event" element={<PlanMyEvent />} />
               <Route path="gallery" element={<Gallery />} />
               <Route path="about" element={<About />} />
@@ -175,11 +160,8 @@ function App() {
             >
               <Route index element={<Dashboard />} />
               <Route path="dashboard" element={<Dashboard />} />
-              <Route path="orders" element={<OrdersManager />} />
               <Route path="products" element={<ProductsManager />} />
               <Route path="categories" element={<CategoriesManager />} />
-              <Route path="coupons" element={<Navigate to="/admin/categories?tab=coupons" replace />} />
-              <Route path="availability" element={<AvailabilityManager />} />
               <Route path="forms" element={<FormBuilder />} />
               <Route path="submissions" element={<SubmissionsManager />} />
               <Route path="gallery" element={<GalleryManager />} />

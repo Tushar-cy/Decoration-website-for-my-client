@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { getPurposeForm, submitPurposeForm } from "../services/api";
+import { usePublicSettings } from "../context/SettingsContext";
 import "../styles/purposeForm.css";
 
 function PurposeForm({ formKey, onCancel, onSuccess }) {
+  const { cleanWhatsapp } = usePublicSettings();
   const [schema, setSchema] = useState(null);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
@@ -294,32 +296,39 @@ function PurposeForm({ formKey, onCancel, onSuccess }) {
     return (
       <div className="purpose-form-success">
         <div className="success-icon-badge">✓</div>
-        <h2>Request Received!</h2>
+        <h2>Your event enquiry has been received.</h2>
         <p className="success-desc">
           {successData.message ||
-            "Thank you! Our decor stylists will connect with you on WhatsApp within 30 minutes."}
+            "Thank you! We have saved your celebration details and preferences. Our styling coordinator will connect with you to share themes and mockups."}
         </p>
 
         <div className="success-ref-card">
-          <span>Submission Reference</span>
-          <strong>#{String(successData.submissionId).slice(-6).toUpperCase()}</strong>
+          <span>Enquiry Reference</span>
+          <strong>#{String(successData.submissionId || "").slice(-6).toUpperCase()}</strong>
         </div>
 
-        {successData.whatsappUrl && (
-          <div className="whatsapp-cta-block">
-            <a
-              href={successData.whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-whatsapp"
-            >
-              <span>💬</span> Chat with Stylist on WhatsApp
-            </a>
-            <span className="whatsapp-hint">
-              Tap above to get immediate mockups, balloon samples, and priority booking!
-            </span>
-          </div>
-        )}
+        <div className="whatsapp-cta-block">
+          <a
+            href={
+              successData.whatsappUrl ||
+              `https://wa.me/${cleanWhatsapp || "917015767715"}?text=${encodeURIComponent(
+                `Hi Decor Joy Gurgaon! 🎉 I just submitted my event enquiry on your website.\n\n` +
+                  `• Purpose: ${schema?.title || "Event Decoration"}\n` +
+                  `• Ref ID: #${String(successData.submissionId || "").slice(-6).toUpperCase()}\n\n` +
+                  `Looking forward to receiving your decor mockups, themes, and pricing quote!`
+              )}`
+            }
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-whatsapp"
+            style={{ fontSize: "1.05rem", padding: "14px 28px" }}
+          >
+            <span>💬</span> Continue on WhatsApp
+          </a>
+          <span className="whatsapp-hint">
+            Tap to directly message our Gurgaon team on WhatsApp and receive immediate decor mockups & quotes!
+          </span>
+        </div>
 
         <button
           className="btn btn-secondary"

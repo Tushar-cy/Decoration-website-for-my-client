@@ -6,7 +6,7 @@ const Product = require("../models/Product");
 const Category = require("../models/Category");
 const Settings = require("../models/Settings");
 
-describe("Storefront v2 Architecture & Transaction Tests", () => {
+describe("Storefront Showcase Catalogue & Public Settings", () => {
   let origSettingsGet;
   let origProductFind;
   let origProductCount;
@@ -24,16 +24,17 @@ describe("Storefront v2 Architecture & Transaction Tests", () => {
           address: "Sector 57, Gurugram, Haryana",
           geo: { lat: 28.4239, lng: 77.0863 },
         },
-        slots: [
-          { key: "morning", label: "Morning", startTime: "09:00", endTime: "12:00", capacityPerDay: 5 },
-          { key: "evening", label: "Evening", startTime: "16:30", endTime: "19:30", capacityPerDay: 5 },
-        ],
         serviceablePincodes: [
           { pincode: "122001", deliveryFeePaise: 0 },
           { pincode: "122011", deliveryFeePaise: 20000 },
         ],
-        advancePercent: 25,
-        paymentMode: "advance_online",
+        socials: {
+          instagram: "https://instagram.com/decorjoygurgaon",
+        },
+        flags: {
+          bookingsPaused: false,
+          maintenanceBanner: "",
+        },
       });
 
     origProductFind = Product.find;
@@ -101,6 +102,15 @@ describe("Storefront v2 Architecture & Transaction Tests", () => {
     assert.strictEqual(res.body.data.hasOwnProperty("mongoUri"), false);
   });
 
+  test("GET /api/settings/flags returns storefront operational flags", async () => {
+    const res = await request(app).get("/api/settings/flags");
+
+    assert.strictEqual(res.statusCode, 200);
+    assert.strictEqual(res.body.status, "success");
+    assert.strictEqual(typeof res.body.data.bookingsPaused, "boolean");
+    assert.strictEqual(typeof res.body.data.maintenanceBanner, "string");
+  });
+
   test("GET /api/products returns paginated catalog without fallbacks", async () => {
     const res = await request(app).get("/api/products?page=1&limit=5");
 
@@ -119,51 +129,5 @@ describe("Storefront v2 Architecture & Transaction Tests", () => {
     assert.strictEqual(res.body.status, "success");
     assert.ok(Array.isArray(res.body.data.categories));
     assert.strictEqual(res.body.data.categories.length, 2);
-  });
-
-  test("POST /api/quotes recomputes price from DB and rejects price tampering", async () => {
-    // Attempt price tampering: client tries sending a fake price
-    const tamperingPayload = {
-      items: [
-        {
-          productId: "679901000000000000000001",
-          quantity: 1,
-          tamperedPrice: 100, // Should be completely ignored by server
-        },
-      ],
-      pincode: "122001",
-    };
-
-    const res = await request(app)
-      .post("/api/quotes")
-      .set("x-requested-with", "decorjoy")
-      .send(tamperingPayload);
-
-    // If product is not in database, it returns 400 or 404, never 200 with tampered price
-    if (res.statusCode === 200) {
-      assert.strictEqual(res.body.status, "success");
-      assert.notStrictEqual(res.body.data.pricing.totalPaise, 100);
-    } else {
-      assert.ok(res.statusCode === 400 || res.statusCode === 404);
-    }
-  });
-
-  test("POST /api/orders requires valid fields and rejects empty cart", async () => {
-    const res = await request(app)
-      .post("/api/orders")
-      .set("x-requested-with", "decorjoy")
-      .send({
-        customer: { name: "Test User", phone: "9876543210" },
-        event: {
-          type: "Birthday",
-          date: "2026-10-15",
-          slotKey: "evening",
-          address: { line1: "Test Address", locality: "Gurgaon", city: "Gurugram", pincode: "122001" },
-        },
-        items: [],
-      });
-
-    // Rejects empty items array with 400 Validation Error
-    assert.strictEqual(res.statusCode, 400);
   });
 });

@@ -78,7 +78,6 @@ async function getSubmissionById(req, res, next) {
   try {
     const submission = await Submission.findById(req.params.id)
       .populate("assignedTo", "name email role")
-      .populate("convertedOrderId", "orderNumber status pricing")
       .lean();
 
     if (!submission) {
@@ -95,7 +94,7 @@ async function getSubmissionById(req, res, next) {
 }
 
 const statusSchema = z.object({
-  status: z.enum(["new", "contacted", "quoted", "converted", "lost"]),
+  status: z.enum(["new", "contacted", "quoted", "converted", "closed", "spam", "lost"]),
 });
 
 /**
@@ -217,7 +216,8 @@ async function assignSubmission(req, res, next) {
 }
 
 const convertSchema = z.object({
-  orderId: z.string().min(1, "Order ID is required to link converted order"),
+  orderId: z.string().optional(),
+  bookingRef: z.string().optional(),
 });
 
 /**
@@ -225,24 +225,25 @@ const convertSchema = z.object({
  */
 async function convertSubmissionToOrder(req, res, next) {
   try {
-    const { orderId } = convertSchema.parse(req.body);
+    const { orderId, bookingRef } = convertSchema.parse(req.body);
     const submission = await Submission.findById(req.params.id);
 
     if (!submission) {
       throw new AppError(`Submission '${req.params.id}' not found`, 404);
     }
 
-    submission.convertedOrderId = orderId;
+    const ref = orderId || bookingRef || `BOOK-${Date.now().toString().slice(-6)}`;
+    submission.convertedOrderId = ref;
     submission.status = "converted";
     await submission.save();
 
     await recordAudit({
       actorId: req.admin?.id,
-      action: "SUBMISSION_CONVERTED_TO_ORDER",
+      action: "SUBMISSION_CONVERTED",
       entity: "Submission",
       entityId: submission._id,
       before: null,
-      after: { convertedOrderId: orderId, status: "converted" },
+      after: { convertedOrderId: ref, status: "converted" },
       ip: req.ip,
     });
 

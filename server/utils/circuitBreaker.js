@@ -122,13 +122,11 @@ class CircuitBreaker {
 }
 
 // Pre-configured service breakers
-const razorpayBreaker = new CircuitBreaker("Razorpay", { failureThreshold: 5, recoveryTimeout: 30000 });
 const cloudinaryBreaker = new CircuitBreaker("Cloudinary", { failureThreshold: 5, recoveryTimeout: 30000 });
 const emailBreaker = new CircuitBreaker("Email", { failureThreshold: 5, recoveryTimeout: 30000 });
 
 module.exports = {
   CircuitBreaker,
-  razorpayBreaker,
   cloudinaryBreaker,
   emailBreaker,
 };

@@ -44,8 +44,6 @@ router.get("/public", publicCache(60, 600), async (req, res, next) => {
             pincode: p.pincode,
             deliveryFeePaise: p.deliveryFeePaise,
           })),
-          advancePercent: settings.advancePercent || 25,
-          paymentMode: settings.paymentMode || "advance_online",
           socials: settings.socials || {},
         };
       },

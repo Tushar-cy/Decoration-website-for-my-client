@@ -9,7 +9,6 @@ function ProductQuickViewModal() {
   const {
     quickViewProduct,
     setQuickViewProduct,
-    addToCart,
     toggleWishlist,
     isInWishlist,
   } = useShop();
@@ -216,32 +215,18 @@ function ProductQuickViewModal() {
 
             {/* Actions */}
             <div style={{ display: "flex", gap: "10px", marginTop: "16px", flexWrap: "wrap" }}>
-              {product.slug ? (
-                <Link
-                  to={`/p/${product.slug}`}
-                  className="btn btn-gold"
-                  onClick={() => setQuickViewProduct(null)}
-                  style={{ flex: 1, minHeight: "44px", textAlign: "center", textDecoration: "none" }}
-                >
-                  Configure & Book ➔
-                </Link>
-              ) : (
-                <button
-                  type="button"
-                  className="btn btn-gold"
-                  onClick={() => {
-                    addToCart({ productId: product._id, title: product.title });
-                    setQuickViewProduct(null);
-                  }}
-                  style={{ flex: 1, minHeight: "44px" }}
-                >
-                  Add to Celebration Bag 🛍️
-                </button>
-              )}
+              <Link
+                to={product.slug ? `/p/${product.slug}` : "/shop"}
+                className="btn btn-gold"
+                onClick={() => setQuickViewProduct(null)}
+                style={{ flex: 1, minHeight: "44px", textAlign: "center", textDecoration: "none", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+              >
+                View Package Details ➔
+              </Link>
 
               <WhatsAppButton
                 text="Inquire on WhatsApp"
-                message={`Hi Decor Joy! I am interested in the "${product.title}" setup. Could you please share the custom quote and check availability?`}
+                message={`Hi Decor Joy! I am interested in the "${product.title}" decoration package. Could you please share the custom quote and check availability?`}
                 className="btn btn-whatsapp"
                 style={{ flex: 1, minHeight: "44px" }}
               />

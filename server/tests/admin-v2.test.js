@@ -8,21 +8,16 @@ const Product = require("../models/Product");
 const Category = require("../models/Category");
 const Admin = require("../models/Admin");
 const Settings = require("../models/Settings");
-const Order = require("../models/Order");
 const Submission = require("../models/Submission");
-const SlotBooking = require("../models/SlotBooking");
 
-describe("Admin v2 Role Guards, Operations & Security", () => {
+describe("Admin v2 Role Guards, Operations & Lead CRM", () => {
   let ownerToken;
   let staffToken;
   let originalAdminFindById;
   let originalSettingsGet;
-  let originalOrderFind;
-  let originalOrderCount;
-  let originalOrderAggregate;
   let originalSubmissionCount;
+  let originalSubmissionAggregate;
   let originalSubmissionFind;
-  let originalSlotBookingFind;
 
   before(async () => {
     const secret = process.env.JWT_ACCESS_SECRET;
@@ -69,32 +64,20 @@ describe("Admin v2 Role Guards, Operations & Security", () => {
       Settings.getSettings = () =>
         Promise.resolve({
           _id: "settings-id",
-          slots: [
-            { key: "morning", label: "Morning", startTime: "09:00", endTime: "13:00", capacityPerDay: 5 },
-            { key: "afternoon", label: "Afternoon", startTime: "13:00", endTime: "17:00", capacityPerDay: 5 },
-            { key: "evening", label: "Evening", startTime: "17:00", endTime: "21:00", capacityPerDay: 5 },
-          ],
-          blackoutDates: [],
+          business: {
+            name: "Decor Joy Gurgaon",
+            phone: "+91 7015767715",
+            whatsapp: "+91 7015767715",
+          },
           serviceablePincodes: [{ pincode: "122001", deliveryFeePaise: 0 }],
-          advancePercent: 25,
-          paymentMode: "advance_online",
-          toObject: () => ({ advancePercent: 25, paymentMode: "advance_online" }),
+          toObject: () => ({ business: { name: "Decor Joy Gurgaon" } }),
         });
-
-      originalOrderFind = Order.find;
-      Order.find = () => ({
-        select: () => ({ lean: () => Promise.resolve([]) }),
-        lean: () => Promise.resolve([]),
-      });
-
-      originalOrderCount = Order.countDocuments;
-      Order.countDocuments = () => Promise.resolve(2);
-
-      originalOrderAggregate = Order.aggregate;
-      Order.aggregate = () => Promise.resolve([{ total: 1500000 }]);
 
       originalSubmissionCount = Submission.countDocuments;
       Submission.countDocuments = () => Promise.resolve(5);
+
+      originalSubmissionAggregate = Submission.aggregate;
+      Submission.aggregate = () => Promise.resolve([{ _id: "new", count: 5 }]);
 
       originalSubmissionFind = Submission.find;
       Submission.find = () => ({
@@ -106,26 +89,18 @@ describe("Admin v2 Role Guards, Operations & Security", () => {
           }),
         }),
       });
-
-      originalSlotBookingFind = SlotBooking.find;
-      SlotBooking.find = () => ({
-        lean: () => Promise.resolve([]),
-      });
     }
   });
 
   after(() => {
     Admin.findById = originalAdminFindById;
     if (originalSettingsGet) Settings.getSettings = originalSettingsGet;
-    if (originalOrderFind) Order.find = originalOrderFind;
-    if (originalOrderCount) Order.countDocuments = originalOrderCount;
-    if (originalOrderAggregate) Order.aggregate = originalOrderAggregate;
     if (originalSubmissionCount) Submission.countDocuments = originalSubmissionCount;
+    if (originalSubmissionAggregate) Submission.aggregate = originalSubmissionAggregate;
     if (originalSubmissionFind) Submission.find = originalSubmissionFind;
-    if (originalSlotBookingFind) SlotBooking.find = originalSlotBookingFind;
   });
 
-  test("GET /api/admin/dashboard returns operational stats for staff", async () => {
+  test("GET /api/admin/dashboard returns operational lead stats for staff", async () => {
     const res = await request(app)
       .get("/api/admin/dashboard")
       .set("x-requested-with", "decorjoy")
@@ -133,10 +108,13 @@ describe("Admin v2 Role Guards, Operations & Security", () => {
 
     assert.strictEqual(res.statusCode, 200);
     assert.strictEqual(res.body.status, "success");
-    assert.ok(res.body.data.hasOwnProperty("todaySetups"));
-    assert.ok(res.body.data.hasOwnProperty("ordersNeedingAction"));
-    assert.ok(res.body.data.hasOwnProperty("revenueThisWeekPaise"));
-    assert.ok(res.body.data.hasOwnProperty("slotLoad"));
+    assert.ok(res.body.data.hasOwnProperty("totalSubmissions"));
+    assert.ok(res.body.data.hasOwnProperty("newSubmissionsCount"));
+    assert.ok(res.body.data.hasOwnProperty("todaySubmissionsCount"));
+    assert.ok(res.body.data.hasOwnProperty("thisWeekSubmissionsCount"));
+    assert.ok(res.body.data.hasOwnProperty("statusBreakdown"));
+    assert.ok(res.body.data.hasOwnProperty("occasionBreakdown"));
+    assert.ok(res.body.data.hasOwnProperty("recentSubmissions"));
   });
 
   test("GET /api/admin/settings: Staff access is forbidden with 403", async () => {
@@ -190,17 +168,5 @@ describe("Admin v2 Role Guards, Operations & Security", () => {
       .set("Cookie", [`accessToken=${staffToken}`]);
 
     assert.strictEqual(res.statusCode, 403);
-  });
-
-  test("GET /api/admin/availability/month returns full month grid", async () => {
-    const res = await request(app)
-      .get("/api/admin/availability/month?year=2026&month=10")
-      .set("x-requested-with", "decorjoy")
-      .set("Cookie", [`accessToken=${staffToken}`]);
-
-    assert.strictEqual(res.statusCode, 200);
-    assert.strictEqual(res.body.status, "success");
-    assert.strictEqual(res.body.data.days.length, 31);
-    assert.ok(res.body.data.days[0].slots.length > 0);
   });
 });

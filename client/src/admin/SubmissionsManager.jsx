@@ -155,34 +155,92 @@ function SubmissionsManager() {
     }
   };
 
-  // Convert to Order
+  // Mark as Converted (Deal Closed)
   const handleConvertToOrder = async () => {
     if (!activeSubmission) return;
-    const defaultOrderId = `ORD-${Date.now().toString().slice(-6)}`;
-    const orderId = window.prompt("Enter or confirm the Order Reference ID to link:", defaultOrderId);
-    if (!orderId) return;
+    const defaultRef = `BOOK-${Date.now().toString().slice(-6)}`;
+    const ref = window.prompt("Enter or confirm Booking/Deal Reference (e.g. client name or code):", defaultRef);
+    if (ref === null) return;
 
     try {
-      const res = await convertAdminSubmission(activeSubmission._id, orderId);
+      const res = await convertAdminSubmission(activeSubmission._id, { orderId: ref || defaultRef });
       const updated = res.data?.data?.submission;
       setActiveSubmission(updated);
 
       setSubmissions((prev) =>
-        prev.map((s) => (s._id === updated._id ? { ...s, status: "converted", convertedOrderId: orderId } : s))
+        prev.map((s) => (s._id === updated._id ? { ...s, status: "converted", convertedOrderId: ref || defaultRef } : s))
       );
 
-      alert(`Submission marked as CONVERTED and linked to Order Ref: ${orderId}`);
+      alert(`Submission marked as CONVERTED! Ref: ${ref || defaultRef}`);
     } catch (err) {
-      alert("Failed to convert submission.");
+      alert("Failed to mark submission as converted.");
     }
+  };
+
+  // Helper to extract key fields (customer, occasion, date, location, budget) from schema answers
+  const extractSubmissionSummary = (sub) => {
+    if (!sub) {
+      return { customerName: "", customerPhone: "", customerEmail: "", occasion: "", date: "—", location: "Gurgaon", budget: "Indicative", preferences: "" };
+    }
+    const answers = sub.answers || {};
+    const snapshot = sub.answersSnapshot || [];
+
+    const getVal = (keys) => {
+      for (const k of keys) {
+        if (answers[k] !== undefined && answers[k] !== null && answers[k] !== "") return answers[k];
+        const snap = snapshot.find((s) => s.fieldId === k);
+        if (snap?.value !== undefined && snap?.value !== null && snap?.value !== "") return snap.value;
+      }
+      return null;
+    };
+
+    const customerName = sub.name || getVal(["name", "fullName", "celebrant_name"]) || "Customer";
+    const customerPhone = sub.phone || getVal(["phone", "whatsapp", "mobile"]) || "";
+    const customerEmail = sub.email || getVal(["email"]) || "";
+
+    const occasion =
+      getVal(["occasion", "event_type", "purpose", "theme"]) ||
+      (sub.formKey ? sub.formKey.replace(/-/g, " ") : "Celebration");
+
+    const date =
+      getVal(["event_date", "eventDate", "preferred_date", "date", "celebration_date"]) || "Flexible";
+
+    const location =
+      getVal(["location", "venue_address", "pincode", "venue_type", "address", "area", "condo"]) ||
+      "Gurgaon";
+
+    const budget =
+      getVal(["budget", "approximate_budget", "budget_range", "price_range"]) || "Custom Quote";
+
+    const preferences =
+      getVal(["theme", "colours", "custom_theme_desc", "special_requests", "notes", "requirements"]) || "";
+
+    return {
+      customerName,
+      customerPhone,
+      customerEmail,
+      occasion,
+      date,
+      location,
+      budget,
+      preferences,
+    };
+  };
+
+  // Click-to-call link
+  const getCallHref = (submission) => {
+    const rawPhone = submission.phone || "";
+    const cleanPhone = rawPhone.replace(/[^\d+]/g, "");
+    return `tel:${cleanPhone}`;
   };
 
   // WhatsApp click-to-chat
   const getWhatsAppUrl = (submission) => {
     const rawPhone = submission.phone || "";
     const cleanPhone = rawPhone.replace(/[^0-9]/g, "");
+    const summary = extractSubmissionSummary(submission);
     const msg = encodeURIComponent(
-      `Hello ${submission.name}! Thank you for your ${submission.formKey.toUpperCase()} decoration request with Decor Joy Gurgaon. I'd love to help finalize your setup design. How may we assist you today?`
+      `Hello ${submission.name}! Thank you for submitting your ${summary.occasion.toUpperCase()} decoration enquiry with Decor Joy Gurgaon. We'd love to share customized decor mockups and pricing options with you. How may we assist you today?`
     );
     return `https://wa.me/${cleanPhone.startsWith("91") ? cleanPhone : "91" + cleanPhone}?text=${msg}`;
   };
@@ -322,20 +380,16 @@ function SubmissionsManager() {
             <thead>
               <tr>
                 <th>Customer</th>
-                <th>Purpose</th>
+                <th>Occasion</th>
                 <th>Event Date / Slot</th>
-                <th>Submitted (IST)</th>
+                <th>Location & Budget</th>
                 <th>Status</th>
-                <th>Assigned</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody>
               {submissions.map((sub) => {
-                const eventDate =
-                  sub.answers?.event_date ||
-                  sub.answers?.eventDate ||
-                  sub.answersSnapshot?.find((s) => s.fieldId === "event_date" || s.fieldId === "eventDate")?.value;
+                const summary = extractSubmissionSummary(sub);
 
                 return (
                   <tr key={sub._id}>
@@ -352,22 +406,22 @@ function SubmissionsManager() {
                         }}
                       >
                         <strong style={{ color: "#0f172a", fontSize: "0.92rem", textDecoration: "underline" }}>
-                          {sub.name || "Customer"}
+                          {summary.customerName}
                         </strong>
                       </button>
                       <div style={{ fontSize: "0.82rem", color: "#64748b", marginTop: "2px" }}>
-                        📞 {sub.phone}
+                        📞 {summary.customerPhone}
                       </div>
-                      {sub.email && (
+                      {summary.customerEmail && (
                         <div style={{ fontSize: "0.78rem", color: "#94a3b8" }}>
-                          ✉️ {sub.email}
+                          ✉️ {summary.customerEmail}
                         </div>
                       )}
                     </td>
 
                     <td>
                       <span className="badge-gold" style={{ textTransform: "capitalize" }}>
-                        {sub.formKey.replace(/-/g, " ")}
+                        {summary.occasion}
                       </span>
                       <div style={{ fontSize: "0.72rem", color: "#94a3b8", marginTop: "2px" }}>
                         v{sub.formVersion}
@@ -375,15 +429,14 @@ function SubmissionsManager() {
                     </td>
 
                     <td style={{ fontSize: "0.85rem", color: "#334155" }}>
-                      {eventDate ? String(eventDate) : "—"}
+                      📅 {summary.date}
                     </td>
 
-                    <td style={{ fontSize: "0.82rem", color: "#64748b" }}>
-                      {new Date(sub.createdAt).toLocaleString("en-IN", {
-                        timeZone: "Asia/Kolkata",
-                        dateStyle: "medium",
-                        timeStyle: "short",
-                      })}
+                    <td style={{ fontSize: "0.82rem", color: "#475569" }}>
+                      <div>📍 {summary.location}</div>
+                      <div style={{ color: "#b88932", fontWeight: 600, marginTop: "2px" }}>
+                        💰 {summary.budget}
+                      </div>
                     </td>
 
                     <td>
@@ -397,16 +450,14 @@ function SubmissionsManager() {
                         <option value="contacted">Contacted</option>
                         <option value="quoted">Quoted</option>
                         <option value="converted">Converted</option>
+                        <option value="closed">Closed</option>
+                        <option value="spam">Spam</option>
                         <option value="lost">Lost</option>
                       </select>
                     </td>
 
-                    <td style={{ fontSize: "0.85rem", color: "#64748b" }}>
-                      {sub.assignedTo || "—"}
-                    </td>
-
                     <td>
-                      <div style={{ display: "flex", gap: "6px" }}>
+                      <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
                         <a
                           href={getWhatsAppUrl(sub)}
                           target="_blank"
@@ -419,10 +470,32 @@ function SubmissionsManager() {
                             textDecoration: "none",
                             padding: "4px 8px",
                             fontSize: "0.78rem",
+                            background: "#25d366",
+                            color: "#ffffff",
+                            borderColor: "#25d366",
                           }}
                           title="Open WhatsApp chat"
                         >
                           <span>💬</span> WhatsApp
+                        </a>
+
+                        <a
+                          href={getCallHref(sub)}
+                          className="btn-action-edit"
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "4px",
+                            textDecoration: "none",
+                            padding: "4px 8px",
+                            fontSize: "0.78rem",
+                            background: "#0284c7",
+                            color: "#ffffff",
+                            borderColor: "#0284c7",
+                          }}
+                          title="Call Customer"
+                        >
+                          <span>📞</span> Call
                         </a>
 
                         <button
@@ -484,19 +557,24 @@ function SubmissionsManager() {
         <div className="admin-modal-backdrop" onClick={closeDetail}>
           <div
             className="admin-modal-card"
-            style={{ maxWidth: "800px", width: "95%" }}
+            style={{ maxWidth: "840px", width: "95%" }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="admin-modal-header">
               <div>
                 <h3 className="admin-modal-title">
-                  {activeSubmission.name} -{" "}
+                  {activeSubmission.name} —{" "}
                   <span style={{ textTransform: "capitalize", color: "#b88932" }}>
                     {activeSubmission.formKey.replace(/-/g, " ")}
                   </span>
                 </h3>
                 <span style={{ fontSize: "0.78rem", color: "#64748b" }}>
-                  Ref: {activeSubmission._id} • Version: v{activeSubmission.formVersion}
+                  Ref: {activeSubmission._id} • Version: v{activeSubmission.formVersion} • Submitted:{" "}
+                  {new Date(activeSubmission.createdAt).toLocaleString("en-IN", {
+                    timeZone: "Asia/Kolkata",
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  })}
                 </span>
               </div>
               <button
@@ -530,61 +608,104 @@ function SubmissionsManager() {
                 </div>
               )}
 
-              {/* Status and Action Ribbon */}
+              {/* Executive Summary Card (Who, Occasion, Date, Location, Budget, Status) */}
+              {(() => {
+                const summary = extractSubmissionSummary(activeSubmission);
+                return (
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
+                      gap: "12px",
+                      background: "#fffaf0",
+                      border: "1px solid rgba(184, 137, 50, 0.35)",
+                      borderRadius: "10px",
+                      padding: "16px",
+                      marginBottom: "18px",
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: "0.72rem", color: "#8c6424", textTransform: "uppercase", fontWeight: 700 }}>
+                        👤 Customer
+                      </div>
+                      <div style={{ fontWeight: 700, color: "#1a221f", fontSize: "0.95rem" }}>
+                        {summary.customerName}
+                      </div>
+                      <div style={{ fontSize: "0.82rem", color: "#475569" }}>
+                        {summary.customerPhone}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div style={{ fontSize: "0.72rem", color: "#8c6424", textTransform: "uppercase", fontWeight: 700 }}>
+                        🎉 Occasion
+                      </div>
+                      <div style={{ fontWeight: 700, color: "#1a221f", fontSize: "0.95rem", textTransform: "capitalize" }}>
+                        {summary.occasion}
+                      </div>
+                      <div style={{ fontSize: "0.8rem", color: "#64748b" }}>
+                        v{activeSubmission.formVersion}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div style={{ fontSize: "0.72rem", color: "#8c6424", textTransform: "uppercase", fontWeight: 700 }}>
+                        📅 Preferred Date
+                      </div>
+                      <div style={{ fontWeight: 700, color: "#1a221f", fontSize: "0.95rem" }}>
+                        {summary.date}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div style={{ fontSize: "0.72rem", color: "#8c6424", textTransform: "uppercase", fontWeight: 700 }}>
+                        📍 Location / Area
+                      </div>
+                      <div style={{ fontWeight: 700, color: "#1a221f", fontSize: "0.95rem" }}>
+                        {summary.location}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div style={{ fontSize: "0.72rem", color: "#8c6424", textTransform: "uppercase", fontWeight: 700 }}>
+                        💰 Approx. Budget
+                      </div>
+                      <div style={{ fontWeight: 700, color: "#b88932", fontSize: "0.95rem" }}>
+                        {summary.budget}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div style={{ fontSize: "0.72rem", color: "#8c6424", textTransform: "uppercase", fontWeight: 700 }}>
+                        ⚡ Current Status
+                      </div>
+                      <div>
+                        <span className={`status-pill status-${activeSubmission.status}`}>
+                          {activeSubmission.status.toUpperCase()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Direct Actions Toolbar: WhatsApp, Call, Mark Contacted, Mark Converted, Close */}
               <div
                 style={{
                   display: "flex",
                   flexWrap: "wrap",
-                  gap: "14px",
+                  gap: "10px",
                   alignItems: "center",
                   justifyContent: "space-between",
                   background: "#f8fafc",
                   padding: "14px",
+                  border: "1px solid #e2e8f0",
                   borderRadius: "8px",
                   marginBottom: "20px",
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#334155" }}>
-                    Status:
-                  </span>
-                  <select
-                    value={activeSubmission.status}
-                    onChange={(e) => handleStatusChange(activeSubmission._id, e.target.value)}
-                    className={`status-pill status-${activeSubmission.status}`}
-                    style={{ border: "1px solid #cbd5e1", outline: "none", cursor: "pointer" }}
-                  >
-                    <option value="new">New</option>
-                    <option value="contacted">Contacted</option>
-                    <option value="quoted">Quoted</option>
-                    <option value="converted">Converted</option>
-                    <option value="lost">Lost</option>
-                  </select>
-                </div>
-
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#334155" }}>
-                    Staff:
-                  </span>
-                  <input
-                    type="text"
-                    className="fb-input"
-                    style={{ width: "130px", padding: "4px 8px" }}
-                    placeholder="Staff name"
-                    value={assigneeInput}
-                    onChange={(e) => setAssigneeInput(e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    className="btn-action-edit"
-                    style={{ padding: "4px 8px", fontSize: "0.78rem" }}
-                    onClick={handleAssign}
-                  >
-                    Save
-                  </button>
-                </div>
-
-                <div style={{ display: "flex", gap: "8px" }}>
+                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
+                  {/* Action 1: WhatsApp */}
                   <a
                     href={getWhatsAppUrl(activeSubmission)}
                     target="_blank"
@@ -592,37 +713,132 @@ function SubmissionsManager() {
                     className="btn-admin-primary"
                     style={{
                       background: "#25d366",
-                      fontSize: "0.82rem",
-                      padding: "6px 12px",
+                      fontSize: "0.85rem",
+                      padding: "8px 14px",
                       textDecoration: "none",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
                     }}
                   >
                     <span>💬</span> WhatsApp
                   </a>
 
+                  {/* Action 2: Call */}
+                  <a
+                    href={getCallHref(activeSubmission)}
+                    className="btn-admin-primary"
+                    style={{
+                      background: "#0284c7",
+                      fontSize: "0.85rem",
+                      padding: "8px 14px",
+                      textDecoration: "none",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                    }}
+                  >
+                    <span>📞</span> Call
+                  </a>
+
+                  {/* Action 3: Mark Contacted */}
+                  {activeSubmission.status === "new" && (
+                    <button
+                      type="button"
+                      className="btn-action-edit"
+                      style={{ fontSize: "0.85rem", padding: "8px 14px", fontWeight: 600 }}
+                      onClick={() => handleStatusChange(activeSubmission._id, "contacted")}
+                    >
+                      ✓ Mark Contacted
+                    </button>
+                  )}
+
+                  {/* Action 4: Mark Converted */}
                   {activeSubmission.status !== "converted" ? (
                     <button
                       type="button"
                       className="btn-admin-primary"
-                      style={{ fontSize: "0.82rem", padding: "6px 12px" }}
-                      onClick={handleConvertToOrder}
+                      style={{ fontSize: "0.85rem", padding: "8px 14px", background: "#b88932" }}
+                      onClick={() => handleConvertToOrder(activeSubmission)}
                     >
-                      🎯 Convert to Order
+                      🎯 Mark Converted
                     </button>
                   ) : (
                     <span
                       style={{
-                        padding: "6px 12px",
+                        padding: "8px 14px",
                         background: "#dcfce7",
                         color: "#166534",
                         borderRadius: "6px",
-                        fontSize: "0.8rem",
+                        fontSize: "0.82rem",
                         fontWeight: 700,
                       }}
                     >
-                      ✓ Order Ref: {activeSubmission.convertedOrderId}
+                      ✓ Converted: {activeSubmission.convertedOrderId || "Yes"}
                     </span>
                   )}
+
+                  {/* Action 5: Close */}
+                  {activeSubmission.status !== "closed" && (
+                    <button
+                      type="button"
+                      className="btn-action-edit"
+                      style={{
+                        fontSize: "0.85rem",
+                        padding: "8px 14px",
+                        color: "#dc2626",
+                        borderColor: "#fca5a5",
+                      }}
+                      onClick={() => handleStatusChange(activeSubmission._id, "closed")}
+                    >
+                      ✖ Close
+                    </button>
+                  )}
+                </div>
+
+                {/* Status Dropdown & Staff Assignment */}
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#64748b" }}>
+                      Status:
+                    </span>
+                    <select
+                      value={activeSubmission.status}
+                      onChange={(e) => handleStatusChange(activeSubmission._id, e.target.value)}
+                      className={`status-pill status-${activeSubmission.status}`}
+                      style={{ border: "1px solid #cbd5e1", outline: "none", cursor: "pointer" }}
+                    >
+                      <option value="new">New</option>
+                      <option value="contacted">Contacted</option>
+                      <option value="quoted">Quoted</option>
+                      <option value="converted">Converted</option>
+                      <option value="closed">Closed</option>
+                      <option value="spam">Spam</option>
+                      <option value="lost">Lost</option>
+                    </select>
+                  </div>
+
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#64748b" }}>
+                      Staff:
+                    </span>
+                    <input
+                      type="text"
+                      className="fb-input"
+                      style={{ width: "110px", padding: "4px 8px", fontSize: "0.8rem" }}
+                      placeholder="Staff name"
+                      value={assigneeInput}
+                      onChange={(e) => setAssigneeInput(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className="btn-action-edit"
+                      style={{ padding: "4px 8px", fontSize: "0.78rem" }}
+                      onClick={handleAssign}
+                    >
+                      Save
+                    </button>
+                  </div>
                 </div>
               </div>
 

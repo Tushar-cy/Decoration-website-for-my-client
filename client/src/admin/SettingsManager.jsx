@@ -110,28 +110,6 @@ function SettingsManagerContent({ currentUser }) {
           </p>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            {/* Online Payments toggle */}
-            <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
-              <div style={{ paddingTop: "3px" }}>
-                <input
-                  type="checkbox"
-                  id="flag-online-payments"
-                  style={{ width: 20, height: 20, cursor: "pointer", accentColor: "#16a34a" }}
-                  checked={formData.flags?.onlinePayments !== false}
-                  onChange={(e) =>
-                    setFormData({ ...formData, flags: { ...(formData.flags || {}), onlinePayments: e.target.checked } })
-                  }
-                />
-              </div>
-              <div>
-                <label htmlFor="flag-online-payments" style={{ fontWeight: 700, cursor: "pointer", fontSize: "0.95rem" }}>
-                  💳 Online Payments Enabled
-                </label>
-                <p style={{ fontSize: "0.8rem", color: "#64748b", margin: "2px 0 0" }}>
-                  Uncheck to fall back to Pay-on-Confirmation. Customer sees a message; no order is blocked.
-                </p>
-              </div>
-            </div>
 
             {/* Bookings Paused toggle */}
             <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
@@ -257,40 +235,6 @@ function SettingsManagerContent({ currentUser }) {
           </div>
         </div>
 
-        {/* Payments and Checkout Configuration */}
-        <div className="fb-card">
-          <div className="fb-card-title">💳 Payments & Checkout Mode</div>
-          <div className="fb-field-grid">
-            <div className="fb-input-group">
-              <label className="fb-input-label">Payment Mode</label>
-              <select
-                className="fb-select"
-                value={formData.paymentMode || "advance_online"}
-                onChange={(e) => setFormData({ ...formData, paymentMode: e.target.value })}
-              >
-                <option value="advance_online">Advance Online via Razorpay (Recommended)</option>
-                <option value="pay_on_confirmation">Pay on Confirmation (No online checkout)</option>
-              </select>
-            </div>
-
-            <div className="fb-input-group">
-              <label className="fb-input-label">Advance Booking Percentage (%)</label>
-              <input
-                type="number"
-                min="0"
-                max="100"
-                className="fb-input"
-                value={formData.advancePercent || 25}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    advancePercent: parseInt(e.target.value, 10) || 0,
-                  })
-                }
-              />
-            </div>
-          </div>
-        </div>
 
         {/* Serviceable Pincodes and Delivery Fees */}
         <div className="fb-card">

@@ -6,7 +6,6 @@ import AdminErrorBoundary from "./components/AdminErrorBoundary";
 import { UndoToastProvider } from "./context/UndoToastContext";
 import { AdminRealtimeProvider, useAdminRealtime } from "./context/AdminRealtimeContext";
 import AdminBottomNav from "./components/AdminBottomNav";
-import AdminPushNotificationPrompt from "./components/AdminPushNotificationPrompt";
 import "../styles/admin.css";
 
 const adminQueryClient = new QueryClient({
@@ -48,24 +47,11 @@ function AdminLayoutInner({ currentUser, onLogout }) {
             </NavLink>
 
             <NavLink
-              to="/admin/orders"
-              className={({ isActive }) => (isActive ? "admin-nav-item active" : "admin-nav-item")}
-            >
-              <span>🛍️</span>
-              <span style={{ display: "flex", justifyContent: "space-between", flex: 1, alignItems: "center" }}>
-                <span>Orders</span>
-                {(stats?.ordersNeedingAction || 0) > 0 && (
-                  <span className="nav-badge-pill">{stats.ordersNeedingAction}</span>
-                )}
-              </span>
-            </NavLink>
-
-            <NavLink
               to="/admin/products"
               className={({ isActive }) => (isActive ? "admin-nav-item active" : "admin-nav-item")}
             >
               <span>🎈</span>
-              <span>Products & Setups</span>
+              <span>Decoration Packages</span>
             </NavLink>
 
             <NavLink
@@ -74,14 +60,6 @@ function AdminLayoutInner({ currentUser, onLogout }) {
             >
               <span>🏷️</span>
               <span>Categories & Add-Ons</span>
-            </NavLink>
-
-            <NavLink
-              to="/admin/availability"
-              className={({ isActive }) => (isActive ? "admin-nav-item active" : "admin-nav-item")}
-            >
-              <span>📅</span>
-              <span>Slot Availability</span>
             </NavLink>
 
             <NavLink
@@ -182,7 +160,6 @@ function AdminLayoutInner({ currentUser, onLogout }) {
           </header>
 
           <div className="admin-content-body">
-            <AdminPushNotificationPrompt />
             <Outlet context={{ currentUser }} />
           </div>
 
@@ -198,22 +175,6 @@ function AdminLayout() {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  // Set Admin manifest and dark theme color so owner can install Admin as a standalone PWA
-  useEffect(() => {
-    const manifestEl = document.getElementById("app-manifest");
-    const themeMeta = document.querySelector('meta[name="theme-color"]');
-    const prevManifestHref = manifestEl ? manifestEl.getAttribute("href") : "/manifest.webmanifest";
-    const prevThemeColor = themeMeta ? themeMeta.getAttribute("content") : "#b88932";
-
-    if (manifestEl) manifestEl.setAttribute("href", "/admin-manifest.webmanifest");
-    if (themeMeta) themeMeta.setAttribute("content", "#172019");
-
-    return () => {
-      if (manifestEl) manifestEl.setAttribute("href", prevManifestHref);
-      if (themeMeta) themeMeta.setAttribute("content", prevThemeColor);
-    };
-  }, []);
 
   useEffect(() => {
     let isMounted = true;

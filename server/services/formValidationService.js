@@ -1,6 +1,6 @@
 const { z } = require("zod");
 const AppError = require("../utils/AppError");
-const { normalizeIndianPhone } = require("../models/Customer");
+const { normalizeIndianPhone } = require("../utils/phoneUtils");
 
 /**
  * Strips HTML tags from strings to mitigate XSS vulnerabilities.

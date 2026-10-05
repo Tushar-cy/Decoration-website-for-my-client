@@ -51,16 +51,6 @@ function AdminBottomNav({ user, onLogout }) {
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
               <NavLink
-                to="/admin/availability"
-                onClick={closeMore}
-                className="admin-nav-item"
-                style={{ background: "#f8fafc", color: "#1e293b", border: "1px solid #e2e8f0" }}
-              >
-                <span>📅</span>
-                <span>Availability</span>
-              </NavLink>
-
-              <NavLink
                 to="/admin/forms"
                 onClick={closeMore}
                 className="admin-nav-item"
@@ -78,16 +68,6 @@ function AdminBottomNav({ user, onLogout }) {
               >
                 <span>🏷️</span>
                 <span>Categories</span>
-              </NavLink>
-
-              <NavLink
-                to="/admin/coupons"
-                onClick={closeMore}
-                className="admin-nav-item"
-                style={{ background: "#f8fafc", color: "#1e293b", border: "1px solid #e2e8f0" }}
-              >
-                <span>🎟️</span>
-                <span>Coupons</span>
               </NavLink>
 
               <NavLink
@@ -173,19 +153,14 @@ function AdminBottomNav({ user, onLogout }) {
           <span>Home</span>
         </NavLink>
 
-        <NavLink to="/admin/orders" className={({ isActive }) => (isActive ? "active" : "")}>
-          <span style={{ position: "relative" }}>
-            🛍️
-            {(stats?.ordersNeedingAction || 0) > 0 && (
-              <span className="nav-badge-pill">{stats.ordersNeedingAction}</span>
-            )}
-          </span>
-          <span>Orders</span>
-        </NavLink>
-
         <NavLink to="/admin/products" className={({ isActive }) => (isActive ? "active" : "")}>
           <span>🎈</span>
           <span>Catalog</span>
+        </NavLink>
+
+        <NavLink to="/admin/gallery" className={({ isActive }) => (isActive ? "active" : "")}>
+          <span>📸</span>
+          <span>Gallery</span>
         </NavLink>
 
         <NavLink to="/admin/submissions" className={({ isActive }) => (isActive ? "active" : "")}>

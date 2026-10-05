@@ -11,7 +11,6 @@ const AddOn = require("./models/AddOn");
 const Settings = require("./models/Settings");
 const Gallery = require("./models/Gallery");
 const Testimonial = require("./models/Testimonial");
-const Coupon = require("./models/Coupon");
 
 const sampleCategories = [
   {
@@ -609,33 +608,6 @@ const seedDB = async () => {
       console.log(`Products already exist (${productCount} items).`);
     }
 
-    // 6. Seed Coupons
-    const couponCount = await Coupon.countDocuments();
-    if (couponCount === 0) {
-      const nextYear = new Date();
-      nextYear.setFullYear(nextYear.getFullYear() + 1);
-
-      await Coupon.create([
-        {
-          code: "JOY10",
-          type: "percent",
-          value: 10,
-          minOrderPaise: 300000, // ₹3,000
-          maxDiscountPaise: 100000, // ₹1,000
-          validTo: nextYear,
-          isActive: true,
-        },
-        {
-          code: "WELCOME500",
-          type: "flat",
-          value: 50000, // ₹500
-          minOrderPaise: 250000, // ₹2,500
-          validTo: nextYear,
-          isActive: true,
-        },
-      ]);
-      console.log("Seeded sample Coupons: JOY10 and WELCOME500.");
-    }
 
     // 7. Seed Gallery if empty
     const galleryCount = await Gallery.countDocuments();

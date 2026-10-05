@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import path from "path";
 import fs from "fs";
 
-test.describe("Full Customer Booking Flow with Screenshots", () => {
+test.describe("Customer Showcase & WhatsApp / Event Form Flow", () => {
   test.beforeEach(async ({ page }) => {
     // Mock Public Settings
     await page.route(/\/api\/settings\/public/, async (route) => {
@@ -10,36 +10,36 @@ test.describe("Full Customer Booking Flow with Screenshots", () => {
         status: 200,
         contentType: "application/json",
         body: JSON.stringify({
-          success: true,
+          status: "success",
           data: {
             business: {
               name: "Decor Joy Gurgaon",
-              phone: "+917015767715",
-              whatsapp: "+917015767715",
+              phone: "+91 7015767715",
+              whatsapp: "+91 7015767715",
               email: "decorjoygurgaon@gmail.com",
             },
-            slots: [
-              {
-                key: "evening",
-                label: "Evening (05:00 PM - 09:00 PM)",
-                startTime: "17:00",
-                endTime: "21:00",
-                capacityPerDay: 5,
-              },
-              {
-                key: "morning",
-                label: "Morning (09:00 AM - 01:00 PM)",
-                startTime: "09:00",
-                endTime: "13:00",
-                capacityPerDay: 5,
-              },
-            ],
             serviceablePincodes: [
               { pincode: "122001", deliveryFeePaise: 0 },
               { pincode: "122002", deliveryFeePaise: 0 },
             ],
-            paymentMode: "advance_online",
-            advancePercent: 25,
+            socials: {
+              instagram: "https://instagram.com/decorjoygurgaon",
+            },
+          },
+        }),
+      });
+    });
+
+    // Mock Public Settings Flags
+    await page.route(/\/api\/settings\/flags/, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          status: "success",
+          data: {
+            bookingsPaused: false,
+            maintenanceBanner: "",
           },
         }),
       });
@@ -53,7 +53,7 @@ test.describe("Full Customer Booking Flow with Screenshots", () => {
           status: 200,
           contentType: "application/json",
           body: JSON.stringify({
-            success: true,
+            status: "success",
             data: {
               product: {
                 _id: "prod_101",
@@ -95,7 +95,7 @@ test.describe("Full Customer Booking Flow with Screenshots", () => {
           status: 200,
           contentType: "application/json",
           body: JSON.stringify({
-            success: true,
+            status: "success",
             data: {
               products: [
                 {
@@ -113,7 +113,7 @@ test.describe("Full Customer Booking Flow with Screenshots", () => {
                   ],
                 },
               ],
-              pagination: { total: 1, page: 1, limit: 20, pages: 1 },
+              pagination: { total: 1, page: 1, limit: 20, totalPages: 1 },
             },
           }),
         });
@@ -126,33 +126,31 @@ test.describe("Full Customer Booking Flow with Screenshots", () => {
         status: 200,
         contentType: "application/json",
         body: JSON.stringify({
-          success: true,
-          data: [
-            { _id: "cat_1", name: "Birthdays", slug: "birthdays" },
-            { _id: "cat_2", name: "Anniversaries", slug: "anniversaries" },
-          ],
+          status: "success",
+          data: {
+            categories: [
+              { _id: "cat_1", name: "Birthdays", slug: "birthdays" },
+              { _id: "cat_2", name: "Anniversaries", slug: "anniversaries" },
+            ],
+          },
         }),
       });
     });
 
-    // Mock Availability
-    await page.route(/\/api\/availability/, async (route) => {
+    // Mock Forms list
+    await page.route(/\/api\/forms$/, async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
         body: JSON.stringify({
-          success: true,
+          status: "success",
           data: {
-            date: "2026-10-15",
-            blackout: false,
-            slots: [
+            purposes: [
               {
-                key: "evening",
-                label: "Evening (05:00 PM - 09:00 PM)",
-                startTime: "17:00",
-                endTime: "21:00",
-                remainingCapacity: 4,
-                isAvailable: true,
+                key: "birthday",
+                title: "Birthday Celebration",
+                description: "Custom balloon themes & party backdrops",
+                fieldCount: 4,
               },
             ],
           },
@@ -160,110 +158,62 @@ test.describe("Full Customer Booking Flow with Screenshots", () => {
       });
     });
 
-    // Mock Quotes
-    await page.route(/\/api\/quotes/, async (route) => {
+    // Mock specific form schema
+    await page.route(/\/api\/forms\/birthday$/, async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
         body: JSON.stringify({
-          success: true,
+          status: "success",
           data: {
-            items: [
-              {
-                productId: "prod_101",
-                titleSnapshot: "Grand Ring Balloon Arch",
-                quantity: 1,
-                unitPricePaise: 349900,
-                subtotalPaise: 349900,
-              },
-            ],
-            pricing: {
-              itemsSubtotalPaise: 349900,
-              discountPaise: 0,
-              deliveryFeePaise: 0,
-              totalPaise: 349900,
-              advanceDuePaise: 87475,
-              balanceDuePaise: 262425,
+            form: {
+              key: "birthday",
+              title: "Birthday Celebration",
+              description: "Tell us about the birthday milestone",
+              version: 1,
+              fields: [
+                {
+                  id: "celebrant_name",
+                  label: "Birthday Person's Name",
+                  type: "text",
+                  required: true,
+                  placeholder: "e.g. Aarav",
+                },
+                {
+                  id: "preferred_theme",
+                  label: "Preferred Theme / Color",
+                  type: "text",
+                  required: false,
+                  placeholder: "e.g. Jungle Safari, Pastel Pink",
+                },
+              ],
+              successMessage: "Thank you! Our decor coordinator will message you on WhatsApp shortly.",
             },
           },
         }),
       });
     });
 
-    // Mock Order Creation & Razorpay
-    await page.route(/\/api\/orders(?!\/track)/, async (route) => {
+    // Mock form submission
+    await page.route(/\/api\/forms\/birthday\/submissions/, async (route) => {
       await route.fulfill({
         status: 201,
         contentType: "application/json",
         body: JSON.stringify({
-          success: true,
+          status: "success",
           data: {
-            orderNumber: "DJ-2026-TEST889",
-            status: "pending_advance",
-            amount: 87475,
-            razorpayOrderId: "order_mock_test_12345",
-            keyId: "rzp_test_mockKey",
-          },
-        }),
-      });
-    });
-
-    // Mock Order Tracking query
-    await page.route(/\/api\/orders\/track/, async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          success: true,
-          data: {
-            orderNumber: "DJ-2026-TEST889",
-            status: "confirmed",
-            event: {
-              type: "Birthday",
-              date: "2026-10-15",
-              slotKey: "evening",
-              address: {
-                line1: "Flat 402, DLF Phase 5",
-                city: "Gurugram",
-                pincode: "122001",
-              },
-            },
-            customer: {
-              name: "Pooja Malhotra",
-              phone: "+919876543210",
-            },
-            items: [
-              {
-                titleSnapshot: "Grand Ring Balloon Arch",
-                quantity: 1,
-                unitPricePaise: 349900,
-              },
-            ],
-            pricing: {
-              totalPaise: 349900,
-              advancePaidPaise: 87475,
-              balanceDuePaise: 262425,
-            },
+            submissionId: "sub_mock_12345",
+            message: "Thank you! Our decor coordinator will message you on WhatsApp shortly.",
+            whatsappUrl: "https://wa.me/917015767715?text=Hello",
           },
         }),
       });
     });
   });
 
-  test("completes browse -> product -> pick date/slot -> checkout -> tracking with screenshots", async ({
+  test("completes browse -> package detail -> WhatsApp CTA check -> Plan My Event flow", async ({
     page,
   }, testInfo) => {
-    page.on("console", (msg) => console.log("BROWSER CONSOLE:", msg.type(), msg.text()));
-    page.on("pageerror", (err) => console.log("PAGE UNCAUGHT ERROR:", err.message, err.stack));
-    page.on("requestfailed", (req) =>
-      console.log("REQUEST FAILED:", req.url(), req.failure()?.errorText)
-    );
-    page.on("response", (res) => {
-      if (res.url().includes("api")) {
-        console.log("API RES:", res.status(), res.url());
-      }
-    });
-
     const projectName = testInfo.project.name;
     const screenshotDir = path.join(process.cwd(), "e2e", "screenshots");
     if (!fs.existsSync(screenshotDir)) {
@@ -280,71 +230,30 @@ test.describe("Full Customer Booking Flow with Screenshots", () => {
       fullPage: false,
     });
 
-    // Step 2: Open Product Detail
+    // Step 2: Open Package Detail
     await page.goto("/p/deluxe-balloon-arch", { waitUntil: "domcontentloaded" });
     await expect(page.locator("h1")).toContainText(/Grand Ring Balloon Arch/i, { timeout: 15000 });
 
-    // Pick date and slot
-    const dateInput = page.locator('input[type="date"]').first();
-    if (await dateInput.isVisible()) {
-      await dateInput.fill("2026-10-15");
-    }
-
-    const slotSelect = page.locator("select.schedule-input");
-    if (await slotSelect.isVisible()) {
-      await slotSelect.selectOption({ index: 1 });
-    }
+    // Verify WhatsApp CTA is visible and has WhatsApp link
+    const waButton = page.locator('a[href*="wa.me"]:visible').first();
+    await expect(waButton).toBeVisible();
+    const waHref = await waButton.getAttribute("href");
+    expect(waHref).toContain("wa.me");
 
     await page.waitForTimeout(500);
     await page.screenshot({
-      path: path.join(screenshotDir, `${projectName}-2-product.png`),
+      path: path.join(screenshotDir, `${projectName}-2-package-detail.png`),
       fullPage: false,
     });
 
-    // Step 3: Populate cart and proceed to Checkout
-    await page.evaluate(() => {
-      localStorage.setItem(
-        "decorjoy_cart_v3",
-        JSON.stringify([
-          {
-            id: "item_test_101",
-            productId: "prod_101",
-            variantSelections: [],
-            addOnIds: [],
-            quantity: 1,
-            date: "2026-10-15",
-            slotKey: "evening",
-            title: "Grand Ring Balloon Arch",
-          },
-        ])
-      );
-    });
-
-    // Navigate to checkout with items
-    await page.goto("/checkout");
-    await page.waitForSelector('input[placeholder*="Radhika"]', { timeout: 10000 });
-
-    // Populate checkout form
-    await page.fill('input[placeholder*="Radhika"]', "Pooja Malhotra");
-    await page.fill('input[placeholder*="9876543210"]', "9876543210");
-    await page.fill('input[placeholder*="Crest"]', "Flat 402, DLF Phase 5");
+    // Step 3: Plan My Event Form
+    await page.goto("/plan-my-event");
+    await expect(page.locator("body")).toContainText(/Plan My Event|Birthday/i);
 
     await page.waitForTimeout(500);
     await page.screenshot({
-      path: path.join(screenshotDir, `${projectName}-3-checkout.png`),
+      path: path.join(screenshotDir, `${projectName}-3-plan-event.png`),
       fullPage: false,
     });
-
-    // Step 4: Tracking Page
-    await page.goto("/order/DJ-2026-TEST889");
-    await page.waitForTimeout(500);
-
-    await page.screenshot({
-      path: path.join(screenshotDir, `${projectName}-4-tracking.png`),
-      fullPage: false,
-    });
-
-    // Verify order tracking page loaded
-    await expect(page.locator("body")).toContainText(/DJ-2026-TEST889/i);
   });
 });

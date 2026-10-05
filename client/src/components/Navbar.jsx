@@ -21,9 +21,7 @@ function Navbar() {
   const navigate = useNavigate();
 
   const {
-    cartCount,
     wishlist,
-    setIsCartOpen,
     setIsWishlistOpen,
   } = useShop();
 
@@ -260,46 +258,6 @@ function Navbar() {
             )}
           </button>
 
-          {/* Cart Bag Button */}
-          <button
-            type="button"
-            className="nav-action-icon-btn"
-            onClick={() => setIsCartOpen(true)}
-            aria-label={`View celebration bag (${cartCount} items)`}
-            style={{
-              position: "relative",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              fontSize: "1.25rem",
-              padding: "8px",
-            }}
-          >
-            <span>🛍️</span>
-            {cartCount > 0 && (
-              <span
-                style={{
-                  position: "absolute",
-                  top: "2px",
-                  right: "0px",
-                  background: "var(--dark)",
-                  color: "#fbbf24",
-                  fontSize: "0.7rem",
-                  fontWeight: 800,
-                  width: "18px",
-                  height: "18px",
-                  borderRadius: "50%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  border: "1px solid #fbbf24",
-                }}
-              >
-                {cartCount}
-              </span>
-            )}
-          </button>
-
           {/* WhatsApp Direct Action */}
           <WhatsAppButton
             text="WhatsApp Us"
@@ -409,18 +367,18 @@ function Navbar() {
             }}
             style={{ flex: 1, padding: "10px" }}
           >
-            ❤️ Wishlist ({wishlist.length})
+            ❤️ Saved ({wishlist.length})
           </button>
           <button
             type="button"
             className="btn btn-gold"
             onClick={() => {
               closeMobileMenu();
-              setIsCartOpen(true);
+              navigate("/plan-my-event");
             }}
             style={{ flex: 1, padding: "10px" }}
           >
-            🛍️ Bag ({cartCount})
+            ✨ Plan Event
           </button>
         </div>
 

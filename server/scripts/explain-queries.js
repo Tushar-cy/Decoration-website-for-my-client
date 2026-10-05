@@ -3,7 +3,6 @@ const mongoose = require("mongoose");
 const { connectDB, closeDB } = require("../config/db");
 const Product = require("../models/Product");
 const Category = require("../models/Category");
-const Order = require("../models/Order");
 const Submission = require("../models/Submission");
 const Gallery = require("../models/Gallery");
 const Testimonial = require("../models/Testimonial");
@@ -63,23 +62,6 @@ async function runExplainAudits() {
     indexUsed: q2.queryPlanner.winningPlan?.inputStage?.indexName || "idx_category_active",
   });
 
-  // Query 3: Admin Orders List with status & date sorting
-  const q3 = await Order.find({ status: "confirmed" })
-    .sort({ "event.date": 1 })
-    .limit(20)
-    .explain("executionStats");
-
-  const stage3 = extractScanStage(q3.queryPlanner.winningPlan);
-  results.push({
-    endpoint: "GET /api/admin/orders (Filtered by Status)",
-    filter: "{ status: 'confirmed' }",
-    sort: "{ 'event.date': 1 }",
-    scanType: stage3,
-    docsExamined: q3.executionStats.totalDocsExamined,
-    nReturned: q3.executionStats.nReturned,
-    timeMs: q3.executionStats.executionTimeMillis,
-    indexUsed: q3.queryPlanner.winningPlan?.inputStage?.indexName || "idx_orders_status_date",
-  });
 
   // Query 4: Admin Submissions Cursor Pagination
   const q4 = await Submission.find({})

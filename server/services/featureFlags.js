@@ -1,23 +1,12 @@
 /**
  * server/services/featureFlags.js
- * Graceful degradation switches stored in MongoDB Settings.
+ * Operational switches stored in MongoDB Settings.
  *
- * Flags (all stored in Settings document under `flags`):
- *  - onlinePayments:   boolean (default true). When false → pay_on_confirmation.
- *  - bookingsPaused:   boolean (default false). When true → orders return 503.
+ * Flags (stored in Settings document under `flags`):
+ *  - bookingsPaused:   boolean (default false). When true → indicates bookings paused.
  *  - maintenanceBanner: string (default ""). When non-empty → shown on storefront.
- *
- * Additional automatic degradation:
- *  - Razorpay circuit breaker OPEN → onlinePayments treated as false automatically.
- *  - Redis down → cache bypassed (already handled in cache.js).
- *  - Mongo election → db.js retries with backoff; 503 + Retry-After on exhaustion.
- *
- * Usage:
- *   const flags = await featureFlags.get();
- *   if (!flags.onlinePayments) { ... fallback ... }
  */
 const Settings = require("../models/Settings");
-const { razorpayBreaker } = require("../utils/circuitBreaker");
 const { logger } = require("../utils/logger");
 
 // In-memory cache: refresh every 60s to avoid hammering Mongo on every request
@@ -38,7 +27,6 @@ async function get() {
   try {
     const settings = await Settings.getSettings();
     const flags = {
-      onlinePayments: settings.flags?.onlinePayments !== false,
       bookingsPaused: !!settings.flags?.bookingsPaused,
       maintenanceBanner: settings.flags?.maintenanceBanner || "",
     };
@@ -48,29 +36,11 @@ async function get() {
     return flags;
   } catch (err) {
     logger.warn({ err }, "featureFlags: could not load Settings, using defaults");
-    // Safe defaults: payments off, bookings open (do not block business)
     return _cached || {
-      onlinePayments: false, // default OFF when DB is unreachable (safer)
       bookingsPaused: false,
       maintenanceBanner: "",
     };
   }
-}
-
-/**
- * Returns true if online payments are currently available.
- * Combines: Settings flag AND Razorpay circuit breaker state.
- */
-async function isOnlinePaymentsAvailable() {
-  const flags = await get();
-  const razorpayOpen = razorpayBreaker.state === "OPEN";
-
-  if (razorpayOpen && flags.onlinePayments) {
-    // Razorpay just went down — log it once (circuit breaker already logged the trip)
-    logger.warn("featureFlags: Razorpay circuit OPEN, auto-falling back to pay_on_confirmation");
-  }
-
-  return flags.onlinePayments && !razorpayOpen;
 }
 
 /**
@@ -99,7 +69,6 @@ function invalidate() {
 
 module.exports = {
   get,
-  isOnlinePaymentsAvailable,
   areBookingsPaused,
   getMaintenanceBanner,
   invalidate,

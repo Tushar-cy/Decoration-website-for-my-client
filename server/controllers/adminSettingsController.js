@@ -21,8 +21,6 @@ const settingsUpdateSchema = z.object({
   slots: z.array(slotConfigSchema).optional(),
   blackoutDates: z.array(z.string()).optional(),
   serviceablePincodes: z.array(pincodeSchema).optional(),
-  advancePercent: z.number().min(0).max(100).optional(),
-  paymentMode: z.enum(["advance_online", "pay_on_confirmation"]).optional(),
   notificationEmails: z.array(z.string().email()).optional(),
   business: z
     .object({
@@ -36,6 +34,12 @@ const settingsUpdateSchema = z.object({
     .optional(),
   socials: z.record(z.string()).optional(),
   homepage: z.record(z.any()).optional(),
+  flags: z
+    .object({
+      bookingsPaused: z.boolean().optional(),
+      maintenanceBanner: z.string().optional(),
+    })
+    .optional(),
 });
 
 /**
@@ -55,7 +59,7 @@ async function getSettings(req, res, next) {
 
 /**
  * PATCH /api/admin/settings
- * Owner only. Updates slots, capacity, blackout dates, payment modes, and serviceable pincodes.
+ * Owner only. Updates slots, capacity, blackout dates, and serviceable pincodes.
  */
 async function updateSettings(req, res, next) {
   try {
@@ -77,12 +81,8 @@ async function updateSettings(req, res, next) {
       settings.serviceablePincodes = validated.serviceablePincodes;
     }
 
-    if (validated.advancePercent !== undefined) {
-      settings.advancePercent = validated.advancePercent;
-    }
-
-    if (validated.paymentMode) {
-      settings.paymentMode = validated.paymentMode;
+    if (validated.flags) {
+      settings.flags = { ...settings.flags.toObject(), ...validated.flags };
     }
 
     if (validated.notificationEmails) {

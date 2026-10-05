@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { normalizeIndianPhone } = require("./Customer");
+const { normalizeIndianPhone } = require("../utils/phoneUtils");
 
 const answerSnapshotSchema = new mongoose.Schema(
   {
@@ -87,7 +87,7 @@ const submissionSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["new", "contacted", "quoted", "converted", "lost"],
+      enum: ["new", "contacted", "quoted", "converted", "closed", "spam", "lost"],
       default: "new",
     },
     assignedTo: {
@@ -100,8 +100,7 @@ const submissionSchema = new mongoose.Schema(
       default: [],
     },
     convertedOrderId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Order",
+      type: String,
       default: null,
     },
     utm: {

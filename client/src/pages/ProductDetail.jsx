@@ -1,9 +1,8 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { getProductBySlug, getAvailability, getQuote } from "../services/api";
-import { formatPaise, formatISTDisplay } from "../utils/money";
-import { getOptimizedImageUrl, getImageSrcSet } from "../utils/cloudinary";
+import { getProductBySlug } from "../services/api";
+import { getOptimizedImageUrl } from "../utils/cloudinary";
 import { useShop } from "../context/ShopContext";
 import { usePublicSettings } from "../context/SettingsContext";
 import { LoadingSkeleton } from "../components/common/LoadingSkeleton";
@@ -17,10 +16,10 @@ import "../styles/productDetail.css";
 export default function ProductDetail() {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const { cleanWhatsapp, serviceablePincodes, business } = usePublicSettings();
-  const { addToCart, isInWishlist, toggleWishlist } = useShop();
+  const { cleanWhatsapp, business } = usePublicSettings();
+  const { isInWishlist, toggleWishlist } = useShop();
 
-  // 1. Fetch Product Data
+  // 1. Fetch Package Data
   const {
     data: productData,
     isLoading: isProductLoading,
@@ -34,7 +33,7 @@ export default function ProductDetail() {
         const res = await getProductBySlug(slug);
         if (res.data?.data?.product) return res.data.data;
       } catch {
-        // Fallback when MongoDB / backend is offline
+        // Fallback when backend is offline
       }
       const matched = FALLBACK_PRODUCTS.find((p) => p.slug === slug) || FALLBACK_PRODUCTS[0];
       const related = FALLBACK_PRODUCTS.filter((p) => p.slug !== matched?.slug).slice(0, 3);
@@ -48,7 +47,7 @@ export default function ProductDetail() {
   const product = productData?.product;
   const relatedProducts = productData?.related || [];
 
-  // Track product view in analytics
+  // Track package view in analytics
   useEffect(() => {
     if (product) {
       trackViewItem(product);
@@ -58,137 +57,44 @@ export default function ProductDetail() {
   // Active gallery index
   const [activeImageIdx, setActiveImageIdx] = useState(0);
 
-  // Selected Variants state: map of variantName -> optionLabel
+  // Customization selections
   const [selectedVariants, setSelectedVariants] = useState({});
+  const [selectedAddOns, setSelectedAddOns] = useState(new Set());
+  const [selectedDate, setSelectedDate] = useState("");
+  const [preferredSlot, setPreferredSlot] = useState("evening");
+  const [pincodeInput, setPincodeInput] = useState("");
+  const [pincodeStatus, setPincodeStatus] = useState(null);
 
-  // Initialize variants when product loads
+  // Initialize variants
   useEffect(() => {
     if (product?.variants && product.variants.length > 0) {
-      const initial = {};
+      const defaults = {};
       product.variants.forEach((v) => {
         if (v.options && v.options.length > 0) {
-          initial[v.name] = v.options[0].label;
+          defaults[v.name] = v.options[0].label;
         }
       });
-      setSelectedVariants(initial);
+      setSelectedVariants(defaults);
     }
   }, [product]);
 
-  // Selected Add-ons: set of addOnIds
-  const [selectedAddOns, setSelectedAddOns] = useState(new Set());
-
-  // Date and Slot Selection
   const todayStr = useMemo(() => {
     const d = new Date();
-    d.setDate(d.getDate() + 1); // Earliest next day
     return d.toISOString().split("T")[0];
   }, []);
 
-  const [selectedDate, setSelectedDate] = useState(todayStr);
-  const [selectedSlotKey, setSelectedSlotKey] = useState("");
-  const [pincodeInput, setPincodeInput] = useState("122001");
-  const [pincodeStatus, setPincodeStatus] = useState(null);
-
-  // Pincode serviceability check
   const handlePincodeCheck = () => {
-    const code = pincodeInput.trim();
-    if (!code || code.length !== 6) {
-      setPincodeStatus({ valid: false, message: "Enter a valid 6-digit Gurugram pincode" });
+    const pin = pincodeInput.trim();
+    if (!pin || pin.length !== 6 || !/^\d+$/.test(pin)) {
+      setPincodeStatus({ valid: false, message: "Please enter a valid 6-digit Gurgaon pincode." });
       return;
     }
-    const match = serviceablePincodes.find((p) => p.pincode === code);
-    if (match || code.startsWith("122")) {
-      const fee = match?.deliveryFeePaise || 0;
-      setPincodeStatus({
-        valid: true,
-        message: fee === 0 ? "✓ Free Delivery & Setup in this area!" : `✓ Serviceable (Delivery fee: ${formatPaise(fee)})`,
-      });
+    // Gurgaon pincodes start with 122
+    if (pin.startsWith("122")) {
+      setPincodeStatus({ valid: true, message: "✓ Free Setup & On-Time Delivery Available in Gurgaon!" });
     } else {
-      setPincodeStatus({
-        valid: false,
-        message: "Currently we only serve Gurugram (Pincodes 122xxx). Contact us for custom arrangements.",
-      });
+      setPincodeStatus({ valid: true, message: "✓ Available across Delhi NCR. Contact us for delivery details." });
     }
-  };
-
-  // 2. Availability Query for selected date
-  const {
-    data: availabilityData,
-    isLoading: isAvailabilityLoading,
-  } = useQuery({
-    queryKey: ["availability", selectedDate, product?._id, pincodeInput],
-    queryFn: async () => {
-      if (!selectedDate) return null;
-      const res = await getAvailability({
-        date: selectedDate,
-        productId: product?._id,
-        pincode: pincodeInput,
-      });
-      return res.data?.data;
-    },
-    enabled: !!selectedDate && !!product?._id,
-    staleTime: 15 * 1000,
-  });
-
-  const slots = availabilityData?.slots || [];
-
-  // 3. Live Price from POST /api/quotes
-  const quoteVariantSelections = useMemo(() => {
-    return Object.entries(selectedVariants).map(([name, optionLabel]) => ({
-      name,
-      optionLabel,
-    }));
-  }, [selectedVariants]);
-
-  const quotePayload = useMemo(() => {
-    if (!product?._id) return null;
-    return {
-      items: [
-        {
-          productId: product._id,
-          variantSelections: quoteVariantSelections,
-          addOnIds: Array.from(selectedAddOns),
-          quantity: 1,
-        },
-      ],
-      pincode: pincodeInput,
-    };
-  }, [product?._id, quoteVariantSelections, selectedAddOns, pincodeInput]);
-
-  const { data: quoteResult } = useQuery({
-    queryKey: ["product-live-quote", quotePayload],
-    queryFn: async () => {
-      if (!quotePayload) return null;
-      const res = await getQuote(quotePayload);
-      return res.data?.data;
-    },
-    enabled: !!quotePayload,
-    staleTime: 30 * 1000,
-  });
-
-  const livePricePaise = quoteResult?.pricing?.totalPaise ?? product?.basePricePaise ?? 0;
-
-  // Add to Bag action
-  const handleAddToBag = () => {
-    if (!selectedSlotKey) {
-      alert("Please select a time slot for setup");
-      return;
-    }
-
-    addToCart({
-      productId: product._id,
-      variantSelections: quoteVariantSelections,
-      addOnIds: Array.from(selectedAddOns),
-      quantity: 1,
-      date: selectedDate,
-      slotKey: selectedSlotKey,
-      title: product.title,
-    });
-  };
-
-  const handleBookNow = () => {
-    handleAddToBag();
-    navigate("/checkout");
   };
 
   if (isProductLoading) {
@@ -218,21 +124,43 @@ export default function ProductDetail() {
   const activeImg = images[activeImageIdx] || images[0];
   const isSaved = isInWishlist(product._id);
 
-  // WhatsApp inquiry URL
-  const waMsg = `Hi Decor Joy Gurgaon! I'm interested in "${product.title}" for date ${selectedDate}. Could you please share the custom quote and check slot availability?`;
-  const waUrl = `https://wa.me/${cleanWhatsapp}?text=${encodeURIComponent(waMsg)}`;
+  // Build descriptive WhatsApp inquiry message
+  const variantSummary = Object.entries(selectedVariants)
+    .map(([k, v]) => `${k}: ${v}`)
+    .join(", ");
+  const addonNames = Array.from(selectedAddOns)
+    .map((id) => product.addOnIds?.find((a) => a._id === id)?.name)
+    .filter(Boolean)
+    .join(", ");
+
+  let waMsg = `Hi Decor Joy, I'm interested in the "${product.title}" decoration setup. I'd like to know availability, customization options and pricing.`;
+  if (selectedDate) {
+    waMsg += `\n📅 Preferred Date: ${selectedDate}`;
+  }
+  if (preferredSlot) {
+    waMsg += `\n⏰ Preferred Timing: ${preferredSlot === "morning" ? "Morning (09:00 - 13:00)" : preferredSlot === "afternoon" ? "Afternoon (13:00 - 17:00)" : "Evening (17:00 - 21:00)"}`;
+  }
+  if (variantSummary) {
+    waMsg += `\n🎨 Preferences: ${variantSummary}`;
+  }
+  if (addonNames) {
+    waMsg += `\n✨ Optional Add-ons: ${addonNames}`;
+  }
+  waMsg += `\n\nLooking forward to hearing from you!`;
+
+  const waUrl = `https://wa.me/${cleanWhatsapp || "917015767715"}?text=${encodeURIComponent(waMsg)}`;
 
   const productSchema = buildProductJsonLd(product, business);
   const breadcrumbSchema = buildBreadcrumbJsonLd([
     { name: "Home", url: "/" },
-    { name: "Shop", url: "/shop" },
+    { name: "Catalog", url: "/shop" },
     { name: product.title, url: `/p/${product.slug}` },
   ]);
 
   return (
     <div className="product-page">
       <SEO
-        title={`${product.title} | Decor Joy Gurgaon`}
+        title={`${product.title} | Luxury Event Decoration in Gurgaon`}
         description={
           product.description
             ? product.description.slice(0, 160)
@@ -243,11 +171,12 @@ export default function ProductDetail() {
         ogImage={activeImg.url}
         jsonLd={[productSchema, breadcrumbSchema]}
       />
+
       {/* Breadcrumb */}
       <nav className="container product-breadcrumb" aria-label="Breadcrumb">
         <Link to="/">Home</Link>
         <span>/</span>
-        <Link to="/shop">Shop</Link>
+        <Link to="/shop">Catalog</Link>
         <span>/</span>
         <span className="current">{product.title}</span>
       </nav>
@@ -258,19 +187,17 @@ export default function ProductDetail() {
           <div className="main-image-wrap">
             <img
               src={getOptimizedImageUrl(activeImg.url, { width: 800, height: 600, crop: "fill" })}
-              srcSet={getImageSrcSet(activeImg.url, [480, 768, 960])}
-              sizes="(max-width: 768px) 100vw, 50vw"
               alt={activeImg.alt || product.title}
+              className="main-product-img"
               width="800"
               height="600"
-              className="main-image"
             />
             {product.badge && <span className="product-badge-overlay">{product.badge}</span>}
             <button
               type="button"
-              className={`wishlist-fab ${isSaved ? "saved" : ""}`}
+              className={`wishlist-btn-overlay ${isSaved ? "saved" : ""}`}
               onClick={() => toggleWishlist(product)}
-              aria-label={isSaved ? "Remove from saved" : "Save setup"}
+              aria-label={isSaved ? "Remove from wishlist" : "Save to wishlist"}
             >
               {isSaved ? "❤️" : "🤍"}
             </button>
@@ -278,7 +205,7 @@ export default function ProductDetail() {
 
           {/* Thumbnails */}
           {images.length > 1 && (
-            <div className="thumbnail-row">
+            <div className="thumb-row" role="tablist" aria-label="Product Images">
               {images.map((img, idx) => (
                 <button
                   key={idx}
@@ -288,7 +215,7 @@ export default function ProductDetail() {
                 >
                   <img
                     src={getOptimizedImageUrl(img.url, { width: 120, height: 90, crop: "fill" })}
-                    alt={img.alt || `Thumb ${idx + 1}`}
+                    alt={img.alt || `${product.title} thumbnail ${idx + 1}`}
                     loading="lazy"
                     width="120"
                     height="90"
@@ -299,32 +226,47 @@ export default function ProductDetail() {
           )}
         </div>
 
-        {/* Right Column: Configuration & Details */}
+        {/* Right Column: Details & Inquiry CTAs */}
         <div className="product-details-col">
-          <div className="product-header-meta">
-            <span className="product-cat-tag">{product.categoryId?.name || "Event Setup"}</span>
-            {product.ratingAvg > 0 && (
-              <span className="product-star-tag">★ {product.ratingAvg.toFixed(1)} ({product.ratingCount || 1} reviews)</span>
+          <div className="category-tag">
+            🎉 Occasion: <strong>{product.categoryId?.name || "Bespoke Event Setup"}</strong>
+          </div>
+
+          <h1 className="product-title">{product.title}</h1>
+
+          {/* Pricing showcase */}
+          <div className="pricing-block">
+            {product.basePricePaise > 0 ? (
+              <div className="starting-price-pill">
+                <span>Starting from</span>
+                <strong style={{ fontSize: "1.35rem", color: "var(--gold, #b88932)", marginLeft: "6px" }}>
+                  ₹{(product.basePricePaise / 100).toLocaleString("en-IN")}
+                </strong>
+                <span style={{ fontSize: "0.8rem", color: "#64748b", marginLeft: "6px" }}>(indicative)</span>
+              </div>
+            ) : (
+              <div className="starting-price-pill">
+                <span>Pricing:</span>
+                <strong style={{ fontSize: "1.3rem", color: "var(--gold, #b88932)", marginLeft: "6px" }}>
+                  Custom Quote on WhatsApp
+                </strong>
+              </div>
             )}
+            <span className="price-note">
+              ✨ Free Setup, Delivery & Takedown across Gurgaon
+            </span>
           </div>
 
-          <h1 className="product-h1">{product.title}</h1>
+          <p className="product-description">{product.description}</p>
 
-          <div className="live-pricing-bar">
-            <span className="price-big" style={{ fontSize: "1.2rem", color: "var(--gold, #d4af37)" }}>✓ Custom Quote on WhatsApp</span>
-            <span className="price-note">Punctual setup & professional takedown in Gurgaon</span>
-          </div>
-
-          <p className="product-short-desc">{product.shortDescription}</p>
-
-          {/* Variants Builder (Size, Colour, Theme) */}
-          {(product.variants || []).map((v) => (
-            <div key={v.name} className="variant-group">
+          {/* Variants Selector */}
+          {product.variants && product.variants.map((v) => (
+            <div key={v.name} className="variant-section">
               <label className="variant-label">
-                Select {v.name}: <strong>{selectedVariants[v.name]}</strong>
+                {v.name}: <strong>{selectedVariants[v.name]}</strong>
               </label>
-              <div className="variant-options">
-                {(v.options || []).map((opt) => {
+              <div className="variant-pills">
+                {v.options && v.options.map((opt) => {
                   const isSelected = selectedVariants[v.name] === opt.label;
                   return (
                     <button
@@ -377,9 +319,9 @@ export default function ProductDetail() {
             </div>
           )}
 
-          {/* Date & Slot Picker driven by /api/availability */}
+          {/* Date & Preferred Setup Timing */}
           <div className="schedule-section">
-            <h4 className="schedule-title">📅 Choose Event Date & Setup Slot</h4>
+            <h4 className="schedule-title">📅 Preferred Event Date & Setup Timing</h4>
             <div className="schedule-row">
               <div className="schedule-field">
                 <label className="field-lbl">Event Date</label>
@@ -388,43 +330,23 @@ export default function ProductDetail() {
                   className="schedule-input"
                   min={todayStr}
                   value={selectedDate}
-                  onChange={(e) => {
-                    setSelectedDate(e.target.value);
-                    setSelectedSlotKey("");
-                  }}
+                  onChange={(e) => setSelectedDate(e.target.value)}
                 />
               </div>
 
               <div className="schedule-field">
-                <label className="field-lbl">Time Slot</label>
+                <label className="field-lbl">Setup Time Window</label>
                 <select
                   className="schedule-input"
-                  value={selectedSlotKey}
-                  onChange={(e) => setSelectedSlotKey(e.target.value)}
-                  disabled={isAvailabilityLoading}
+                  value={preferredSlot}
+                  onChange={(e) => setPreferredSlot(e.target.value)}
                 >
-                  <option value="">-- Choose Slot --</option>
-                  {slots.map((s) => (
-                    <option
-                      key={s.key}
-                      value={s.key}
-                      disabled={!s.isAvailable}
-                    >
-                      {s.label} ({s.startTime} - {s.endTime}) {s.isAvailable ? `[${s.remainingCapacity} left]` : "[FULL]"}
-                    </option>
-                  ))}
-                  {slots.length === 0 && (
-                    <option value="evening">Evening Slot (16:30 - 19:30)</option>
-                  )}
+                  <option value="morning">Morning (09:00 AM - 01:00 PM)</option>
+                  <option value="afternoon">Afternoon (01:00 PM - 05:00 PM)</option>
+                  <option value="evening">Evening (05:00 PM - 09:00 PM)</option>
                 </select>
               </div>
             </div>
-
-            {availabilityData?.blackout && (
-              <div className="blackout-warning">
-                ⚠️ Selected date is unavailable due to holiday blackout. Please pick another date.
-              </div>
-            )}
           </div>
 
           {/* Pincode Serviceability */}
@@ -457,7 +379,7 @@ export default function ProductDetail() {
             )}
           </div>
 
-          {/* Included Items */}
+          {/* What's Included */}
           {product.includedItems && product.includedItems.length > 0 && (
             <div className="included-section">
               <h4 className="included-title">What's Included in this Package:</h4>
@@ -469,35 +391,30 @@ export default function ProductDetail() {
             </div>
           )}
 
-          {/* Desktop Action Buttons */}
+          {/* Primary Action Buttons (Catalogue + WhatsApp Model) */}
           <div className="desktop-actions">
-            <button
-              type="button"
-              className="btn btn-gold action-btn"
-              onClick={handleBookNow}
-            >
-              Book This Setup ➔
-            </button>
-            <button
-              type="button"
-              className="btn btn-outline action-btn"
-              onClick={handleAddToBag}
-            >
-              Add to Celebration Bag 🛍️
-            </button>
             <a
               href={waUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn-whatsapp action-btn"
+              style={{ flex: 1.5, textAlign: "center", textDecoration: "none", fontSize: "1.02rem" }}
             >
-              Chat on WhatsApp 💬
+              💬 Enquire on WhatsApp
             </a>
+            <button
+              type="button"
+              className="btn btn-gold action-btn"
+              onClick={() => navigate(`/plan-my-event?package=${product.slug}`)}
+              style={{ flex: 1 }}
+            >
+              ✨ Plan a Similar Event
+            </button>
           </div>
         </div>
       </section>
 
-      {/* Related Setups */}
+      {/* Related Packages */}
       {relatedProducts.length > 0 && (
         <section className="container related-section">
           <h2 className="related-title">You May Also Like</h2>
@@ -513,7 +430,7 @@ export default function ProductDetail() {
                 />
                 <div className="related-info">
                   <h4>{rel.title}</h4>
-                  <span style={{ color: "var(--gold)" }}>✓ Custom Quote</span>
+                  <span style={{ color: "var(--gold)" }}>✓ Custom Quote on WhatsApp</span>
                 </div>
               </Link>
             ))}
@@ -521,29 +438,33 @@ export default function ProductDetail() {
         </section>
       )}
 
-      {/* Sticky Bottom "Book Now" Bar on Mobile (>=44px touch targets) */}
+      {/* Sticky Bottom Bar on Mobile */}
       <div className="mobile-sticky-bar">
         <div className="sticky-price-wrap">
-          <span className="sticky-price-label">Booking:</span>
-          <span className="sticky-price-val" style={{ fontSize: "0.95rem" }}>Instant WhatsApp Confirmation</span>
+          <span className="sticky-price-label">Decoration Package:</span>
+          <span className="sticky-price-val" style={{ fontSize: "0.92rem", color: "#16a34a" }}>
+            Instant WhatsApp Quote
+          </span>
         </div>
         <div className="sticky-btns">
-          <button
-            type="button"
-            className="btn btn-gold sticky-btn"
-            onClick={handleBookNow}
-          >
-            Book Now ➔
-          </button>
           <a
             href={waUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn btn-whatsapp sticky-btn-icon"
-            aria-label="Inquire on WhatsApp"
+            className="btn btn-whatsapp sticky-btn"
+            style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px", flex: 2 }}
           >
-            💬
+            <span>💬</span> Enquire on WhatsApp
           </a>
+          <button
+            type="button"
+            className="btn btn-gold sticky-btn-icon"
+            onClick={() => navigate(`/plan-my-event?package=${product.slug}`)}
+            aria-label="Plan a Similar Event"
+            title="Plan a Similar Event"
+          >
+            ✨
+          </button>
         </div>
       </div>
     </div>

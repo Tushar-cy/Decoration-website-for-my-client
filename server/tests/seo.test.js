@@ -7,9 +7,6 @@ const { app } = require("../server");
 const Product = require("../models/Product");
 const Category = require("../models/Category");
 const Settings = require("../models/Settings");
-const Order = require("../models/Order");
-const whatsappService = require("../services/whatsappService");
-const { sendReviewRequestsSweep } = require("../worker");
 
 describe("SEO & Local Search Endpoints and Workers", () => {
   let origSettingsGet;
@@ -124,52 +121,6 @@ describe("SEO & Local Search Endpoints and Workers", () => {
     assert.ok(business.sameAs.includes("https://instagram.com/decorjoygurgaon"));
   });
 
-  test("sendReviewRequestsSweep triggers review prompt 2 hours post-slot", async () => {
-    let sentReviewPayload = null;
-    origSendReviewRequest = whatsappService.sendReviewRequest;
-    whatsappService.sendReviewRequest = async (payload) => {
-      sentReviewPayload = payload;
-      return true;
-    };
-
-    const pastEventDate = new Date(Date.now() - 48 * 60 * 60 * 1000); // 2 days ago
-
-    origOrderFind = Order.find;
-    Order.find = () => ({
-      lean: () =>
-        Promise.resolve([
-          {
-            _id: "679902000000000000000001",
-            orderNumber: "DJ-2026-0099",
-            customerSnapshot: {
-              name: "Pooja Sharma",
-              phone: "+919876543210",
-            },
-            event: {
-              date: pastEventDate,
-              slotKey: "morning",
-            },
-            status: "completed",
-            reviewPromptSentAt: null,
-          },
-        ]),
-    });
-
-    let updatedDoc = null;
-    origOrderFindOneAndUpdate = Order.findOneAndUpdate;
-    Order.findOneAndUpdate = (filter, update) => {
-      updatedDoc = { _id: filter._id, ...update.$set };
-      return Promise.resolve(updatedDoc);
-    };
-
-    const result = await sendReviewRequestsSweep();
-    assert.strictEqual(result.sentCount, 1, "Should send 1 review request");
-    assert.ok(sentReviewPayload, "whatsappService.sendReviewRequest must have been invoked");
-    assert.strictEqual(sentReviewPayload.customerName, "Pooja Sharma");
-    assert.strictEqual(sentReviewPayload.orderNumber, "DJ-2026-0099");
-    assert.ok(sentReviewPayload.googleReviewUrl.includes("decorjoygurgaon"));
-    assert.ok(updatedDoc.reviewPromptSentAt instanceof Date, "reviewPromptSentAt must be set to Date");
-  });
 
   const clientDistExists = fs.existsSync(path.resolve(__dirname, "../../client/dist/index.html"));
 

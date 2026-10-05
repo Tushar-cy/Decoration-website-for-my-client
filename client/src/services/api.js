@@ -88,28 +88,6 @@ export const getServiceById = async (id) => {
   return API.get(`/products/${id}`);
 };
 
-// ================= ORDERS, QUOTES & AVAILABILITY =================
-export const getQuote = (payload) => API.post("/quotes", payload);
-
-export const getAvailability = (params) => API.get("/availability", { params });
-
-export const createOrder = (orderData, idempotencyKey) => {
-  const headers = {};
-  if (idempotencyKey) {
-    headers["Idempotency-Key"] = idempotencyKey;
-  }
-  return API.post("/orders", orderData, { headers });
-};
-
-export const trackOrder = (orderNumber, phone) => {
-  const params = { orderNumber };
-  if (phone) params.phone = phone;
-  return API.get("/orders/track", { params });
-};
-
-export const getOrderByNumber = (orderNumber) => API.get(`/orders/${orderNumber}`);
-
-export const verifyPayment = (paymentData) => API.post("/payments/verify", paymentData);
 
 // ================= GALLERY API (Zero fallbacks) =================
 export const getGallery = (category) => {
@@ -158,20 +136,14 @@ export const addAdminSubmissionNote = (id, text) =>
   API.post(`/admin/submissions/${id}/notes`, { text });
 export const assignAdminSubmission = (id, assignedTo) =>
   API.patch(`/admin/submissions/${id}/assign`, { assignedTo });
-export const convertAdminSubmission = (id, orderId) =>
-  API.post(`/admin/submissions/${id}/convert`, { orderId });
+export const convertAdminSubmission = (id, data = {}) =>
+  API.post(`/admin/submissions/${id}/convert`, typeof data === "string" ? { orderId: data } : data);
 
 // ================= ADMIN V2 EXTENDED API =================
 
 // Dashboard
 export const getAdminDashboardStats = () => API.get("/admin/dashboard");
 
-// Orders
-export const getAdminOrders = (params) => API.get("/admin/orders", { params });
-export const getAdminOrder = (id) => API.get(`/admin/orders/${id}`);
-export const updateAdminOrderStatus = (id, status) => API.patch(`/admin/orders/${id}/status`, { status });
-export const updateAdminOrderDetails = (id, data) => API.patch(`/admin/orders/${id}`, data);
-export const refundAdminOrder = (id, data) => API.post(`/admin/orders/${id}/refund`, data);
 
 // Products
 export const getAdminProducts = (params) => API.get("/admin/products", { params });
@@ -195,11 +167,6 @@ export const updateAdminAddOn = (id, data) => API.put(`/admin/addons/${id}`, dat
 export const deleteAdminAddOn = (id) => API.delete(`/admin/addons/${id}`);
 export const restoreAdminAddOn = (id) => API.post(`/admin/addons/${id}/restore`);
 
-// Coupons
-export const getAdminCoupons = (params) => API.get("/admin/coupons", { params });
-export const createAdminCoupon = (data) => API.post("/admin/coupons", data);
-export const updateAdminCoupon = (id, data) => API.put(`/admin/coupons/${id}`, data);
-export const deleteAdminCoupon = (id) => API.delete(`/admin/coupons/${id}`);
 
 // Settings
 export const getAdminSettings = () => API.get("/admin/settings");
@@ -215,10 +182,6 @@ export const resetAdminUserPassword = (id, newPassword) => API.post(`/admin/user
 // Audit Logs
 export const getAdminAuditLogs = (params) => API.get("/admin/audit-logs", { params });
 
-// Availability Management
-export const getAdminAvailabilityMonth = (params) => API.get("/admin/availability/month", { params });
-export const toggleAdminBlockDate = (date) => API.post("/admin/availability/toggle-block", { date });
-export const updateAdminSlotCapacity = (slotKey, capacityPerDay) => API.patch("/admin/availability/slot-capacity", { slotKey, capacityPerDay });
 
 // Admin Gallery (TanStack Query aware — includes inactive)
 export const getAdminGallery = (params) => API.get("/admin/gallery", { params });

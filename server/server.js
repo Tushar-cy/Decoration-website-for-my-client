@@ -22,7 +22,7 @@ const { globalLimiter } = require("./middleware/rateLimiter");
 const { requireCustomHeader } = require("./middleware/csrfMiddleware");
 const AppError = require("./utils/AppError");
 const featureFlags = require("./services/featureFlags");
-const { razorpayBreaker } = require("./utils/circuitBreaker");
+const { warmUpCache } = require("./utils/warmUpCache");
 
 const app = express();
 
@@ -58,8 +58,6 @@ app.use(
 );
 
 // 6. Request Body Parsing
-// Raw body for Razorpay Webhook signature verification
-app.use("/api/payments/razorpay/webhook", express.raw({ type: "*/*" }));
 app.use(express.json({ limit: "100kb" }));
 app.use(express.urlencoded({ extended: true, limit: "100kb" }));
 
@@ -109,8 +107,7 @@ app.get("/readyz", async (req, res) => {
 
   const checks = {
     mongo: mongoConnected ? "connected" : "disconnected",
-    redis: redisConnected ? "connected" : "bypassed",  // Redis down = bypass, not fatal
-    razorpay: razorpayBreaker.state,   // CLOSED | OPEN | HALF_OPEN
+    redis: redisConnected ? "connected" : "bypassed", // Redis down = bypass, not fatal
   };
 
   if (!mongoConnected) {
@@ -129,15 +126,13 @@ app.get("/readyz", async (req, res) => {
   });
 });
 
-// Public flags endpoint (for storefront banners, payment mode)
+// Public flags endpoint (for storefront announcement banners & availability status)
 app.get("/api/settings/flags", async (req, res) => {
   try {
     const flags = await featureFlags.get();
-    // Only expose customer-facing flags — never return raw Settings
     return res.status(200).json({
       status: "success",
       data: {
-        onlinePayments: flags.onlinePayments && razorpayBreaker.state !== "OPEN",
         bookingsPaused: flags.bookingsPaused,
         maintenanceBanner: flags.maintenanceBanner,
       },
@@ -145,7 +140,7 @@ app.get("/api/settings/flags", async (req, res) => {
   } catch (err) {
     return res.status(200).json({
       status: "success",
-      data: { onlinePayments: false, bookingsPaused: false, maintenanceBanner: "" },
+      data: { bookingsPaused: false, maintenanceBanner: "" },
     });
   }
 });
@@ -153,20 +148,14 @@ app.get("/api/settings/flags", async (req, res) => {
 // 12. Application API Routes & SEO Routes
 app.use("/", require("./routes/seoRoutes"));
 
-// Private, no-store transactional & auth routes
+// Private, no-store auth & inquiry routes
 app.use("/api/auth", noStoreCache(), require("./routes/authRoutes"));
-app.use("/api/quotes", noStoreCache(), require("./routes/quoteRoutes"));
-app.use("/api/orders", noStoreCache(), require("./routes/orderRoutes"));
-app.use("/api/payments", noStoreCache(), require("./routes/paymentRoutes"));
 app.use("/api/inquiries", noStoreCache(), require("./routes/inquiryRoutes"));
 
 // Public edge-cached routes (ETag + max-age=30, s-maxage=300, stale-while-revalidate=86400, stale-if-error=86400)
 app.use("/api/services", publicCache(30, 300), require("./routes/serviceRoutes"));
 app.use("/api/gallery", publicCache(30, 300), require("./routes/galleryRoutes"));
 app.use("/api/testimonials", publicCache(30, 300), require("./routes/testimonialRoutes"));
-
-// Availability has dedicated short 15s cache
-app.use("/api/availability", require("./routes/availabilityRoutes"));
 
 // Products, Categories & AddOns Routes
 app.use("/api/products", publicCache(30, 300), require("./routes/productRoutes"));
@@ -180,15 +169,12 @@ app.use("/api/forms", publicCache(30, 300), require("./routes/purposeFormRoutes"
 // Admin Management Routes (strictly private, no-store)
 app.use("/api/admin", noStoreCache());
 app.use("/api/admin/dashboard", require("./routes/adminDashboardRoutes"));
-app.use("/api/admin/orders", require("./routes/adminOrderRoutes"));
 app.use("/api/admin", require("./routes/adminProductRoutes"));
-app.use("/api/admin/coupons", require("./routes/adminCouponRoutes"));
 app.use("/api/admin/settings", require("./routes/adminSettingsRoutes"));
 app.use("/api/admin/forms", require("./routes/adminFormRoutes"));
 app.use("/api/admin/submissions", require("./routes/adminSubmissionRoutes"));
 app.use("/api/admin/users", require("./routes/adminUserRoutes"));
 app.use("/api/admin/audit-logs", require("./routes/adminAuditRoutes"));
-app.use("/api/admin/availability", require("./routes/adminAvailabilityRoutes"));
 app.use("/api/admin/gallery", require("./routes/adminGalleryRoutes"));
 app.use("/api/admin/testimonials", require("./routes/adminTestimonialRoutes"));
 
@@ -220,7 +206,7 @@ if (fs.existsSync(clientDistPath)) {
     next();
   });
 
-  // Second priority: Serve static assets (JS, CSS, images, manifests)
+  // Second priority: Serve static assets (JS, CSS, images)
   app.use(
     express.static(clientDistPath, {
       index: false,
@@ -252,7 +238,7 @@ app.all("*", (req, res, next) => {
   next(new AppError(`Endpoint '${req.originalUrl}' not found on this server`, 404));
 });
 
-// 13. Centralized Error Handler
+// 14. Centralized Error Handler
 app.use(errorHandler);
 
 // Lifecycle: Boot function
@@ -265,6 +251,11 @@ const startServer = async () => {
 
     // Connect to Redis
     await connectRedis();
+
+    // Warm up hot catalogue and config data into Redis cache
+    warmUpCache().catch((err) => {
+      logger.warn({ err: err.message }, "Background cache warmup warning");
+    });
 
     server = app.listen(env.PORT, () => {
       logger.info(`Decor Joy Gurgaon Server running on port ${env.PORT} [${env.NODE_ENV}]`);

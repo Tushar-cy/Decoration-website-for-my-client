@@ -11,10 +11,6 @@ import {
   updateAdminAddOn,
   deleteAdminAddOn,
   restoreAdminAddOn,
-  getAdminCoupons,
-  createAdminCoupon,
-  updateAdminCoupon,
-  deleteAdminCoupon,
 } from "../services/api";
 import { useUndoToast } from "./context/UndoToastContext";
 import { useAdminUser } from "./hooks/useAdminUser";
@@ -29,10 +25,10 @@ function CategoriesManager() {
 
   const [activeTab, setActiveTab] = useState(
     () => searchParams.get("tab") || "categories"
-  ); // 'categories' | 'addons' | 'coupons'
+  ); // 'categories' | 'addons'
 
   // Modal states
-  const [modalType, setModalType] = useState(null); // 'category' | 'addon' | 'coupon' | null
+  const [modalType, setModalType] = useState(null); // 'category' | 'addon' | null
   const [editingItem, setEditingItem] = useState(null);
 
   // Queries
@@ -44,19 +40,11 @@ function CategoriesManager() {
     },
   });
 
-  const { data: addOns = [], isLoading: addonLoading } = useQuery({
+  const { data: addOns = [], isLoading: addOnLoading } = useQuery({
     queryKey: ["adminAddOns"],
     queryFn: async () => {
       const res = await getPublicAddOns();
       return res.data?.data?.addOns || [];
-    },
-  });
-
-  const { data: coupons = [], isLoading: couponLoading } = useQuery({
-    queryKey: ["adminCoupons"],
-    queryFn: async () => {
-      const res = await getAdminCoupons();
-      return res.data?.data?.coupons || [];
     },
   });
 
@@ -74,18 +62,18 @@ function CategoriesManager() {
     onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ["adminCategories"] });
       showUndoToast({
-        message: "Category deleted.",
-        onUndo: async () => {
-          await restoreAdminCategory(id);
-          queryClient.invalidateQueries({ queryKey: ["adminCategories"] });
-        },
+        message: "Category soft-deleted",
+        onUndo: () =>
+          restoreAdminCategory(id).then(() =>
+            queryClient.invalidateQueries({ queryKey: ["adminCategories"] })
+          ),
       });
     },
   });
 
   // Mutations - AddOns
   const addOnSave = useMutation({
-    mutationFn: (item) => (item._id ? updateAdminAddOn(item._id, item) : createAdminAddOn(item)),
+    mutationFn: (addon) => (addon._id ? updateAdminAddOn(addon._id, addon) : createAdminAddOn(addon)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["adminAddOns"] });
       setModalType(null);
@@ -97,28 +85,12 @@ function CategoriesManager() {
     onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ["adminAddOns"] });
       showUndoToast({
-        message: "AddOn deleted.",
-        onUndo: async () => {
-          await restoreAdminAddOn(id);
-          queryClient.invalidateQueries({ queryKey: ["adminAddOns"] });
-        },
+        message: "Add-On soft-deleted",
+        onUndo: () =>
+          restoreAdminAddOn(id).then(() =>
+            queryClient.invalidateQueries({ queryKey: ["adminAddOns"] })
+          ),
       });
-    },
-  });
-
-  // Mutations - Coupons
-  const couponSave = useMutation({
-    mutationFn: (coup) => (coup._id ? updateAdminCoupon(coup._id, coup) : createAdminCoupon(coup)),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["adminCoupons"] });
-      setModalType(null);
-    },
-  });
-
-  const couponDelete = useMutation({
-    mutationFn: (id) => deleteAdminCoupon(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["adminCoupons"] });
     },
   });
 
@@ -126,9 +98,9 @@ function CategoriesManager() {
     <div>
       <div className="manager-header">
         <div>
-          <h1 className="manager-title">Categories, Add-Ons & Coupons</h1>
+          <h1 className="manager-title">Categories & Add-Ons</h1>
           <p style={{ color: "#64748b", fontSize: "0.88rem", marginTop: "4px" }}>
-            Configure event categories, cross-sell items (lights, cakes), and discount codes.
+            Configure event celebration categories and custom optional add-ons (fairy lights, cakes, backdrops).
           </p>
         </div>
 
@@ -158,26 +130,6 @@ function CategoriesManager() {
               ➕ Add Add-On
             </button>
           )}
-
-          {activeTab === "coupons" && (
-            <button
-              type="button"
-              className="btn-admin-primary"
-              onClick={() => {
-                setEditingItem({
-                  code: "",
-                  discountType: "percent",
-                  discountValue: 10,
-                  minOrderValuePaise: 299900,
-                  maxDiscountPaise: 100000,
-                  isActive: true,
-                });
-                setModalType("coupon");
-              }}
-            >
-              ➕ Create Coupon
-            </button>
-          )}
         </div>
       </div>
 
@@ -197,13 +149,6 @@ function CategoriesManager() {
         >
           ✨ Add-Ons ({addOns.length})
         </button>
-        <button
-          type="button"
-          className={`fb-tab-btn ${activeTab === "coupons" ? "active" : ""}`}
-          onClick={() => setActiveTab("coupons")}
-        >
-          🎟️ Coupons ({coupons.length})
-        </button>
       </div>
 
       {/* TAB 1: CATEGORIES */}
@@ -214,21 +159,23 @@ function CategoriesManager() {
               <tr>
                 <th>Category Name</th>
                 <th>Slug</th>
-                <th>Sort Order</th>
+                <th>Order</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {categories.map((cat) => (
-                <tr key={cat._id}>
+              {categories.map((c) => (
+                <tr key={c._id}>
                   <td>
-                    <strong>{cat.name}</strong>
+                    <strong>{c.name}</strong>
                   </td>
-                  <td>{cat.slug}</td>
-                  <td>{cat.sortOrder || 0}</td>
+                  <td style={{ color: "#64748b", fontSize: "0.85rem" }}>{c.slug}</td>
+                  <td>{c.sortOrder}</td>
                   <td>
-                    <span className="status-pill status-completed">Active</span>
+                    <span className={`status-pill ${c.isActive ? "status-completed" : "status-lost"}`}>
+                      {c.isActive ? "Active" : "Hidden"}
+                    </span>
                   </td>
                   <td>
                     <div style={{ display: "flex", gap: "6px" }}>
@@ -236,7 +183,7 @@ function CategoriesManager() {
                         type="button"
                         className="btn-action-edit"
                         onClick={() => {
-                          setEditingItem(cat);
+                          setEditingItem(c);
                           setModalType("category");
                         }}
                       >
@@ -246,7 +193,7 @@ function CategoriesManager() {
                         <button
                           type="button"
                           className="btn-action-delete"
-                          onClick={() => categoryDelete.mutate(cat._id)}
+                          onClick={() => categoryDelete.mutate(c._id)}
                         >
                           Delete
                         </button>
@@ -266,22 +213,22 @@ function CategoriesManager() {
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Add-On Item</th>
-                <th>Price (INR)</th>
+                <th>Add-On Name</th>
+                <th>Indicative Price</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {addOns.map((ad) => (
-                <tr key={ad._id}>
+              {addOns.map((a) => (
+                <tr key={a._id}>
                   <td>
-                    <strong>{ad.name}</strong>
+                    <strong>{a.name}</strong>
                   </td>
-                  <td>₹{((ad.pricePaise || 0) / 100).toLocaleString("en-IN")}</td>
+                  <td>₹{((a.pricePaise || 0) / 100).toLocaleString("en-IN")}</td>
                   <td>
-                    <span className={`status-pill ${ad.isActive ? "status-completed" : "status-lost"}`}>
-                      {ad.isActive ? "Active" : "Inactive"}
+                    <span className={`status-pill ${a.isActive ? "status-completed" : "status-lost"}`}>
+                      {a.isActive ? "Active" : "Disabled"}
                     </span>
                   </td>
                   <td>
@@ -290,7 +237,7 @@ function CategoriesManager() {
                         type="button"
                         className="btn-action-edit"
                         onClick={() => {
-                          setEditingItem(ad);
+                          setEditingItem(a);
                           setModalType("addon");
                         }}
                       >
@@ -300,7 +247,7 @@ function CategoriesManager() {
                         <button
                           type="button"
                           className="btn-action-delete"
-                          onClick={() => addOnDelete.mutate(ad._id)}
+                          onClick={() => addOnDelete.mutate(a._id)}
                         >
                           Delete
                         </button>
@@ -314,77 +261,16 @@ function CategoriesManager() {
         </div>
       )}
 
-      {/* TAB 3: COUPONS */}
-      {activeTab === "coupons" && (
-        <div className="admin-table-card">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Promo Code</th>
-                <th>Type & Value</th>
-                <th>Min Order</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {coupons.map((cp) => (
-                <tr key={cp._id}>
-                  <td>
-                    <strong style={{ color: "#b88932" }}>{cp.code}</strong>
-                  </td>
-                  <td>
-                    {cp.discountType === "percent" ? `${cp.discountValue}% OFF` : `₹${((cp.discountValue || 0) / 100).toFixed(0)} OFF`}
-                  </td>
-                  <td>₹{((cp.minOrderValuePaise || 0) / 100).toLocaleString("en-IN")}</td>
-                  <td>
-                    <span className={`status-pill ${cp.isActive ? "status-completed" : "status-lost"}`}>
-                      {cp.isActive ? "Active" : "Disabled"}
-                    </span>
-                  </td>
-                  <td>
-                    <div style={{ display: "flex", gap: "6px" }}>
-                      <button
-                        type="button"
-                        className="btn-action-edit"
-                        onClick={() => {
-                          setEditingItem(cp);
-                          setModalType("coupon");
-                        }}
-                      >
-                        Edit
-                      </button>
-                      {isOwner && (
-                        <button
-                          type="button"
-                          className="btn-action-delete"
-                          onClick={() => couponDelete.mutate(cp._id)}
-                        >
-                          Delete
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* MODAL EDITORS */}
+      {/* Edit / Create Modal */}
       {modalType && editingItem && (
         <div className="admin-modal-backdrop" onClick={() => setModalType(null)}>
-          <div className="admin-modal-card" onClick={(e) => e.stopPropagation()}>
+          <div className="admin-modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="admin-modal-header">
-              <h3 className="admin-modal-title">
-                {modalType === "category" ? "Category" : modalType === "addon" ? "Add-On" : "Coupon"}
+              <h3>
+                {editingItem._id ? "Edit" : "Create"}{" "}
+                {modalType === "category" ? "Category" : "Add-On"}
               </h3>
-              <button
-                type="button"
-                onClick={() => setModalType(null)}
-                style={{ background: "none", border: "none", fontSize: "1.2rem", cursor: "pointer" }}
-              >
+              <button type="button" className="close-btn" onClick={() => setModalType(null)}>
                 ✕
               </button>
             </div>
@@ -436,62 +322,13 @@ function CategoriesManager() {
                     />
                   </div>
                   <div className="fb-input-group">
-                    <label className="fb-input-label">Price (in Paise)</label>
+                    <label className="fb-input-label">Indicative Price (in Paise, ₹100 = 10000)</label>
                     <input
                       type="number"
                       className="fb-input"
                       value={editingItem.pricePaise}
                       onChange={(e) =>
                         setEditingItem({ ...editingItem, pricePaise: parseInt(e.target.value, 10) || 0 })
-                      }
-                    />
-                  </div>
-                </div>
-              )}
-
-              {modalType === "coupon" && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                  <div className="fb-input-group">
-                    <label className="fb-input-label">Coupon Code (Uppercase)</label>
-                    <input
-                      type="text"
-                      className="fb-input"
-                      value={editingItem.code}
-                      onChange={(e) => setEditingItem({ ...editingItem, code: e.target.value.toUpperCase() })}
-                    />
-                  </div>
-                  <div className="fb-field-grid">
-                    <div className="fb-input-group">
-                      <label className="fb-input-label">Discount Type</label>
-                      <select
-                        className="fb-select"
-                        value={editingItem.discountType}
-                        onChange={(e) => setEditingItem({ ...editingItem, discountType: e.target.value })}
-                      >
-                        <option value="percent">Percentage (%)</option>
-                        <option value="fixed">Fixed Amount (Paise)</option>
-                      </select>
-                    </div>
-                    <div className="fb-input-group">
-                      <label className="fb-input-label">Discount Value</label>
-                      <input
-                        type="number"
-                        className="fb-input"
-                        value={editingItem.discountValue}
-                        onChange={(e) =>
-                          setEditingItem({ ...editingItem, discountValue: parseInt(e.target.value, 10) || 0 })
-                        }
-                      />
-                    </div>
-                  </div>
-                  <div className="fb-input-group">
-                    <label className="fb-input-label">Min Order Value (in Paise)</label>
-                    <input
-                      type="number"
-                      className="fb-input"
-                      value={editingItem.minOrderValuePaise}
-                      onChange={(e) =>
-                        setEditingItem({ ...editingItem, minOrderValuePaise: parseInt(e.target.value, 10) || 0 })
                       }
                     />
                   </div>
@@ -509,7 +346,6 @@ function CategoriesManager() {
                 onClick={() => {
                   if (modalType === "category") categorySave.mutate(editingItem);
                   if (modalType === "addon") addOnSave.mutate(editingItem);
-                  if (modalType === "coupon") couponSave.mutate(editingItem);
                 }}
               >
                 Save Changes

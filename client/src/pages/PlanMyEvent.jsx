@@ -38,23 +38,39 @@ function PlanMyEvent() {
     fetchPurposes();
   }, []);
 
-  // Sync with searchParams
+  const packageSlug = searchParams.get("package") || "";
+
+  // Sync with searchParams & detect package
   useEffect(() => {
     const p = searchParams.get("purpose");
+    const pkg = searchParams.get("package");
     if (p) {
       setSelectedPurpose(p);
+    } else if (pkg && !selectedPurpose) {
+      const lower = pkg.toLowerCase();
+      if (lower.includes("birthday") || lower.includes("bday") || lower.includes("kids")) {
+        setSelectedPurpose("birthday");
+      } else if (lower.includes("anniversary") || lower.includes("romantic")) {
+        setSelectedPurpose("anniversary");
+      } else if (lower.includes("baby") || lower.includes("shower") || lower.includes("welcome")) {
+        setSelectedPurpose("baby-shower");
+      } else if (lower.includes("proposal") || lower.includes("marry")) {
+        setSelectedPurpose("proposal");
+      } else if (lower.includes("corporate") || lower.includes("office")) {
+        setSelectedPurpose("corporate");
+      }
     }
-  }, [searchParams]);
+  }, [searchParams, selectedPurpose]);
 
   const handleSelectPurpose = (key) => {
     setSelectedPurpose(key);
-    setSearchParams({ purpose: key });
+    setSearchParams(packageSlug ? { purpose: key, package: packageSlug } : { purpose: key });
     window.scrollTo({ top: 380, behavior: "smooth" });
   };
 
   const handleBackToChooser = () => {
     setSelectedPurpose("");
-    setSearchParams({});
+    setSearchParams(packageSlug ? { package: packageSlug } : {});
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -128,6 +144,29 @@ function PlanMyEvent() {
               ← Choose a Different Occasion
             </button>
           </div>
+
+          {/* Package inspiration banner */}
+          {packageSlug && (
+            <div
+              style={{
+                backgroundColor: "#fffdf5",
+                border: "1px solid rgba(184, 137, 50, 0.35)",
+                borderRadius: "10px",
+                padding: "10px 16px",
+                marginBottom: "16px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                fontSize: "0.88rem",
+                color: "#785312",
+              }}
+            >
+              <span>✨</span>
+              <span>
+                Consultation tailored for: <strong>{packageSlug.replace(/-/g, " ")}</strong>
+              </span>
+            </div>
+          )}
 
           {/* Render Schema-driven Purpose Form */}
           <PurposeForm

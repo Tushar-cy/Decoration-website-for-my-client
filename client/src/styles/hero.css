@@ -204,12 +204,60 @@
   color: var(--dark);
 }
 
+.hero-occasions-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.occ-tag {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(184, 137, 50, 0.08);
+  border: 1px solid rgba(184, 137, 50, 0.25);
+  color: #785312;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+}
+
 .hero-cta-group {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 14px;
   margin-bottom: 28px;
+}
+
+.hero-btn-main {
+  font-size: 1.05rem !important;
+  padding: 14px 28px !important;
+  box-shadow: 0 4px 16px rgba(37, 211, 102, 0.35) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.3px;
+}
+
+.hero-btn-sub {
+  font-size: 1.05rem !important;
+  padding: 14px 26px !important;
+  font-weight: 700 !important;
+}
+
+.hero-catalog-link {
+  font-size: 0.92rem;
+  color: var(--dark);
+  font-weight: 700;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-bottom: 2px solid var(--gold);
+  transition: all 0.2s ease;
+}
+
+.hero-catalog-link:hover {
+  color: var(--gold);
+  border-color: var(--dark);
 }
 
 /* Trust Badges / Stats */

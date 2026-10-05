@@ -16,37 +16,50 @@ function Hero() {
       <div className="container hero-container">
         {/* Left Column: Hero Content */}
         <div className="hero-content">
-          <div className="hero-badge">
-            <span className="sparkle">✨</span>
-            <span>Gurgaon's Premier Event Stylists Since 2021</span>
+          <div className="hero-badge-wrap">
+            <div className="hero-badge">
+              <span className="sparkle">📍</span>
+              <span>Premier Event & Party Styling in Gurgaon</span>
+            </div>
+            <div className="hero-delivery-pill">
+              <span>Condo & Home Setups</span>
+            </div>
           </div>
 
           <h1 className="hero-title">
-            Decor Joy <span>Gurgaon</span>
+            Luxury Event & Balloon Decorations in <span>Gurgaon</span>
           </h1>
 
-          <div className="hero-tagline">
-            "Your Celebration. Our Creation."
+          {/* Occasion Tags: Instantly communicates what we decorate */}
+          <div className="hero-occasions-tags">
+            <span className="occ-tag">🎂 Birthdays</span>
+            <span className="occ-tag">💍 Anniversaries</span>
+            <span className="occ-tag">🍼 Baby Showers</span>
+            <span className="occ-tag">❤️ Proposals</span>
+            <span className="occ-tag">✨ Milestone Parties</span>
           </div>
 
           <p className="hero-description">
-            Beautifully designed celebrations, thoughtfully decorated to make your special moments unforgettable. From intimate candlelit anniversaries to lavish birthday bashes across Gurugram.
+            Bespoke balloon arches, organic garlands, sequin backdrops, and neon styling. 
+            We discuss your venue, design the aesthetic, and craft a stunning setup anywhere in Gurugram.
           </p>
 
+          {/* Core Conversion CTAs: WhatsApp Primary + Plan My Event Secondary */}
           <div className="hero-cta-group">
-            <Link to="/shop" className="btn btn-gold">
-              Explore Setups 🎈
-            </Link>
-            <Link to="/contact" className="btn btn-outline">
-              Book Your Celebration 📅
-            </Link>
             <WhatsAppButton
               text="WhatsApp Us"
-              message="Hi Decor Joy Gurgaon! I'd like to plan an event decoration."
+              className="btn btn-whatsapp hero-btn-main"
+              message="Hi Decor Joy, I'm planning an event in Gurgaon and would like to discuss decoration setups, themes, and pricing."
             />
+            <Link to="/plan-my-event" className="btn btn-gold hero-btn-sub">
+              ✨ Plan My Event
+            </Link>
+            <Link to="/shop" className="hero-catalog-link">
+              Browse Showcase Catalogue ➔
+            </Link>
           </div>
 
-          {/* Social Proof / Stats */}
+          {/* Social Proof / Trust Stats */}
           <div className="hero-stats">
             <div className="hero-stat-item">
               <span className="stat-number">500+</span>
@@ -54,23 +67,23 @@ function Hero() {
             </div>
             <div className="hero-stat-item">
               <span className="stat-number">4.9 ★</span>
-              <span className="stat-label">Customer Rating</span>
+              <span className="stat-label">Google Rating</span>
             </div>
             <div className="hero-stat-item">
-              <span className="stat-number">Since 2021</span>
-              <span className="stat-label">Trusted in Gurgaon</span>
+              <span className="stat-number">Damage-Free</span>
+              <span className="stat-label">Condo Guaranteed</span>
             </div>
           </div>
         </div>
 
-        {/* Right Column: Visual Showcase (LCP Hero Image with Eager Loading & Explicit Dimensions) */}
+        {/* Right Column: Visual Showcase */}
         <div className="hero-media-wrapper">
           <div className="hero-card-main">
             <img
               src={getOptimizedImageUrl(HERO_IMAGE_URL, { width: 800, height: 600, crop: "fill" })}
               srcSet={getImageSrcSet(HERO_IMAGE_URL, [360, 480, 768, 1000])}
               sizes="(max-width: 768px) 100vw, 50vw"
-              alt="Decor Joy Gurgaon Luxury Event Decoration"
+              alt="Decor Joy Gurgaon Luxury Event & Balloon Decoration"
               width="800"
               height="600"
               loading="eager"
@@ -80,10 +93,10 @@ function Hero() {
 
           {/* Floating Trust Cards */}
           <div className="hero-floating-card floating-card-1">
-            <div className="floating-icon">🎉</div>
+            <div className="floating-icon">🎈</div>
             <div>
-              <div className="floating-text-primary">100% Customized</div>
-              <div className="floating-text-secondary">Tailored to your theme</div>
+              <div className="floating-text-primary">Custom Themes</div>
+              <div className="floating-text-secondary">Tailored to your space</div>
             </div>
           </div>
 
@@ -91,7 +104,7 @@ function Hero() {
             <div className="floating-icon">⏱️</div>
             <div>
               <div className="floating-text-primary">On-Time Setup</div>
-              <div className="floating-text-secondary">Hassle-free execution</div>
+              <div className="floating-text-secondary">Ready before your guests arrive</div>
             </div>
           </div>
         </div>
