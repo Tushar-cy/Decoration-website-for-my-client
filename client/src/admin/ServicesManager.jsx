@@ -226,10 +226,10 @@ function ServicesManager() {
                 <div className="form-group">
                   <label className="form-label">Image URL</label>
                   <input
-                    type="url"
+                    type="text"
                     name="image"
                     className="form-control"
-                    placeholder="https://images.unsplash.com/..."
+                    placeholder="/decor-gallery/decor_001.jpg"
                     value={formData.image}
                     onChange={handleChange}
                     required

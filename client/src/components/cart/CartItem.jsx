@@ -7,7 +7,7 @@ export function CartItem({ item, quoteItem, onUpdateQuantity, onRemove }) {
   const displayTitle = quoteItem?.titleSnapshot || "Event Decoration Setup";
   const unitPricePaise = quoteItem?.unitPricePaise || 0;
   const subtotalPaise = quoteItem?.subtotalPaise || unitPricePaise * item.quantity;
-  const imageUrl = quoteItem?.image || "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=300&q=80";
+  const imageUrl = quoteItem?.image || item?.image || item?.images?.[0]?.url || "/decor-gallery/decor_001.jpg";
 
   return (
     <div className={styles.cartItem}>
@@ -51,7 +51,7 @@ export function CartItem({ item, quoteItem, onUpdateQuantity, onRemove }) {
           ))}
           {(quoteItem?.addOns || []).map((a, idx) => (
             <span key={idx} className={styles.badge}>
-              + {a.name} ({formatPaise(a.pricePaise)})
+              + {a.name}
             </span>
           ))}
         </div>
@@ -78,8 +78,8 @@ export function CartItem({ item, quoteItem, onUpdateQuantity, onRemove }) {
             </button>
           </div>
 
-          <div className={styles.itemPrice}>
-            {formatPaise(subtotalPaise)}
+          <div className={styles.itemPrice} style={{ color: "var(--gold)", fontWeight: 600, fontSize: "0.85rem" }}>
+            ✓ Custom Quote
           </div>
         </div>
       </div>

@@ -117,7 +117,7 @@ function WishlistModal() {
                   }}
                 >
                   <img
-                    src={item.image}
+                    src={item.image || item.images?.[0]?.url || "/decor-gallery/decor_001.jpg"}
                     alt={item.title}
                     style={{
                       width: "80px",
@@ -149,12 +149,12 @@ function WishlistModal() {
                     </div>
 
                     <div style={{ fontSize: "0.78rem", color: "var(--text-light)", marginTop: "4px" }}>
-                      {item.category} • {item.color || "Bespoke Palette"}
+                      {item.category || item.categoryId?.name || "Event Decor"} • {item.color || "Bespoke Palette"}
                     </div>
 
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "10px" }}>
-                      <span style={{ fontWeight: 800, fontSize: "1rem", color: "var(--dark-gold)" }}>
-                        ₹{item.startingPrice?.toLocaleString("en-IN")}
+                      <span style={{ fontWeight: 700, fontSize: "0.85rem", color: "var(--gold)" }}>
+                        ✓ Custom Quote
                       </span>
 
                       <div style={{ display: "flex", gap: "8px" }}>

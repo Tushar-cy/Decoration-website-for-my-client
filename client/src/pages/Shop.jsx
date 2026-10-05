@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getPublicProducts, getPublicCategories } from "../services/api";
+import { FALLBACK_CATEGORIES, FALLBACK_PRODUCTS } from "../data/fallbackData";
 import { formatPaise } from "../utils/money";
 import { getOptimizedImageUrl, getImageSrcSet } from "../utils/cloudinary";
 import { useShop } from "../context/ShopContext";
@@ -41,14 +42,21 @@ export default function Shop() {
   const { data: categoriesData } = useQuery({
     queryKey: ["public-categories"],
     queryFn: async () => {
-      const res = await getPublicCategories();
-      return res.data?.data?.categories || [];
+      try {
+        const res = await getPublicCategories();
+        const list = res.data?.data?.categories || [];
+        if (list.length > 0) return list;
+      } catch {
+        // Fallback when MongoDB is offline
+      }
+      return FALLBACK_CATEGORIES;
     },
     staleTime: 5 * 60 * 1000,
+    retry: false,
   });
 
   const categories = useMemo(() => {
-    return [{ _id: "all", name: "All Setups", slug: "All" }, ...(categoriesData || [])];
+    return [{ _id: "all", name: "All Setups", slug: "All" }, ...(categoriesData || FALLBACK_CATEGORIES)];
   }, [categoriesData]);
 
   // Products Query
@@ -77,12 +85,34 @@ export default function Shop() {
   } = useQuery({
     queryKey: ["public-products", productQueryParams],
     queryFn: async () => {
-      const res = await getPublicProducts(productQueryParams);
-      return res.data?.data;
+      try {
+        const res = await getPublicProducts(productQueryParams);
+        const data = res.data?.data;
+        if (data?.products && data.products.length > 0) return data;
+      } catch {
+        // Fallback when MongoDB is offline
+      }
+      let prods = [...FALLBACK_PRODUCTS];
+      if (activeCategory && activeCategory !== "All") {
+        prods = prods.filter((p) => p.tags.includes(activeCategory.toLowerCase()));
+      }
+      if (debouncedQuery) {
+        const q = debouncedQuery.toLowerCase();
+        prods = prods.filter(
+          (p) =>
+            p.title.toLowerCase().includes(q) ||
+            p.shortDescription?.toLowerCase().includes(q) ||
+            p.tags?.some((t) => t.toLowerCase().includes(q))
+        );
+      }
+      return {
+        products: prods,
+        pagination: { page: 1, totalPages: 1, total: prods.length },
+      };
     },
     staleTime: 60 * 1000,
     gcTime: 10 * 60 * 1000,
-    retry: 2,
+    retry: false,
   });
 
   const products = productsResult?.products || [];
@@ -204,8 +234,6 @@ export default function Shop() {
               onChange={handleSortChange}
             >
               <option value="featured">Featured / Popular</option>
-              <option value="price_asc">Price: Low to High</option>
-              <option value="price_desc">Price: High to Low</option>
               <option value="rating">Highest Rated</option>
               <option value="newest">New Arrivals</option>
             </select>
@@ -252,7 +280,7 @@ export default function Shop() {
           <>
             <div className="shop-grid">
               {products.map((product) => {
-                const mainImg = product.images?.[0]?.url || "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=600&q=80";
+                const mainImg = product.images?.[0]?.url || "/decor-gallery/decor_001.jpg";
                 const isSaved = isInWishlist(product._id);
 
                 return (
@@ -307,23 +335,17 @@ export default function Shop() {
 
                       <div className="product-card-footer">
                         <div className="product-price-block">
-                          <span className="product-price-label">Starts at</span>
-                          <span className="product-price">
-                            {formatPaise(product.basePricePaise)}
+                          <span className="product-quote-tag" style={{ color: "var(--gold, #d4af37)", fontWeight: 600, fontSize: "0.85rem" }}>
+                            ✓ Custom Quote on WhatsApp
                           </span>
-                          {product.compareAtPricePaise > product.basePricePaise && (
-                            <span className="product-compare-price">
-                              {formatPaise(product.compareAtPricePaise)}
-                            </span>
-                          )}
                         </div>
 
                         <Link
                           to={`/p/${product.slug}`}
                           className="btn btn-gold product-btn"
-                          aria-label={`Customize ${product.title}`}
+                          aria-label={`View ${product.title}`}
                         >
-                          Book Setup ➔
+                          View Setup ➔
                         </Link>
                       </div>
                     </div>

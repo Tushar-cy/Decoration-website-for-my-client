@@ -186,7 +186,7 @@ function SearchAutocomplete({ placeholder = "Search setups, themes, colors...", 
             </div>
           ) : (
             results.map((item, idx) => {
-              const imgUrl = item.images?.[0]?.url || item.image || "";
+              const imgUrl = item.images?.[0]?.url || item.image || "/decor-gallery/decor_001.jpg";
               return (
                 <div
                   key={item._id}
@@ -229,8 +229,8 @@ function SearchAutocomplete({ placeholder = "Search setups, themes, colors...", 
                       </span>
                     </div>
                   </div>
-                  <div style={{ fontWeight: 800, fontSize: "0.92rem", color: "var(--dark)", flexShrink: 0 }}>
-                    {formatPaise(item.basePricePaise || item.startingPrice * 100 || 0)}
+                  <div style={{ fontWeight: 600, fontSize: "0.78rem", color: "var(--gold, #d4af37)", flexShrink: 0 }}>
+                    View Setup ➔
                   </div>
                 </div>
               );

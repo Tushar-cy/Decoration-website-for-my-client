@@ -77,7 +77,27 @@ Before running the application, make sure you have:
 
 ---
 
-## 🚀 Complete Step-by-Step Setup Guide (For New Users & Clients)
+## 🚀 1-Click Production VPS Deployment (For Client & Linux Servers)
+
+If your client is setting up the site on a Linux VPS (Ubuntu / Debian), they can deploy the entire stack with **one command without writing or changing a single line of code**:
+
+```bash
+# Make script executable & deploy with automatic database seed
+chmod +x deploy.sh
+./deploy.sh --seed
+```
+
+**What this automated script does:**
+1. ✅ Automatically installs all server and client dependencies.
+2. ✅ Auto-generates secure random 64-character JWT secrets in `server/.env`.
+3. ✅ Builds and prerenders all 11 static pages and optimizes all 251 authentic gallery photos.
+4. ✅ Seeds categories, packages, add-ons, and admin credentials into MongoDB.
+5. ✅ Boots the Node.js API cluster & background worker under PM2 with auto-restart on system reboot.
+6. ✅ Provides a ready-to-copy `nginx.conf` file to connect to your domain with SSL.
+
+---
+
+## 💻 Manual Step-by-Step Setup Guide (For Local Development)
 
 Follow these exact steps to run the complete website on your machine:
 

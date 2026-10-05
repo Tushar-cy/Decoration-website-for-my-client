@@ -10,11 +10,11 @@ export const LOCALITIES = {
     name: "DLF Phase 5",
     seoTitle: "Balloon Decoration in DLF Phase 5, Gurgaon | Decor Joy",
     seoDescription:
-      "Luxury balloon decoration in DLF Phase 5, Gurgaon. Fast setup at The Magnolias, The Aralias, The Belaire, and Park Place. Wall-safe, elevator-friendly celebration styling starting ₹1,499.",
+      "Luxury balloon decoration in DLF Phase 5, Gurgaon. Fast setup at The Magnolias, The Aralias, The Belaire, and Park Place. Wall-safe, elevator-friendly celebration styling with custom WhatsApp quotes.",
     headline: "Luxury Balloon & Event Styling in DLF Phase 5, Gurugram",
     subtitle:
       "Bespoke balloon arches, birthday backdrops, and romantic cabanas delivered to DLF Phase 5's iconic gated communities.",
-    startingPrice: 1499,
+    startingPrice: "Custom",
     deliverySLA: "60 to 90 minutes delivery across DLF Phase 5",
     targetCondos: [
       "DLF The Magnolias",
@@ -78,11 +78,11 @@ export const LOCALITIES = {
     name: "Golf Course Road",
     seoTitle: "Birthday & Anniversary Decor on Golf Course Road, Gurgaon | Decor Joy",
     seoDescription:
-      "Premium event decoration along Golf Course Road, Gurgaon. Elegant birthday backdrops, anniversary cabanas at The Camellias, Palm Springs, and Belmonte. Starting ₹1,999.",
+      "Premium event decoration along Golf Course Road, Gurgaon. Elegant birthday backdrops, anniversary cabanas at The Camellias, Palm Springs, and Belmonte. Transparent quotes on WhatsApp.",
     headline: "Curated Event & Birthday Decoration along Golf Course Road",
     subtitle:
       "Sophisticated celebration styling for penthouses, clubhouses, and terraces across Golf Course Road condominiums.",
-    startingPrice: 1999,
+    startingPrice: "Custom",
     deliverySLA: "Fast setup along the entire Golf Course Road corridor",
     targetCondos: [
       "DLF The Camellias",
@@ -146,11 +146,11 @@ export const LOCALITIES = {
     name: "Cyber City & DLF Cyber Hub",
     seoTitle: "Corporate & Office Celebration Decor in Cyber City, Gurgaon | Decor Joy",
     seoDescription:
-      "Office celebration and corporate event decoration in DLF Cyber City, Gurgaon. Foundation day arches, work anniversaries, festive office styling with instant GST invoice. Starting ₹2,499.",
+      "Office celebration and corporate event decoration in DLF Cyber City, Gurgaon. Foundation day arches, work anniversaries, festive office styling with instant GST invoice and custom WhatsApp quotes.",
     headline: "Office Milestone & Corporate Party Decoration in DLF Cyber City",
     subtitle:
       "Branded balloon arches, corporate milestones, farewell setups, and festive office styling across Building 5, 8, 10, and DLF Cyber Hub.",
-    startingPrice: 2499,
+    startingPrice: "Custom",
     deliverySLA: "Early morning 07:30 AM setup before office hours",
     targetCondos: [
       "DLF Cyber City Building 5",
@@ -213,11 +213,11 @@ export const LOCALITIES = {
     name: "Sohna Road",
     seoTitle: "Baby Shower & Birthday Decor on Sohna Road, Gurgaon | Decor Joy",
     seoDescription:
-      "Joyful baby shower, welcome baby, and 1st birthday decoration on Sohna Road, Gurgaon. Serving Central Park Resorts, Tatvam Villas, and Vipul Greens. Non-toxic balloons from ₹1,699.",
+      "Joyful baby shower, welcome baby, and 1st birthday decoration on Sohna Road, Gurgaon. Serving Central Park Resorts, Tatvam Villas, and Vipul Greens. Non-toxic balloons with custom WhatsApp quotes.",
     headline: "Joyful Baby Shower & 1st Birthday Decor on Sohna Road",
     subtitle:
       "Dreamy pastel canopies, welcome baby arches, and themed backdrops for family celebrations across Sohna Road communities.",
-    startingPrice: 1699,
+    startingPrice: "Custom",
     deliverySLA: "Rapid delivery across Sohna Road & Subhash Chowk",
     targetCondos: [
       "Central Park Resorts",
@@ -280,11 +280,11 @@ export const LOCALITIES = {
     name: "Sector 57 Gurugram",
     seoTitle: "Same-Day Balloon Decoration in Sector 57, Gurugram | Decor Joy HQ",
     seoDescription:
-      "Lightning-fast event and balloon decoration from our Sector 57 workshop. Free delivery to Housing Board Colony, BPTP Freedom Park Life, and Hong Kong Bazaar vicinity. Starting ₹1,199.",
+      "Lightning-fast event and balloon decoration from our Sector 57 workshop. Free delivery to Housing Board Colony, BPTP Freedom Park Life, and Hong Kong Bazaar vicinity. Fast custom quotes on WhatsApp.",
     headline: "Lightning Fast Event Decoration from Our Sector 57 Workshop",
     subtitle:
       "Our creative studio is based right here at 166GF Sector 57! Enjoy 45-minute express dispatch, zero delivery charges, and local friendly service.",
-    startingPrice: 1199,
+    startingPrice: "Custom",
     deliverySLA: "Express 45-minute dispatch directly from our local studio",
     targetCondos: [
       "Housing Board Colony Sector 57",

@@ -352,7 +352,7 @@ function ProductsManager() {
 
                   <td>
                     <img
-                      src={prod.images?.[0]?.url || "https://placehold.co/60x60"}
+                      src={prod.images?.[0]?.url || "/decor-gallery/decor_001.jpg"}
                       alt={prod.title}
                       className="admin-image-thumb"
                     />

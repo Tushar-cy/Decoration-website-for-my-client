@@ -3,6 +3,7 @@ import { useLocation, Link } from "react-router-dom";
 import ServiceCard from "../components/ServiceCard";
 import WhatsAppButton from "../components/WhatsAppButton";
 import { getServices } from "../services/api";
+import { FALLBACK_PRODUCTS } from "../data/fallbackData";
 import "../styles/services.css";
 
 const CATEGORIES = [
@@ -12,13 +13,6 @@ const CATEGORIES = [
   "Baby Showers",
   "Proposals",
   "Special Celebrations",
-];
-
-const PRICE_FILTERS = [
-  { id: "all", label: "All Prices" },
-  { id: "under3500", label: "Under ₹3,500" },
-  { id: "3500to6000", label: "₹3,500 - ₹6,000" },
-  { id: "above6000", label: "Luxury (₹6,000+)" },
 ];
 
 const COLOR_FILTERS = [
@@ -69,12 +63,17 @@ function Services() {
     try {
       setLoading(true);
       const res = await getServices(category);
-      setServices(res.data);
+      if (res.data && res.data.length > 0) {
+        setServices(res.data);
+        return;
+      }
     } catch (error) {
       console.error("Error fetching services:", error);
     } finally {
       setLoading(false);
     }
+    // Fallback when MongoDB is offline
+    setServices(FALLBACK_PRODUCTS);
   };
 
   // Filter and sort items
@@ -91,12 +90,7 @@ function Services() {
         if (!matchTitle && !matchDesc && !matchCat && !matchColor && !matchMat) return false;
       }
 
-      // 2. Price Filter
-      if (activePrice === "under3500" && s.startingPrice >= 3500) return false;
-      if (activePrice === "3500to6000" && (s.startingPrice < 3500 || s.startingPrice > 6000)) return false;
-      if (activePrice === "above6000" && s.startingPrice <= 6000) return false;
-
-      // 3. Color Filter
+      // 2. Color Filter
       if (activeColor !== "all" && s.color !== activeColor) return false;
 
       // 4. Material Filter
@@ -221,14 +215,12 @@ function Services() {
                   }}
                 >
                   <option value="featured">✨ Featured Setups</option>
-                  <option value="price_asc">Price: Low to High</option>
-                  <option value="price_desc">Price: High to Low</option>
                   <option value="rating">Top Rated (★ 4.9+)</option>
                 </select>
               </div>
             </div>
 
-            {/* Row 2: Secondary Attributes (Price, Color, Material) */}
+            {/* Row 2: Secondary Attributes (Color, Material) */}
             <div
               style={{
                 display: "flex",
@@ -239,32 +231,6 @@ function Services() {
                 borderTop: "1px solid var(--border-subtle)",
               }}
             >
-              {/* Price Range Pills */}
-              <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
-                <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>
-                  Price:
-                </span>
-                {PRICE_FILTERS.map((p) => (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => setActivePrice(p.id)}
-                    style={{
-                      background: activePrice === p.id ? "var(--dark)" : "var(--surface-alt)",
-                      color: activePrice === p.id ? "var(--white)" : "var(--text)",
-                      border: "none",
-                      padding: "5px 12px",
-                      borderRadius: "var(--radius-full)",
-                      fontSize: "0.78rem",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      transition: "var(--transition)",
-                    }}
-                  >
-                    {p.label}
-                  </button>
-                ))}
-              </div>
 
               {/* Color Swatch Filters */}
               <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>

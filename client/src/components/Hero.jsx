@@ -4,7 +4,7 @@ import WhatsAppButton from "./WhatsAppButton";
 import { getOptimizedImageUrl, getImageSrcSet } from "../utils/cloudinary";
 import "../styles/hero.css";
 
-const HERO_IMAGE_URL = "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1000&q=80";
+const HERO_IMAGE_URL = "/decor-gallery/decor_002.jpg";
 
 function Hero() {
   return (

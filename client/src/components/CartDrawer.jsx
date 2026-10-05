@@ -46,25 +46,18 @@ export default function CartDrawer() {
   if (!isCartOpen) return null;
 
   // Build WhatsApp inquiry link using dynamic phone from public settings
-  const itemsText = (quoteItems || [])
-    .map(
-      (item) =>
-        `• ${item.titleSnapshot} (x${item.quantity}) - ₹${(
-          (item.subtotalPaise || 0) / 100
-        ).toLocaleString("en-IN")}`
-    )
+  const itemsText = (cart || [])
+    .map((item) => `• ${item.title || "Celebration Setup"} (Qty: ${item.quantity})`)
     .join("\n");
 
-  const totalRupees = Math.round((pricing?.totalPaise || 0) / 100).toLocaleString("en-IN");
-  const waMessage = `Hi Decor Joy Gurgaon! I would like to book the following celebration setups:
+  const waMessage = `Hi Decor Joy Gurgaon! I would like to reserve the following celebration setups:
 ${itemsText}
 
-Total: ₹${totalRupees}
 Pincode: ${formState.pincode}
 Preferred Date: ${formState.date || "To be confirmed"}
 Preferred Slot: ${formState.slotKey}
 
-Could you please confirm slot availability?`;
+Could you please confirm slot availability and share the custom quote?`;
 
   const waUrl = `https://wa.me/${cleanWhatsapp}?text=${encodeURIComponent(waMessage)}`;
 
@@ -235,7 +228,7 @@ Could you please confirm slot availability?`;
                     navigate("/checkout");
                   }}
                 >
-                  Proceed to Checkout (₹{totalRupees}) ➔
+                  Proceed to Reservation ➔
                 </button>
                 <a
                   href={waUrl}

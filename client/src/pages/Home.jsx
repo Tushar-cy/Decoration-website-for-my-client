@@ -10,6 +10,8 @@ import { LoadingSkeleton } from "../components/common/LoadingSkeleton";
 import { ErrorState } from "../components/common/ErrorState";
 import { getPublicProducts, getGallery, getTestimonials } from "../services/api";
 import { usePublicSettings } from "../context/SettingsContext";
+import { DECOR_GALLERY } from "../data/decorGalleryData";
+import { FALLBACK_PRODUCTS, FALLBACK_TESTIMONIALS } from "../data/fallbackData";
 import SEO from "../components/SEO";
 import { buildLocalBusinessJsonLd } from "../utils/jsonLd";
 import "../styles/services.css";
@@ -18,7 +20,7 @@ import "../styles/gallery.css";
 function Home() {
   const [selectedImage, setSelectedImage] = useState(null);
 
-  // 1. Featured Setups Query
+  // 1. Featured Setups Query (with graceful offline fallback)
   const {
     data: productsData,
     isLoading: isProductsLoading,
@@ -27,15 +29,21 @@ function Home() {
   } = useQuery({
     queryKey: ["home-products"],
     queryFn: async () => {
-      const res = await getPublicProducts({ limit: 3 });
-      return res.data?.data?.products || [];
+      try {
+        const res = await getPublicProducts({ limit: 3 });
+        const prods = res.data?.data?.products || [];
+        if (prods.length > 0) return prods;
+      } catch {
+        // Fallback when MongoDB / backend is offline
+      }
+      return FALLBACK_PRODUCTS.slice(0, 3);
     },
     staleTime: 60 * 1000,
     gcTime: 10 * 60 * 1000,
-    retry: 2,
+    retry: 1,
   });
 
-  // 2. Gallery Query
+  // 2. Gallery Query (falls back to authentic DECOR_GALLERY items)
   const {
     data: galleryData,
     isLoading: isGalleryLoading,
@@ -44,28 +52,39 @@ function Home() {
   } = useQuery({
     queryKey: ["home-gallery"],
     queryFn: async () => {
-      const res = await getGallery();
-      const items = Array.isArray(res.data) ? res.data : (res.data?.data || []);
-      return items.slice(0, 6);
+      try {
+        const res = await getGallery();
+        const items = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+        if (items.length > 0) return items.slice(0, 6);
+      } catch {
+        // Fallback to top featured authentic setups
+      }
+      return DECOR_GALLERY.filter((item) => item.isFeatured).slice(0, 6);
     },
     staleTime: 60 * 1000,
     gcTime: 10 * 60 * 1000,
-    retry: 2,
+    retry: 1,
   });
 
-  // 3. Testimonials Query
+  // 3. Testimonials Query (with graceful offline fallback)
   const {
     data: testimonialsData,
     isLoading: isTestimonialsLoading,
   } = useQuery({
     queryKey: ["home-testimonials"],
     queryFn: async () => {
-      const res = await getTestimonials();
-      return Array.isArray(res.data) ? res.data : (res.data?.data || []);
+      try {
+        const res = await getTestimonials();
+        const list = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+        if (list.length > 0) return list;
+      } catch {
+        // Fallback when MongoDB is offline
+      }
+      return FALLBACK_TESTIMONIALS;
     },
     staleTime: 60 * 1000,
     gcTime: 10 * 60 * 1000,
-    retry: 2,
+    retry: 1,
   });
 
   const services = productsData || [];
@@ -213,8 +232,8 @@ function Home() {
             <p style={{ textAlign: "center", color: "var(--text-light)" }}>Portfolio photos coming soon.</p>
           ) : (
             <div className="gallery-grid">
-              {gallery.map((item) => (
-                <GalleryCard key={item._id} item={item} onSelect={setSelectedImage} />
+              {gallery.map((item, idx) => (
+                <GalleryCard key={item.id || item._id || idx} item={item} onSelect={setSelectedImage} index={idx} />
               ))}
             </div>
           )}
@@ -289,7 +308,7 @@ function Home() {
               ✕
             </button>
             <img
-              src={selectedImage.image}
+              src={selectedImage.src || selectedImage.image}
               alt={selectedImage.title}
               className="lightbox-image"
               width="800"

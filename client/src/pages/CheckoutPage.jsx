@@ -403,8 +403,6 @@ export default function CheckoutPage() {
               >
                 {isSubmitting
                   ? "Processing Reservation..."
-                  : paymentMode === "advance_online"
-                  ? `Pay Advance to Reserve Slot (${formatPaise(pricing?.advanceDuePaise || 0)}) ➔`
                   : "Confirm Reservation (Pay on Confirmation) ➔"}
               </button>
             </form>
@@ -416,13 +414,13 @@ export default function CheckoutPage() {
               <h3 className="summary-title">Order Overview</h3>
 
               <div className="checkout-items-preview">
-                {quoteItems.map((item, idx) => (
+                {(quoteItems.length > 0 ? quoteItems : cart).map((item, idx) => (
                   <div key={idx} className="preview-item">
                     <div className="preview-item-info">
-                      <span className="preview-title">{item.titleSnapshot}</span>
+                      <span className="preview-title">{item.titleSnapshot || item.title || "Celebration Setup"}</span>
                       <span className="preview-qty">Qty: {item.quantity}</span>
                     </div>
-                    <span className="preview-price">{formatPaise(item.subtotalPaise)}</span>
+                    <span className="preview-price" style={{ color: "var(--gold)", fontWeight: 600 }}>Custom Quote</span>
                   </div>
                 ))}
               </div>

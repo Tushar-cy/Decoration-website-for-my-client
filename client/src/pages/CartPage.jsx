@@ -29,16 +29,11 @@ export default function CartPage() {
   const totalPaise = pricing?.totalPaise || 0;
 
   // WhatsApp order link
-  const itemsText = (quoteItems || [])
-    .map(
-      (item) =>
-        `• ${item.titleSnapshot} (x${item.quantity}) - ₹${(
-          (item.subtotalPaise || 0) / 100
-        ).toLocaleString("en-IN")}`
-    )
+  const itemsText = (cart || [])
+    .map((item) => `• ${item.title || "Celebration Setup"} (Qty: ${item.quantity})`)
     .join("\n");
 
-  const waMsg = `Hi Decor Joy Gurgaon! I'd like to book these event setups:\n${itemsText}\n\nTotal: ${formatPaise(totalPaise)}\nPlease confirm availability!`;
+  const waMsg = `Hi Decor Joy Gurgaon! I would like to reserve the following celebration setups:\n\n${itemsText}\n\nCould you please share the custom quote and check slot availability?`;
   const waUrl = `https://wa.me/${cleanWhatsapp}?text=${encodeURIComponent(waMsg)}`;
 
   if (cart.length === 0) {
@@ -122,7 +117,7 @@ export default function CartPage() {
                 disabled={!!fixItMessage}
                 onClick={() => navigate("/checkout")}
               >
-                Proceed to Checkout ({formatPaise(totalPaise)}) ➔
+                Proceed to Reserve Slot ➔
               </button>
 
               <a

@@ -43,7 +43,7 @@ function ServiceCard({ service }) {
     ? `₹${startingPrice.toLocaleString("en-IN")}`
     : "Custom";
 
-  const rawImage = (images && images[0]?.url) || image || "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=600&q=80";
+  const rawImage = (images && images[0]?.url) || image || "/decor-gallery/decor_001.jpg";
   const optimizedImage = getOptimizedImageUrl(rawImage, { width: 500, height: 350, crop: "fill" });
   const categoryName = categoryId?.name || category || "Event Decor";
   const displayRating = ratingAvg || rating;
@@ -111,8 +111,7 @@ function ServiceCard({ service }) {
             <Link to={targetLink}>{title}</Link>
           </h3>
           <div className="service-price-block">
-            <span className="service-price-from">Starts at</span>
-            <span className="service-price-value">{priceDisplay}</span>
+            <span className="service-quote-badge">✓ Custom Quote on WhatsApp</span>
           </div>
         </div>
 
@@ -135,13 +134,13 @@ function ServiceCard({ service }) {
             className="btn btn-gold service-book-btn"
             style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
           >
-            <span>Book Setup</span>
+            <span>View Setup</span>
             <span>➔</span>
           </Link>
 
           <WhatsAppButton
             text="WhatsApp Quote"
-            message={`Hello Decor Joy Gurgaon! I am interested in booking the "${title}" package (${priceDisplay}). Please share availability!`}
+            message={`Hello Decor Joy Gurgaon! I am interested in the "${title}" decoration setup. Please share availability and details!`}
             className="btn btn-whatsapp service-book-btn"
           />
         </div>

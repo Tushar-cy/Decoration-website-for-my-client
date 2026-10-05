@@ -37,7 +37,7 @@ function About() {
           <div className="about-intro-grid">
             <div className="about-image-stack">
               <img
-                src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1000&q=80"
+                src="/decor-gallery/decor_006.jpg"
                 alt="Decor Joy Gurgaon Story"
                 className="about-main-img"
               />

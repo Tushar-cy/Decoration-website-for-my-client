@@ -87,8 +87,8 @@ export default function LocalityPage() {
 
           <div className="locality-meta-bar">
             <div className="meta-item">
-              <span className="meta-label">Starting From</span>
-              <span className="meta-value">₹{locality.startingPrice.toLocaleString("en-IN")}</span>
+              <span className="meta-label">Pricing</span>
+              <span className="meta-value">Custom Quote on WhatsApp</span>
             </div>
             <div className="meta-divider" />
             <div className="meta-item">

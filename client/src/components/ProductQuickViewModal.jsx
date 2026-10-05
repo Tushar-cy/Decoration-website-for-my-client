@@ -23,7 +23,7 @@ function ProductQuickViewModal() {
     ? product.images.map((im) => im.url || im)
     : (product.gallery && product.gallery.length > 0)
     ? product.gallery
-    : [product.image || "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=600&q=80"];
+    : [product.image || "/decor-gallery/decor_001.jpg"];
 
   const activeImage = rawImages[activeImageIndex] || rawImages[0];
   const isWishlisted = isInWishlist(product._id);
@@ -202,11 +202,11 @@ function ProductQuickViewModal() {
 
             {/* Price block */}
             <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
-              <span style={{ fontSize: "1.6rem", fontWeight: 800, color: "var(--dark)" }}>
-                {displayPrice}
+              <span style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--gold, #d4af37)" }}>
+                ✓ Custom Quote on WhatsApp
               </span>
               <span style={{ fontSize: "0.82rem", color: "var(--success)", fontWeight: 700 }}>
-                • Free Gurgaon Delivery Included
+                • Free Gurgaon Setup & Takedown
               </span>
             </div>
 
@@ -241,7 +241,7 @@ function ProductQuickViewModal() {
 
               <WhatsAppButton
                 text="Inquire on WhatsApp"
-                message={`Hi Decor Joy! I am interested in the "${product.title}" setup (${displayPrice}).`}
+                message={`Hi Decor Joy! I am interested in the "${product.title}" setup. Could you please share the custom quote and check availability?`}
                 className="btn btn-whatsapp"
                 style={{ flex: 1, minHeight: "44px" }}
               />

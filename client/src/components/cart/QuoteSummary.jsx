@@ -1,53 +1,33 @@
 import React from "react";
 import styles from "./CartDrawer.module.css";
-import { formatPaise } from "../../utils/money";
 
 export function QuoteSummary({ pricing, paymentMode }) {
-  const {
-    subtotalPaise = 0,
-    discountPaise = 0,
-    deliveryFeePaise = 0,
-    totalPaise = 0,
-    advanceDuePaise = 0,
-    advancePercent = 25,
-  } = pricing || {};
-
   return (
     <div className={styles.summaryBox}>
       <div className={styles.summaryRow}>
-        <span>Subtotal</span>
-        <span>{formatPaise(subtotalPaise)}</span>
+        <span>Price Estimate</span>
+        <span style={{ color: "var(--gold)", fontWeight: 700 }}>Custom Quote on WhatsApp</span>
       </div>
-
-      {discountPaise > 0 && (
-        <div className={styles.summaryRowDiscount}>
-          <span>Coupon Discount</span>
-          <span>- {formatPaise(discountPaise)}</span>
-        </div>
-      )}
 
       <div className={styles.summaryRow}>
         <span>Gurugram Delivery & Styling</span>
-        <span>{deliveryFeePaise > 0 ? formatPaise(deliveryFeePaise) : "FREE"}</span>
+        <span style={{ color: "var(--success, #059669)", fontWeight: 700 }}>FREE</span>
+      </div>
+
+      <div className={styles.summaryRow}>
+        <span>Clean Teardown</span>
+        <span style={{ color: "var(--success, #059669)", fontWeight: 700 }}>Included</span>
       </div>
 
       <div className={styles.summaryTotal}>
-        <span>Order Total</span>
-        <span>{formatPaise(totalPaise)}</span>
+        <span>Reservation</span>
+        <span style={{ color: "var(--gold)", fontWeight: 700 }}>Pay After Confirmation</span>
       </div>
 
-      {paymentMode === "advance_online" && advanceDuePaise > 0 && (
-        <div className={styles.advanceBadge}>
-          <span>Advance to book ({advancePercent}%):</span>
-          <span>{formatPaise(advanceDuePaise)}</span>
-        </div>
-      )}
-      {paymentMode === "pay_on_confirmation" && (
-        <div className={styles.advanceBadge}>
-          <span>Payment Mode:</span>
-          <span>Pay on Confirmation</span>
-        </div>
-      )}
+      <div className={styles.advanceBadge}>
+        <span>🔒 Zero Payment Required to Reserve Slot</span>
+      </div>
     </div>
   );
 }
+

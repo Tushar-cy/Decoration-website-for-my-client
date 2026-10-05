@@ -11,6 +11,7 @@ import { ErrorState } from "../components/common/ErrorState";
 import SEO from "../components/SEO";
 import { buildProductJsonLd, buildBreadcrumbJsonLd } from "../utils/jsonLd";
 import { trackViewItem } from "../utils/analytics";
+import { FALLBACK_PRODUCTS } from "../data/fallbackData";
 import "../styles/productDetail.css";
 
 export default function ProductDetail() {
@@ -29,12 +30,19 @@ export default function ProductDetail() {
   } = useQuery({
     queryKey: ["product-detail", slug],
     queryFn: async () => {
-      const res = await getProductBySlug(slug);
-      return res.data?.data;
+      try {
+        const res = await getProductBySlug(slug);
+        if (res.data?.data?.product) return res.data.data;
+      } catch {
+        // Fallback when MongoDB / backend is offline
+      }
+      const matched = FALLBACK_PRODUCTS.find((p) => p.slug === slug) || FALLBACK_PRODUCTS[0];
+      const related = FALLBACK_PRODUCTS.filter((p) => p.slug !== matched?.slug).slice(0, 3);
+      return { product: matched, related };
     },
     staleTime: 60 * 1000,
     gcTime: 10 * 60 * 1000,
-    retry: 2,
+    retry: 1,
   });
 
   const product = productData?.product;
@@ -205,13 +213,13 @@ export default function ProductDetail() {
 
   const images = (product.images && product.images.length > 0)
     ? product.images
-    : [{ url: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=800&q=80", alt: product.title }];
+    : [{ url: "/decor-gallery/decor_001.jpg", alt: product.title }];
 
   const activeImg = images[activeImageIdx] || images[0];
   const isSaved = isInWishlist(product._id);
 
   // WhatsApp inquiry URL
-  const waMsg = `Hi Decor Joy Gurgaon! I'm interested in "${product.title}" (${formatPaise(livePricePaise)}) for date ${selectedDate}. Is this available?`;
+  const waMsg = `Hi Decor Joy Gurgaon! I'm interested in "${product.title}" for date ${selectedDate}. Could you please share the custom quote and check slot availability?`;
   const waUrl = `https://wa.me/${cleanWhatsapp}?text=${encodeURIComponent(waMsg)}`;
 
   const productSchema = buildProductJsonLd(product, business);
@@ -228,15 +236,11 @@ export default function ProductDetail() {
         description={
           product.description
             ? product.description.slice(0, 160)
-            : `Book ${product.title} in Gurgaon. Professional balloon decoration, themed backdrops, and same-day event setups starting ₹${((product.basePricePaise || 0) / 100).toFixed(0)}.`
+            : `Book ${product.title} in Gurgaon. Professional balloon decoration, themed backdrops, and same-day event setups. Get a transparent custom quote on WhatsApp.`
         }
         canonical={`/p/${product.slug}`}
         ogType="product"
         ogImage={activeImg.url}
-        ogPrice={{
-          amount: ((product.basePricePaise || 0) / 100).toFixed(2),
-          currency: "INR",
-        }}
         jsonLd={[productSchema, breadcrumbSchema]}
       />
       {/* Breadcrumb */}
@@ -307,11 +311,8 @@ export default function ProductDetail() {
           <h1 className="product-h1">{product.title}</h1>
 
           <div className="live-pricing-bar">
-            <span className="price-big">{formatPaise(livePricePaise)}</span>
-            {product.compareAtPricePaise > livePricePaise && (
-              <span className="price-compare">{formatPaise(product.compareAtPricePaise)}</span>
-            )}
-            <span className="price-note">All taxes & on-site styling included</span>
+            <span className="price-big" style={{ fontSize: "1.2rem", color: "var(--gold, #d4af37)" }}>✓ Custom Quote on WhatsApp</span>
+            <span className="price-note">Punctual setup & professional takedown in Gurgaon</span>
           </div>
 
           <p className="product-short-desc">{product.shortDescription}</p>
@@ -339,9 +340,6 @@ export default function ProductDetail() {
                         />
                       )}
                       <span>{opt.label}</span>
-                      {opt.priceDeltaPaise > 0 && (
-                        <span className="delta">+{formatPaise(opt.priceDeltaPaise)}</span>
-                      )}
                     </button>
                   );
                 })}
@@ -370,7 +368,7 @@ export default function ProductDetail() {
                       />
                       <div className="addon-info">
                         <span className="addon-name">{addon.name}</span>
-                        <span className="addon-price">+{formatPaise(addon.pricePaise)}</span>
+                        <span className="addon-price" style={{ color: "var(--gold)" }}>✓ Custom Add-on</span>
                       </div>
                     </label>
                   );
@@ -478,7 +476,7 @@ export default function ProductDetail() {
               className="btn btn-gold action-btn"
               onClick={handleBookNow}
             >
-              Book Now (₹{Math.round(livePricePaise / 100).toLocaleString("en-IN")}) ➔
+              Book This Setup ➔
             </button>
             <button
               type="button"
@@ -507,7 +505,7 @@ export default function ProductDetail() {
             {relatedProducts.map((rel) => (
               <Link key={rel._id} to={`/p/${rel.slug}`} className="related-card">
                 <img
-                  src={getOptimizedImageUrl(rel.images?.[0]?.url || "", { width: 400, height: 300, crop: "fill" })}
+                  src={getOptimizedImageUrl(rel.images?.[0]?.url || "/decor-gallery/decor_001.jpg", { width: 400, height: 300, crop: "fill" })}
                   alt={rel.title}
                   loading="lazy"
                   width="400"
@@ -515,7 +513,7 @@ export default function ProductDetail() {
                 />
                 <div className="related-info">
                   <h4>{rel.title}</h4>
-                  <span>Starts at {formatPaise(rel.basePricePaise)}</span>
+                  <span style={{ color: "var(--gold)" }}>✓ Custom Quote</span>
                 </div>
               </Link>
             ))}
@@ -526,8 +524,8 @@ export default function ProductDetail() {
       {/* Sticky Bottom "Book Now" Bar on Mobile (>=44px touch targets) */}
       <div className="mobile-sticky-bar">
         <div className="sticky-price-wrap">
-          <span className="sticky-price-label">Total Setup:</span>
-          <span className="sticky-price-val">{formatPaise(livePricePaise)}</span>
+          <span className="sticky-price-label">Booking:</span>
+          <span className="sticky-price-val" style={{ fontSize: "0.95rem" }}>Instant WhatsApp Confirmation</span>
         </div>
         <div className="sticky-btns">
           <button
