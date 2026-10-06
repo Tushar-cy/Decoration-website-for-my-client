@@ -47,6 +47,7 @@ async function getDashboardStats(req, res, next) {
       converted: 0,
       closed: 0,
       spam: 0,
+      lost: 0,
     };
 
     for (const item of statusAgg) {

@@ -14,7 +14,8 @@ function InquiryManager() {
     try {
       setLoading(true);
       const res = await getInquiries(filter);
-      setInquiries(res.data);
+      const list = res.data?.data || (Array.isArray(res.data) ? res.data : []);
+      setInquiries(list);
     } catch (error) {
       console.error("Error loading inquiries:", error);
     } finally {
@@ -96,11 +97,12 @@ function InquiryManager() {
             </thead>
             <tbody>
               {inquiries.map((inq) => {
-                const cleanPhone = inq.phone.replace(/[^0-9]/g, "");
+                const digits = (inq.phone || "").replace(/[^0-9]/g, "");
+                const local10 = digits.startsWith("91") && digits.length === 12 ? digits.slice(2) : digits;
                 const waMessage = encodeURIComponent(
                   `Hello ${inq.name}! Thank you for inquiring with Decor Joy Gurgaon for your ${inq.eventType} on ${inq.eventDate}. How may we assist you with the decorations?`
                 );
-                const waUrl = `https://wa.me/91${cleanPhone}?text=${waMessage}`;
+                const waUrl = `https://wa.me/91${local10}?text=${waMessage}`;
 
                 return (
                   <tr key={inq._id}>

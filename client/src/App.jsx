@@ -35,6 +35,7 @@ const TestimonialManager = React.lazy(() => import("./admin/TestimonialManager")
 const SettingsManager = React.lazy(() => import("./admin/SettingsManager"));
 const UsersManager = React.lazy(() => import("./admin/UsersManager"));
 const AuditLogManager = React.lazy(() => import("./admin/AuditLogManager"));
+const InquiryManager = React.lazy(() => import("./admin/InquiryManager"));
 
 // Customer TanStack Query Client with required cache and retry parameters
 export const storefrontQueryClient = new QueryClient({
@@ -169,6 +170,7 @@ function App() {
               <Route path="settings" element={<SettingsManager />} />
               <Route path="users" element={<UsersManager />} />
               <Route path="audit-logs" element={<AuditLogManager />} />
+              <Route path="inquiries" element={<InquiryManager />} />
             </Route>
 
             {/* 404 Fallback Route */}

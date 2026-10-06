@@ -15,6 +15,8 @@ const STATUSES = [
   { value: "contacted", label: "Contacted" },
   { value: "quoted", label: "Quoted" },
   { value: "converted", label: "Converted" },
+  { value: "closed", label: "Closed" },
+  { value: "spam", label: "Spam" },
   { value: "lost", label: "Lost" },
 ];
 
@@ -199,7 +201,7 @@ function SubmissionsManager() {
     const customerEmail = sub.email || getVal(["email"]) || "";
 
     const occasion =
-      getVal(["occasion", "event_type", "purpose", "theme"]) ||
+      getVal(["occasion", "event_type", "eventType", "purpose", "theme"]) ||
       (sub.formKey ? sub.formKey.replace(/-/g, " ") : "Celebration");
 
     const date =
@@ -213,7 +215,7 @@ function SubmissionsManager() {
       getVal(["budget", "approximate_budget", "budget_range", "price_range"]) || "Custom Quote";
 
     const preferences =
-      getVal(["theme", "colours", "custom_theme_desc", "special_requests", "notes", "requirements"]) || "";
+      getVal(["theme", "colours", "custom_theme_desc", "special_requests", "notes", "requirements", "message"]) || "";
 
     return {
       customerName,
@@ -237,12 +239,13 @@ function SubmissionsManager() {
   // WhatsApp click-to-chat
   const getWhatsAppUrl = (submission) => {
     const rawPhone = submission.phone || "";
-    const cleanPhone = rawPhone.replace(/[^0-9]/g, "");
+    const digits = rawPhone.replace(/[^0-9]/g, "");
+    const local10 = digits.startsWith("91") && digits.length === 12 ? digits.slice(2) : digits;
     const summary = extractSubmissionSummary(submission);
     const msg = encodeURIComponent(
       `Hello ${submission.name}! Thank you for submitting your ${summary.occasion.toUpperCase()} decoration enquiry with Decor Joy Gurgaon. We'd love to share customized decor mockups and pricing options with you. How may we assist you today?`
     );
-    return `https://wa.me/${cleanPhone.startsWith("91") ? cleanPhone : "91" + cleanPhone}?text=${msg}`;
+    return `https://wa.me/91${local10}?text=${msg}`;
   };
 
   // CSV Export URL

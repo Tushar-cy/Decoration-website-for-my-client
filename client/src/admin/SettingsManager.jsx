@@ -72,7 +72,7 @@ function SettingsManagerContent({ currentUser }) {
         <div>
           <h1 className="manager-title">Store & Business Settings</h1>
           <p style={{ color: "#64748b", fontSize: "0.88rem", marginTop: "4px" }}>
-            Owner configuration for payments, delivery fees by pincode, and WhatsApp integrations.
+            Owner configuration for business contact info, serviceable pincodes, and WhatsApp integrations.
           </p>
         </div>
 

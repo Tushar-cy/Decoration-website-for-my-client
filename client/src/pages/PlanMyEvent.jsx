@@ -4,6 +4,8 @@ import PurposeForm from "../components/PurposeForm";
 import { getActivePurposes } from "../services/api";
 import SEO from "../components/SEO";
 import { buildBreadcrumbJsonLd } from "../utils/jsonLd";
+import { ErrorState } from "../components/common/ErrorState";
+import { LoadingSkeleton } from "../components/common/LoadingSkeleton";
 
 const PURPOSE_ICONS = {
   birthday: "🎂",
@@ -21,20 +23,24 @@ function PlanMyEvent() {
   const [purposes, setPurposes] = useState([]);
   const [selectedPurpose, setSelectedPurpose] = useState(initialPurpose);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchPurposes = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await getActivePurposes();
+      const list = res.data?.data?.purposes || res.data?.purposes || [];
+      setPurposes(list);
+    } catch (err) {
+      console.error("Error fetching purpose forms:", err);
+      setError(err.response?.data?.message || err.message || "Failed to load celebration categories");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchPurposes = async () => {
-      try {
-        const res = await getActivePurposes();
-        const list = res.data?.data?.purposes || res.data?.purposes || [];
-        setPurposes(list);
-      } catch (err) {
-        console.error("Error fetching purpose forms:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchPurposes();
   }, []);
 
@@ -139,6 +145,7 @@ function PlanMyEvent() {
                 alignItems: "center",
                 gap: "6px",
                 padding: "8px 0",
+                minHeight: "44px",
               }}
             >
               ← Choose a Different Occasion
@@ -174,6 +181,45 @@ function PlanMyEvent() {
             formKey={selectedPurpose}
             onCancel={handleBackToChooser}
           />
+        </div>
+      ) : loading ? (
+        <div style={{ maxWidth: "980px", margin: "0 auto" }}>
+          <LoadingSkeleton count={6} type="card" />
+        </div>
+      ) : error ? (
+        <ErrorState
+          title="Could Not Load Celebrations"
+          message={error}
+          onRetry={fetchPurposes}
+        />
+      ) : purposes.length === 0 ? (
+        <div
+          style={{
+            maxWidth: "600px",
+            margin: "40px auto",
+            textAlign: "center",
+            padding: "40px 20px",
+            backgroundColor: "#ffffff",
+            borderRadius: "16px",
+            border: "1px solid #f1f5f9",
+          }}
+        >
+          <div style={{ fontSize: "2.5rem", marginBottom: "12px" }}>🎈</div>
+          <h3 style={{ fontSize: "1.25rem", color: "#0f172a", marginBottom: "8px" }}>
+            Event Forms Updating
+          </h3>
+          <p style={{ color: "#64748b", fontSize: "0.92rem", marginBottom: "20px" }}>
+            Our online event planner forms are being refreshed. Message us directly on WhatsApp for instant assistance!
+          </p>
+          <a
+            href="https://wa.me/917015767715?text=Hello%20Decor%20Joy%20Gurgaon!%20I%20would%20like%20to%20plan%20decorations%20for%20an%20event."
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-whatsapp"
+            style={{ display: "inline-flex", alignItems: "center", gap: "8px", textDecoration: "none" }}
+          >
+            <span>💬</span> Message on WhatsApp
+          </a>
         </div>
       ) : (
         /* Purpose Chooser Grid */

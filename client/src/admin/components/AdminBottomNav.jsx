@@ -90,6 +90,16 @@ function AdminBottomNav({ user, onLogout }) {
                 <span>Reviews</span>
               </NavLink>
 
+              <NavLink
+                to="/admin/inquiries"
+                onClick={closeMore}
+                className="admin-nav-item"
+                style={{ background: "#f8fafc", color: "#1e293b", border: "1px solid #e2e8f0" }}
+              >
+                <span>📞</span>
+                <span>Inquiries</span>
+              </NavLink>
+
               {isOwner && (
                 <>
                   <NavLink

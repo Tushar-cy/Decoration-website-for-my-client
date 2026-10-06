@@ -624,6 +624,16 @@
   color: #64748b;
 }
 
+.status-closed {
+  background-color: #f1f5f9;
+  color: #475569;
+}
+
+.status-spam {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
 /* Submissions Notes Timeline */
 .sub-notes-list {
   display: flex;

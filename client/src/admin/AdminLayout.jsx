@@ -84,6 +84,14 @@ function AdminLayoutInner({ currentUser, onLogout }) {
             </NavLink>
 
             <NavLink
+              to="/admin/inquiries"
+              className={({ isActive }) => (isActive ? "admin-nav-item active" : "admin-nav-item")}
+            >
+              <span>📞</span>
+              <span>Contact Inquiries</span>
+            </NavLink>
+
+            <NavLink
               to="/admin/gallery"
               className={({ isActive }) => (isActive ? "admin-nav-item active" : "admin-nav-item")}
             >

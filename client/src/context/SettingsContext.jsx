@@ -19,8 +19,10 @@ export function SettingsProvider({ children }) {
   const business = data?.business || {};
   const phone = business.phone || "+91 7015767715";
   const whatsapp = business.whatsapp || "+91 7015767715";
-  const cleanPhone = phone.replace(/[^0-9]/g, "");
-  const cleanWhatsapp = whatsapp.replace(/[^0-9]/g, "");
+  const rawCleanPhone = phone.replace(/[^0-9]/g, "");
+  const cleanPhone = rawCleanPhone.length === 10 ? `91${rawCleanPhone}` : rawCleanPhone;
+  const rawCleanWhatsapp = whatsapp.replace(/[^0-9]/g, "");
+  const cleanWhatsapp = rawCleanWhatsapp.length === 10 ? `91${rawCleanWhatsapp}` : rawCleanWhatsapp;
 
   const value = {
     settings: data,

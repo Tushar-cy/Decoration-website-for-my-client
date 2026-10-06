@@ -180,6 +180,7 @@ function Dashboard() {
               { key: "converted", label: "Converted", color: "#16a34a", bg: "#f0fdf4" },
               { key: "closed", label: "Closed", color: "#64748b", bg: "#f8fafc" },
               { key: "spam", label: "Spam", color: "#ef4444", bg: "#fef2f2" },
+              { key: "lost", label: "Lost", color: "#64748b", bg: "#f1f5f9" },
             ].map((st) => (
               <div
                 key={st.key}
