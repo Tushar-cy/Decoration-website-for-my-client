@@ -23,7 +23,7 @@ function Footer() {
 
     setNewsletterStatus({
       state: "success",
-      message: "🎉 Subscribed! Use promo code 'WELCOME10' for 10% off your first setup.",
+      message: "🎉 Subscribed! We'll keep you updated on seasonal offers and celebration ideas from Decor Joy Gurgaon.",
     });
     setEmail("");
   };
@@ -116,7 +116,7 @@ function Footer() {
             <h4 className="footer-col-title">Quick Links</h4>
             <ul className="footer-links-list">
               <li><Link to="/">Home</Link></li>
-              <li><Link to="/services">Decoration Packages</Link></li>
+              <li><Link to="/shop">Decoration Packages</Link></li>
               <li><Link to="/gallery">Photo Gallery</Link></li>
               <li><Link to="/about">About Us & Quality</Link></li>
               <li><Link to="/contact">Book / Contact</Link></li>
@@ -127,11 +127,11 @@ function Footer() {
           <div className="footer-col">
             <h4 className="footer-col-title">Celebrations</h4>
             <ul className="footer-links-list">
-              <li><Link to="/services?category=Birthdays">Birthday Ring Arches</Link></li>
-              <li><Link to="/services?category=Anniversaries">Romantic Terraces & Cabanas</Link></li>
-              <li><Link to="/services?category=Baby%20Showers">Baby Showers & Cloud Themes</Link></li>
-              <li><Link to="/services?category=Proposals">Marry Me Neon Proposals</Link></li>
-              <li><Link to="/services?category=Special%20Celebrations">Haldi & Mehendi Backdrops</Link></li>
+              <li><Link to="/shop?category=Birthdays">Birthday Ring Arches</Link></li>
+              <li><Link to="/shop?category=Anniversaries">Romantic Terraces & Cabanas</Link></li>
+              <li><Link to="/shop?category=Baby%20Showers">Baby Showers & Cloud Themes</Link></li>
+              <li><Link to="/shop?category=Proposals">Marry Me Neon Proposals</Link></li>
+              <li><Link to="/shop?category=Special%20Celebrations">Haldi & Mehendi Backdrops</Link></li>
             </ul>
           </div>
 

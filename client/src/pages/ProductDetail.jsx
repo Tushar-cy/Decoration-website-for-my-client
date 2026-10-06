@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+﻿import React, { useState, useMemo, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getProductBySlug } from "../services/api";
@@ -16,7 +16,7 @@ import "../styles/productDetail.css";
 export default function ProductDetail() {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const { cleanWhatsapp, business } = usePublicSettings();
+  const { cleanWhatsapp, business, serviceablePincodes } = usePublicSettings();
   const { isInWishlist, toggleWishlist } = useShop();
 
   // 1. Fetch Package Data
@@ -91,9 +91,9 @@ export default function ProductDetail() {
     }
     // Gurgaon pincodes start with 122
     if (pin.startsWith("122")) {
-      setPincodeStatus({ valid: true, message: "✓ Free Setup & On-Time Delivery Available in Gurgaon!" });
+      setPincodeStatus({ valid: true, message: "âœ“ Free Setup & On-Time Delivery Available in Gurgaon!" });
     } else {
-      setPincodeStatus({ valid: true, message: "✓ Available across Delhi NCR. Contact us for delivery details." });
+      setPincodeStatus({ valid: true, message: "âœ“ Available across Delhi NCR. Contact us for delivery details." });
     }
   };
 
@@ -135,16 +135,16 @@ export default function ProductDetail() {
 
   let waMsg = `Hi Decor Joy, I'm interested in the "${product.title}" decoration setup. I'd like to know availability, customization options and pricing.`;
   if (selectedDate) {
-    waMsg += `\n📅 Preferred Date: ${selectedDate}`;
+    waMsg += `\nðŸ“… Preferred Date: ${selectedDate}`;
   }
   if (preferredSlot) {
-    waMsg += `\n⏰ Preferred Timing: ${preferredSlot === "morning" ? "Morning (09:00 - 13:00)" : preferredSlot === "afternoon" ? "Afternoon (13:00 - 17:00)" : "Evening (17:00 - 21:00)"}`;
+    waMsg += `\nâ° Preferred Timing: ${preferredSlot === "morning" ? "Morning (09:00 - 13:00)" : preferredSlot === "afternoon" ? "Afternoon (13:00 - 17:00)" : "Evening (17:00 - 21:00)"}`;
   }
   if (variantSummary) {
-    waMsg += `\n🎨 Preferences: ${variantSummary}`;
+    waMsg += `\nðŸŽ¨ Preferences: ${variantSummary}`;
   }
   if (addonNames) {
-    waMsg += `\n✨ Optional Add-ons: ${addonNames}`;
+    waMsg += `\nâœ¨ Optional Add-ons: ${addonNames}`;
   }
   waMsg += `\n\nLooking forward to hearing from you!`;
 
@@ -199,7 +199,7 @@ export default function ProductDetail() {
               onClick={() => toggleWishlist(product)}
               aria-label={isSaved ? "Remove from wishlist" : "Save to wishlist"}
             >
-              {isSaved ? "❤️" : "🤍"}
+              {isSaved ? "â¤ï¸" : "ðŸ¤"}
             </button>
           </div>
 
@@ -229,7 +229,7 @@ export default function ProductDetail() {
         {/* Right Column: Details & Inquiry CTAs */}
         <div className="product-details-col">
           <div className="category-tag">
-            🎉 Occasion: <strong>{product.categoryId?.name || "Bespoke Event Setup"}</strong>
+            ðŸŽ‰ Occasion: <strong>{product.categoryId?.name || "Bespoke Event Setup"}</strong>
           </div>
 
           <h1 className="product-title">{product.title}</h1>
@@ -240,7 +240,7 @@ export default function ProductDetail() {
               <div className="starting-price-pill">
                 <span>Starting from</span>
                 <strong style={{ fontSize: "1.35rem", color: "var(--gold, #b88932)", marginLeft: "6px" }}>
-                  ₹{(product.basePricePaise / 100).toLocaleString("en-IN")}
+                  â‚¹{(product.basePricePaise / 100).toLocaleString("en-IN")}
                 </strong>
                 <span style={{ fontSize: "0.8rem", color: "#64748b", marginLeft: "6px" }}>(indicative)</span>
               </div>
@@ -253,7 +253,7 @@ export default function ProductDetail() {
               </div>
             )}
             <span className="price-note">
-              ✨ Free Setup, Delivery & Takedown across Gurgaon
+              âœ¨ Free Setup, Delivery & Takedown across Gurgaon
             </span>
           </div>
 
@@ -310,7 +310,7 @@ export default function ProductDetail() {
                       />
                       <div className="addon-info">
                         <span className="addon-name">{addon.name}</span>
-                        <span className="addon-price" style={{ color: "var(--gold)" }}>✓ Custom Add-on</span>
+                        <span className="addon-price" style={{ color: "var(--gold)" }}>âœ“ Custom Add-on</span>
                       </div>
                     </label>
                   );
@@ -321,7 +321,7 @@ export default function ProductDetail() {
 
           {/* Date & Preferred Setup Timing */}
           <div className="schedule-section">
-            <h4 className="schedule-title">📅 Preferred Event Date & Setup Timing</h4>
+            <h4 className="schedule-title">ðŸ“… Preferred Event Date & Setup Timing</h4>
             <div className="schedule-row">
               <div className="schedule-field">
                 <label className="field-lbl">Event Date</label>
@@ -344,6 +344,7 @@ export default function ProductDetail() {
                   <option value="morning">Morning (09:00 AM - 01:00 PM)</option>
                   <option value="afternoon">Afternoon (01:00 PM - 05:00 PM)</option>
                   <option value="evening">Evening (05:00 PM - 09:00 PM)</option>
+                  <option value="midnight">Midnight Special (10:00 PM - 12:30 AM)</option>
                 </select>
               </div>
             </div>
@@ -385,7 +386,7 @@ export default function ProductDetail() {
               <h4 className="included-title">What's Included in this Package:</h4>
               <ul className="included-list">
                 {product.includedItems.map((item, idx) => (
-                  <li key={idx}>✓ {item}</li>
+                  <li key={idx}>âœ“ {item}</li>
                 ))}
               </ul>
             </div>
@@ -400,7 +401,7 @@ export default function ProductDetail() {
               className="btn btn-whatsapp action-btn"
               style={{ flex: 1.5, textAlign: "center", textDecoration: "none", fontSize: "1.02rem" }}
             >
-              💬 Enquire on WhatsApp
+              ðŸ’¬ Enquire on WhatsApp
             </a>
             <button
               type="button"
@@ -408,7 +409,7 @@ export default function ProductDetail() {
               onClick={() => navigate(`/plan-my-event?package=${product.slug}`)}
               style={{ flex: 1 }}
             >
-              ✨ Plan a Similar Event
+              âœ¨ Plan a Similar Event
             </button>
           </div>
         </div>
@@ -430,7 +431,7 @@ export default function ProductDetail() {
                 />
                 <div className="related-info">
                   <h4>{rel.title}</h4>
-                  <span style={{ color: "var(--gold)" }}>✓ Custom Quote on WhatsApp</span>
+                  <span style={{ color: "var(--gold)" }}>âœ“ Custom Quote on WhatsApp</span>
                 </div>
               </Link>
             ))}
@@ -454,7 +455,7 @@ export default function ProductDetail() {
             className="btn btn-whatsapp sticky-btn"
             style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px", flex: 2 }}
           >
-            <span>💬</span> Enquire on WhatsApp
+            <span>ðŸ’¬</span> Enquire on WhatsApp
           </a>
           <button
             type="button"
@@ -463,10 +464,11 @@ export default function ProductDetail() {
             aria-label="Plan a Similar Event"
             title="Plan a Similar Event"
           >
-            ✨
+            âœ¨
           </button>
         </div>
       </div>
     </div>
   );
 }
+

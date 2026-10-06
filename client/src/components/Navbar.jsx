@@ -212,11 +212,6 @@ function Navbar() {
           </ul>
         </nav>
 
-        {/* Search Bar in Navbar */}
-        <div className="nav-search-container" style={{ width: "240px", display: "none" }}>
-          <SearchAutocomplete placeholder="Search decor..." />
-        </div>
-
         {/* Action Buttons: Wishlist, Cart & WhatsApp */}
         <div className="navbar-actions">
           {/* Wishlist Button */}

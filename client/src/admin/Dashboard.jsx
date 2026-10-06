@@ -44,11 +44,13 @@ function Dashboard() {
 
   const getWhatsAppUrl = (sub) => {
     const rawPhone = sub.phone || "";
-    const cleanPhone = rawPhone.replace(/[^0-9]/g, "");
+    // Strip all non-digits, then strip leading country code (91) to avoid 9191... double-prefix
+    const digits = rawPhone.replace(/[^0-9]/g, "");
+    const local10 = digits.startsWith("91") && digits.length === 12 ? digits.slice(2) : digits;
     const msg = encodeURIComponent(
       `Hello ${sub.name}! Thank you for enquiring with Decor Joy Gurgaon regarding your ${sub.formKey || "event"} decoration. I'd love to assist you with package options and ideas!`
     );
-    return `https://wa.me/91${cleanPhone}?text=${msg}`;
+    return `https://wa.me/91${local10}?text=${msg}`;
   };
 
   return (
@@ -246,7 +248,7 @@ function Dashboard() {
                     📞 {sub.phone} {sub.email ? `• ✉️ ${sub.email}` : ""}
                   </div>
                   <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: "2px" }}>
-                    Received: {new Date(sub.createdAt).toLocaleDateString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
+                    Received: {new Date(sub.createdAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
                   </div>
                 </div>
 

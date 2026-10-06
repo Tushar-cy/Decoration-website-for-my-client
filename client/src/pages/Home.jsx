@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import Hero from "../components/Hero";
@@ -19,6 +19,15 @@ import "../styles/gallery.css";
 
 function Home() {
   const [selectedImage, setSelectedImage] = useState(null);
+
+  // Close lightbox on Escape key
+  const closeLightbox = useCallback(() => closeLightbox(), []);
+  useEffect(() => {
+    if (!selectedImage) return;
+    const onKey = (e) => { if (e.key === "Escape") closeLightbox(); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [selectedImage, closeLightbox]);
 
   // 1. Featured Setups Query (with graceful offline fallback)
   const {
@@ -138,7 +147,7 @@ function Home() {
 
           <div style={{ textAlign: "center", marginTop: "45px" }}>
             <Link to="/shop" className="btn btn-gold">
-              Explore All Setups & Packages 🎈
+              Explore All Setups & Packages ðŸŽˆ
             </Link>
           </div>
         </div>
@@ -158,7 +167,7 @@ function Home() {
 
           <div className="why-choose-grid">
             <div className="why-card">
-              <div className="why-icon-box">🎨</div>
+              <div className="why-icon-box">ðŸŽ¨</div>
               <h3 className="why-card-title">Creative Designs</h3>
               <p className="why-card-desc">
                 Fresh, contemporary balloon aesthetics, bespoke color palettes, and captivating focal points tailored to your vision.
@@ -166,7 +175,7 @@ function Home() {
             </div>
 
             <div className="why-card">
-              <div className="why-icon-box">✨</div>
+              <div className="why-icon-box">âœ¨</div>
               <h3 className="why-card-title">Personalized Decorations</h3>
               <p className="why-card-desc">
                 Every event is customized with tailored names, ages, themes, floral touches, and glowing LED neon letters.
@@ -174,7 +183,7 @@ function Home() {
             </div>
 
             <div className="why-card">
-              <div className="why-icon-box">💎</div>
+              <div className="why-icon-box">ðŸ’Ž</div>
               <h3 className="why-card-title">Quality Materials</h3>
               <p className="why-card-desc">
                 We use high-grade, durable latex and chrome balloons, premium fabrics, and spotless props that look exquisite in photos.
@@ -182,7 +191,7 @@ function Home() {
             </div>
 
             <div className="why-card">
-              <div className="why-icon-box">⏱️</div>
+              <div className="why-icon-box">â±ï¸</div>
               <h3 className="why-card-title">On-Time Setup</h3>
               <p className="why-card-desc">
                 Punctuality is our core commitment. We arrive and execute seamlessly well before your guests arrive.
@@ -190,7 +199,7 @@ function Home() {
             </div>
 
             <div className="why-card">
-              <div className="why-icon-box">🏷️</div>
+              <div className="why-icon-box">ðŸ·ï¸</div>
               <h3 className="why-card-title">Affordable Packages</h3>
               <p className="why-card-desc">
                 Honest, transparent pricing without hidden fees, giving you luxury event styling at pocket-friendly rates.
@@ -198,7 +207,7 @@ function Home() {
             </div>
 
             <div className="why-card">
-              <div className="why-icon-box">📍</div>
+              <div className="why-icon-box">ðŸ“</div>
               <h3 className="why-card-title">Serving Gurgaon Since 2021</h3>
               <p className="why-card-desc">
                 Trusted by hundreds of families across DLF, Golf Course Road, Sohna Road, and Sector 57 Gurugram.
@@ -240,7 +249,7 @@ function Home() {
 
           <div style={{ textAlign: "center", marginTop: "45px" }}>
             <Link to="/gallery" className="btn btn-outline">
-              Explore Full Photo Gallery 📸
+              Explore Full Photo Gallery ðŸ“¸
             </Link>
           </div>
         </div>
@@ -290,7 +299,7 @@ function Home() {
               className="btn btn-whatsapp"
             />
             <Link to="/contact" className="btn btn-gold">
-              Submit Booking Form 📝
+              Submit Booking Form ðŸ“
             </Link>
           </div>
         </div>
@@ -298,14 +307,14 @@ function Home() {
 
       {/* Lightbox Modal for Image Preview */}
       {selectedImage && (
-        <div className="lightbox-backdrop" onClick={() => setSelectedImage(null)}>
+        <div className="lightbox-backdrop" onClick={() => closeLightbox()}>
           <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
             <button
               className="lightbox-close-btn"
-              onClick={() => setSelectedImage(null)}
+              onClick={() => closeLightbox()}
               aria-label="Close modal"
             >
-              ✕
+              âœ•
             </button>
             <img
               src={selectedImage.src || selectedImage.image}
@@ -341,3 +350,4 @@ function Home() {
 }
 
 export default Home;
+

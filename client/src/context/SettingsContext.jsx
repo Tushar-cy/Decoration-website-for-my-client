@@ -31,8 +31,6 @@ export function SettingsProvider({ children }) {
     cleanWhatsapp,
     slots: data?.slots || [],
     serviceablePincodes: data?.serviceablePincodes || [],
-    advancePercent: data?.advancePercent ?? 25,
-    paymentMode: data?.paymentMode || "advance_online",
     isLoading,
     error,
   };
@@ -56,8 +54,6 @@ export function usePublicSettings() {
       business: { name: "Decor Joy Gurgaon" },
       slots: [],
       serviceablePincodes: [],
-      advancePercent: 25,
-      paymentMode: "advance_online",
       isLoading: false,
     };
   }
